@@ -1,0 +1,3 @@
+cd /home/krzysztof/pico/pico-examples/hello_world/usb/documentation/dox
+doxywizard &
+exit

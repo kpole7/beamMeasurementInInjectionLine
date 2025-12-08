@@ -1,0 +1,272 @@
+// This source code file was written by K.O. (2024 - 2025)
+
+// Modifications in the original Freemodbus code have been labeled "K.O."
+// Particularly non-obvious portions of the code described in the documentation are labeled "K.O. documentation"
+
+
+#include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
+#include "pico/stdlib.h"
+#include "modbusConfig.h"
+#include "masterConfig.h"
+#include "spiCommunication.h"
+#include "debuggingTools.h"
+#include "mb.h"
+
+
+// This directive tells that the LED on pico PCB is connected to GPIO25 port
+#define PICO_ON_BOARD_LED_PIN		25
+
+// This directive specifies the time resolution for checking jumper states and LED light time
+#define SLOWER_DEVICES_TIME_TICK	0x400
+
+// This constant determines the frequency of communication over SPI with the power current source.
+// This constant is related to REPEATING_WRITE_COMMAND
+#define FREQUENCY_DIVIDER_SPI		10
+
+//..............................................................................
+// Variables for Modbus communication
+//..............................................................................
+
+
+// This a table of Modbus registers; initial registers are of type r/w,
+// subsequent registers are of type ro.
+uint16_t ModbusRegisters[MODBUS_AREA_RW_REGISTERS+MODBUS_AREA_RO_REGISTERS];
+
+// This flag indicates that the Modbus state machine has written a new value to a register
+// so writing to the power source should be activated by the SPI.
+bool IsWriteRequest;
+
+// This variable enables stopping the modbus state machine instead of executing the function
+// 'assert' that was in the original freemodbus source code.
+// That enables failover and debugging.
+volatile bool ModbusAssertionFailed;
+
+// This is a flag indicating that the LED should flash due to transmission from the master
+volatile bool ModbusActiveLedShort;
+
+// This is a flag indicating that the LED should shine longer, due to sending
+// a response back to the master
+volatile bool ModbusActiveLedLong;
+
+
+//..............................................................................
+// Local variables concerning checking jumper states and LED light time
+//..............................................................................
+
+
+static bool ModbusActiveLedIsOnShort, ModbusActiveLedIsOnLong;
+static uint64_t ModbusActiveLedTime;
+static uint64_t CurrentTime, SampleTime;
+static uint8_t FrequencyDividerSpiCounter;
+
+//..............................................................................
+// Variables for debugging
+//..............................................................................
+
+
+#if MODBUS_DEBUG_MODE
+bool IsJumperJP2;
+bool IsChangeModbusWrite;
+static bool IsJumperJP1;
+static bool OldIsJumperJP1, OldIsJumperJP2;
+#endif
+
+
+//..............................................................................
+// Prototypes of functions
+//..............................................................................
+
+
+#ifdef TO_BE_REMOVED
+extern void prvvUARTxISR( void );
+extern int64_t prvvTIMERExpiredISR(alarm_id_t id, void *user_data);
+#endif
+
+// This function initializes and turns on the LED on pico board.
+void turnOnLedOnBoard(void);
+
+// This function initializes the operation of the LED that indicates Modbus transmission.
+void initModbusActivityLed(void);
+
+// This function supports the LED that indicates Modbus transmission (provides
+// the correct timing and strength of illumination).
+void modbusActivityLedService(void);
+
+
+//..............................................................................
+// The main routine of the project
+//..............................................................................
+
+
+int main(){
+	uint8_t J;
+	bool IsNewWriteRequest;
+
+	//...............
+	// Initializations of variables, peripherals, etc.
+	//...............
+
+
+	ModbusAssertionFailed = false;
+
+	stdio_init_all();
+	turnOnLedOnBoard();
+	initModbusActivityLed();
+	initializeSPI();
+
+	for (J=0; J<MODBUS_AREA_RW_REGISTERS+MODBUS_AREA_RO_REGISTERS;J++){
+		ModbusRegisters[J] = 0;
+	}
+	IsWriteRequest = false;
+	IsNewWriteRequest = false;
+
+#if MODBUS_DEBUG_MODE
+	initInputPortJP1();
+	initInputPortJP2();
+	initAuxiliaryPrintouts();
+	printf("\r\nHello, world!\r\n");
+#endif
+
+#if AUXILIARY_OUTPUT_PINS
+	auxiliaryOutputsInitialize();
+#endif
+
+#if WRITING_ERROR_TEST
+	initInputPortJP3();
+#endif
+
+#if SPI_SIMULATION_JP4
+	initInputPortJP4();
+#endif
+
+	SampleTime = (uint64_t)0;
+    FrequencyDividerSpiCounter = 1;
+
+	eMBInit(MB_RTU,MODBUS_SLAVE_ID,0,MODBUS_BAUD_RATE,MODBUS_PARITY); // The parameter ucPort is a dummy and will be ignored
+	eMBEnable();
+
+
+	//...............
+	// The main loop
+	//...............
+
+
+    while (1){
+    	// Timing for slower processes.
+    	CurrentTime = time_us_64();
+    	if(CurrentTime>SampleTime){
+    		SampleTime = CurrentTime + (uint64_t)SLOWER_DEVICES_TIME_TICK;
+
+    		// SPI communication with high-current source is slowed down
+    		if(0 == FrequencyDividerSpiCounter){
+    			FrequencyDividerSpiCounter = FREQUENCY_DIVIDER_SPI;
+
+    			IsNewWriteRequest = communicateHighCurrentSource(IsWriteRequest);
+
+#if MODBUS_DEBUG_MODE
+    			if(IsWriteRequest){
+    	    		logAddEvent("m.loop",1);
+    	    	}
+#endif
+
+    			IsWriteRequest = IsNewWriteRequest; // normally 'false'
+    		}
+    		else{
+    			FrequencyDividerSpiCounter--;
+    		}
+
+    		modbusActivityLedService();
+
+#if MODBUS_DEBUG_MODE
+    		// Reading the states of jumpers.
+    		IsJumperJP1 = !readInputPortJP1(); // false;	// Modbus state machine debugging
+    		IsJumperJP2 = !readInputPortJP2(); // true;	// SPI communication debugging
+#endif
+    	}
+
+#if MODBUS_DEBUG_MODE
+    	// Auxiliary printouts for debugging purpose
+    	if(IsJumperJP1 && !OldIsJumperJP1){
+    		logPrintAll(0);
+    	}
+    	OldIsJumperJP1 = IsJumperJP1;
+    	OldIsJumperJP2 = IsJumperJP2; // not used
+#endif
+
+    	// Modbus communication service
+    	if(!ModbusAssertionFailed){
+
+    		eMBPoll();
+
+    	}
+    	else{
+    		// Stopping the modbus state machine instead of executing the function 'assert'
+    		// that was in the original freemodbus source code.
+    		// That enables failover and debugger actions.
+    		if(irq_is_enabled(MODBUS_UART0_IRQ)){
+    		    irq_set_enabled(MODBUS_UART0_IRQ, false);
+    		}
+    	}
+    } // The main loop
+
+// These lines are to make doxygen take into account the interrupt handling routines
+// This is intentionally dead code
+#ifdef TO_BE_REMOVED
+    if(false){
+    	prvvUARTxISR();
+    	prvvTIMERExpiredISR(0,NULL);
+    }
+#endif // TO_BE_REMOVED
+}
+
+
+//..............................................................................
+// Definitions of functions
+//..............................................................................
+
+
+// This function initializes and turns on the LED on pico board.
+void turnOnLedOnBoard(void){
+	gpio_init(PICO_ON_BOARD_LED_PIN);
+	gpio_set_dir(PICO_ON_BOARD_LED_PIN, GPIO_OUT);
+	gpio_put(PICO_ON_BOARD_LED_PIN, true);
+}
+
+// This function initializes the operation of the LED that indicates Modbus transmission.
+void initModbusActivityLed(void){
+	gpio_init(MODBUS_ACTIVITY_LED);
+	gpio_set_dir(MODBUS_ACTIVITY_LED, GPIO_OUT);
+	gpio_put(MODBUS_ACTIVITY_LED, false);
+
+	ModbusActiveLedIsOnShort=false;
+	ModbusActiveLedIsOnLong=false;
+	ModbusActiveLedShort=false;
+	ModbusActiveLedLong=false;
+}
+
+// This function supports the LED that indicates Modbus transmission (provides
+// the correct timing and strength of illumination).
+void modbusActivityLedService(void){
+	if(ModbusActiveLedShort && !ModbusActiveLedIsOnShort){
+		ModbusActiveLedIsOnShort=true;
+		gpio_put(MODBUS_ACTIVITY_LED, true);
+		gpio_set_drive_strength(MODBUS_ACTIVITY_LED,GPIO_DRIVE_STRENGTH_2MA);
+		ModbusActiveLedTime = CurrentTime + (uint64_t)MODBUS_ACTIVITY_SHORT_TICKS;
+	}
+	if(ModbusActiveLedLong && !ModbusActiveLedIsOnLong){
+		ModbusActiveLedIsOnLong=true;
+		gpio_put(MODBUS_ACTIVITY_LED, true);
+		gpio_set_drive_strength(MODBUS_ACTIVITY_LED,GPIO_DRIVE_STRENGTH_12MA);
+		ModbusActiveLedTime = CurrentTime + (uint64_t)MODBUS_ACTIVITY_LONG_TICKS;
+	}
+	if(CurrentTime > ModbusActiveLedTime){
+		gpio_put(MODBUS_ACTIVITY_LED, false);
+		ModbusActiveLedIsOnShort=false;
+		ModbusActiveLedIsOnLong=false;
+		ModbusActiveLedShort=false;
+		ModbusActiveLedLong=false;
+	}
+}
+
