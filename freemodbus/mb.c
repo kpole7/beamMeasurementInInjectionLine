@@ -32,7 +32,7 @@
 #include "string.h"
 
 /* ----------------------- Platform includes --------------------------------*/
-#include "../../portfreemodbus/port.h" //K.O. modification
+#include "../../portfreemodbus/port.h" /* K.O. modification */
 
 /* ----------------------- Modbus includes ----------------------------------*/
 #include "mb.h"
@@ -40,8 +40,8 @@
 #include "mbframe.h"
 #include "mbproto.h"
 #include "mbfunc.h"
-#include "../../debuggingTools.h" //K.O. modification
-#include "../../masterConfig.h" //K.O. modification
+#include "../../debuggingTools.h" /* K.O. modification */
+#include "../../masterConfig.h" /* K.O. modification */
 
 #include "mbport.h"
 #if MB_RTU_ENABLED == 1
@@ -73,7 +73,7 @@ static enum
 /* Functions pointer which are initialized in eMBInit( ). Depending on the
  * mode (RTU or ASCII) the are set to the correct implementations.
  */
-#ifdef VARIABLE_POINTERS_TO_FUNCTIONS_ALLOWED //K.O. modification
+#ifdef VARIABLE_POINTERS_TO_FUNCTIONS_ALLOWED /* K.O. modification */
 static peMBFrameSend peMBFrameSendCur;
 static pvMBFrameStart pvMBFrameStartCur;
 static pvMBFrameStop pvMBFrameStopCur;
@@ -148,7 +148,7 @@ eMBInit( eMBMode eMode, UCHAR ucSlaveAddress, UCHAR ucPort, ULONG ulBaudRate, eM
         {
 #if MB_RTU_ENABLED > 0
         case MB_RTU:
-#ifndef VARIABLE_POINTERS_TO_FUNCTIONS_NOT_ALLOWED //K.O. modification
+#ifndef VARIABLE_POINTERS_TO_FUNCTIONS_NOT_ALLOWED /* K.O. modification */
             pvMBFrameStartCur = eMBRTUStart;
             pvMBFrameStopCur = eMBRTUStop;
             peMBFrameSendCur = eMBRTUSend;
@@ -226,7 +226,7 @@ eMBTCPInit( USHORT ucTCPPort )
 }
 #endif
 
-#ifdef NOT_USED_FUNCTIONS_ALLOWED //K.O.
+#ifdef NOT_USED_FUNCTIONS_ALLOWED /* K.O. */
 eMBErrorCode
 eMBRegisterCB( UCHAR ucFunctionCode, pxMBFunctionHandler pxHandler )
 {
@@ -274,7 +274,7 @@ eMBRegisterCB( UCHAR ucFunctionCode, pxMBFunctionHandler pxHandler )
 }
 #endif
 
-#ifdef NOT_USED_FUNCTIONS_ALLOWED //K.O.
+#ifdef NOT_USED_FUNCTIONS_ALLOWED /* K.O. */
 eMBErrorCode
 eMBClose( void )
 {
@@ -303,7 +303,7 @@ eMBEnable( void )
     if( eMBState == STATE_DISABLED )
     {
         /* Activate the protocol stack. */
-#ifndef VARIABLE_POINTERS_TO_FUNCTIONS_NOT_ALLOWED //K.O. modification
+#ifndef VARIABLE_POINTERS_TO_FUNCTIONS_NOT_ALLOWED /* K.O. modification */
         pvMBFrameStartCur(  );
 #else
         eMBRTUStart();
@@ -317,7 +317,7 @@ eMBEnable( void )
     return eStatus;
 }
 
-#ifdef NOT_USED_FUNCTIONS_ALLOWED //K.O.
+#ifdef NOT_USED_FUNCTIONS_ALLOWED /* K.O. */
 eMBErrorCode
 eMBDisable( void )
 {
@@ -358,7 +358,7 @@ eMBPoll( void )
     if( eMBState != STATE_ENABLED )
     {
 #if MODBUS_DEBUG_MODE
-    	logAddEvent("eMBPoll 1", (uint16_t)eMBState); //K.O.
+    	logAddEvent("eMBPoll 1", (uint16_t)eMBState); /* K.O. */
 #endif
 
         return MB_EILLSTATE;
@@ -375,10 +375,10 @@ eMBPoll( void )
 
         case EV_FRAME_RECEIVED:
 #if MODBUS_DEBUG_MODE
-        	logAddEvent("eMBPoll 2", (uint16_t)eMBState); //K.O.
+        	logAddEvent("eMBPoll 2", (uint16_t)eMBState); /* K.O. */
 #endif
 
-#ifndef VARIABLE_POINTERS_TO_FUNCTIONS_NOT_ALLOWED //K.O. modification
+#ifndef VARIABLE_POINTERS_TO_FUNCTIONS_NOT_ALLOWED /* K.O. modification */
             eStatus = peMBFrameReceiveCur( &ucRcvAddress, &ucMBFrame, &usLength );
 #else
             eStatus = eMBRTUReceive( &ucRcvAddress, &ucMBFrame, &usLength );
@@ -395,7 +395,7 @@ eMBPoll( void )
 
         case EV_EXECUTE:
 #if MODBUS_DEBUG_MODE
-        	logAddEvent("eMBPoll 3", (uint16_t)eMBState); //K.O.
+        	logAddEvent("eMBPoll 3", (uint16_t)eMBState); /* K.O. */
 #endif
 
             ucFunctionCode = ucMBFrame[MB_PDU_FUNC_OFF];
@@ -410,7 +410,7 @@ eMBPoll( void )
                 else if( xFuncHandlers[i].ucFunctionCode == ucFunctionCode )
                 {
 #if MODBUS_DEBUG_MODE
-                	logAddEvent("eMBPoll3+", (uint16_t)i); //K.O.
+                	logAddEvent("eMBPoll3+", (uint16_t)i); /* K.O. */
 #endif
                 	eException = xFuncHandlers[i].pxHandler( ucMBFrame, &usLength );
                     break;
@@ -432,7 +432,7 @@ eMBPoll( void )
                 {
                     vMBPortTimersDelay( MB_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS );
                 }                
-#ifndef VARIABLE_POINTERS_TO_FUNCTIONS_NOT_ALLOWED //K.O. modification
+#ifndef VARIABLE_POINTERS_TO_FUNCTIONS_NOT_ALLOWED /* K.O. modification */
                 eStatus = peMBFrameSendCur( ucMBAddress, ucMBFrame, usLength );
 #else
                 eStatus = eMBRTUSend( ucMBAddress, ucMBFrame, usLength );
@@ -442,7 +442,7 @@ eMBPoll( void )
 
         case EV_FRAME_SENT:
 #if MODBUS_DEBUG_MODE
-        	logAddEvent("eMBPoll 4", (uint16_t)eMBState); //K.O.
+        	logAddEvent("eMBPoll 4", (uint16_t)eMBState); /* K.O. */
 #if (MODBUS_DEBUG_MODE && MODBUS_DEBUG_PRINT)
         	logPrintNew(200);
 #endif
@@ -451,7 +451,7 @@ eMBPoll( void )
         }
     }
     else{
-    	xMBPortSerialPoll(); //K.O. Substantial modification of the source code
+    	xMBPortSerialPoll(); /* K.O. Substantial modification of the source code */
     }
     return MB_ENOERR;
 }

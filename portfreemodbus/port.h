@@ -24,8 +24,8 @@
 
 #include <assert.h>
 #include <inttypes.h>
-#include <stdbool.h> //K.O. modification
-#include "../../modbusConfig.h" //K.O. modification
+#include <stdbool.h> /* K.O. modification */
+#include "../../modbusConfig.h" /* K.O. modification */
 
 #define INLINE                      inline
 #define PR_BEGIN_EXTERN_C           extern "C" {

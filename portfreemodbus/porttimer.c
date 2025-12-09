@@ -24,20 +24,20 @@
 #include "hardware/irq.h"
 #include "pico/time.h"
 
-#include "../../portfreemodbus/port.h" //K.O. modification
+#include "../../portfreemodbus/port.h" /* K.O. modification */
 
 /* ----------------------- Modbus includes ----------------------------------*/
 #include "mb.h"
 #include "mbport.h"
-#include "../../debuggingTools.h" //K.O. modification
-#include "../../masterConfig.h" //K.O. modification
+#include "../../debuggingTools.h" /* K.O. modification */
+#include "../../masterConfig.h" /* K.O. modification */
 
-#ifdef VARIABLE_POINTERS_TO_FUNCTIONS_NOT_ALLOWED //K.O. modification
+#ifdef VARIABLE_POINTERS_TO_FUNCTIONS_NOT_ALLOWED /* K.O. modification */
 #include "mbrtu.h"
 #endif
 
 /* ----------------------- Static functions ---------------------------------*/
-static int64_t prvvTIMERExpiredISR(alarm_id_t id, void *user_data); //K.O.
+static int64_t prvvTIMERExpiredISR(alarm_id_t id, void *user_data); /* K.O. */
 
 /* ----------------------- Static variables ---------------------------------*/
 static alarm_id_t alarm_num = -1; /* 0 - 3 */
@@ -79,26 +79,29 @@ vMBPortTimersDisable(  )
     }
 }
 
-/* Create an ISR which is called whenever the timer has expired. This function
- * must then call pxMBPortCBTimerExpired( ) to notify the protocol stack that
- * the timer has expired.
- */
-static int64_t prvvTIMERExpiredISR(alarm_id_t id, void *user_data) //K.O.
+/*
+Create an ISR which is called whenever the timer has expired. This function
+ must then call pxMBPortCBTimerExpired( ) to notify the protocol stack that
+ the timer has expired.
+ @callgraph
+ @callergraph
+*/
+static int64_t prvvTIMERExpiredISR(alarm_id_t id, void *user_data) /* K.O. */
 {
 #if MODBUS_DEBUG_MODE
-	logAddEvent("irq time", (uint16_t)id); //K.O.
+	logAddEvent("irq time", (uint16_t)id); /* K.O. */
 #endif
-	if(ModbusAssertionFailed){ //K.O.
-		vMBPortTimersDisable(); //K.O.
-		return(0); //K.O.
+	if(ModbusAssertionFailed){ /* K.O. */
+		vMBPortTimersDisable(); /* K.O. */
+		return(0); /* K.O. */
 	}
-#ifndef VARIABLE_POINTERS_TO_FUNCTIONS_NOT_ALLOWED //K.O. modification
+#ifndef VARIABLE_POINTERS_TO_FUNCTIONS_NOT_ALLOWED /* K.O. modification */
     ( void )pxMBPortCBTimerExpired(  );
 #else
     ( void )xMBRTUTimerT35Expired(  );
 #endif
 #if MODBUS_DEBUG_MODE
-    logAddEvent("reti time", 0xFFFFu); //K.O.
+    logAddEvent("reti time", 0xFFFFu); /* K.O. */
 #endif
-	return(0); //K.O.
+	return(0); /* K.O. */
 }

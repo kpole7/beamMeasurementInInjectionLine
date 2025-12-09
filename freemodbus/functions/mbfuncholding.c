@@ -32,14 +32,14 @@
 #include "string.h"
 
 /* ----------------------- Platform includes --------------------------------*/
-#include "../../portfreemodbus/port.h" //K.O. modification
+#include "../../portfreemodbus/port.h" /* K.O. modification */
 
 /* ----------------------- Modbus includes ----------------------------------*/
 #include "mb.h"
 #include "mbframe.h"
 #include "mbproto.h"
 #include "mbconfig.h"
-#include "../../debuggingTools.h" //K.O. modification
+#include "../../debuggingTools.h" /* K.O. modification */
 
 /* ----------------------- Defines ------------------------------------------*/
 #define MB_PDU_FUNC_READ_ADDR_OFF               ( MB_PDU_DATA_OFF + 0)
@@ -84,7 +84,7 @@ eMBFuncWriteHoldingRegister( UCHAR * pucFrame, USHORT * usLen )
     {
         usRegAddress = ( USHORT )( pucFrame[MB_PDU_FUNC_WRITE_ADDR_OFF] << 8 );
         usRegAddress |= ( USHORT )( pucFrame[MB_PDU_FUNC_WRITE_ADDR_OFF + 1] );
-//        usRegAddress++; //K.O. This is a bug in my opinion (substantial modification)
+/*         usRegAddress++;    K.O. This is a bug in my opinion (substantial modification) */
 
         /* Make callback to update the value. */
         eRegStatus = eMBRegHoldingCB( &pucFrame[MB_PDU_FUNC_WRITE_VALUE_OFF],
@@ -117,18 +117,18 @@ eMBFuncWriteMultipleHoldingRegister( UCHAR * pucFrame, USHORT * usLen )
     eMBErrorCode    eRegStatus;
 
 #if MODBUS_DEBUG_MODE
-	logAddEvent("WrMHold1", 0xFFFFu); //K.O.
+	logAddEvent("WrMHold1", 0xFFFFu); /* K.O. */
 #endif
 
     if( *usLen >= ( MB_PDU_FUNC_WRITE_MUL_SIZE_MIN + MB_PDU_SIZE_MIN ) )
     {
 #if MODBUS_DEBUG_MODE
-    	logAddEvent("WrMHold2", 0xFFFFu); //K.O.
+    	logAddEvent("WrMHold2", 0xFFFFu); /* K.O. */
 #endif
 
     	usRegAddress = ( USHORT )( pucFrame[MB_PDU_FUNC_WRITE_MUL_ADDR_OFF] << 8 );
         usRegAddress |= ( USHORT )( pucFrame[MB_PDU_FUNC_WRITE_MUL_ADDR_OFF + 1] );
-//        usRegAddress++; //K.O. This is a bug in my opinion (substantial modification)
+/*        usRegAddress++;     K.O. This is a bug in my opinion (substantial modification) */
 
         usRegCount = ( USHORT )( pucFrame[MB_PDU_FUNC_WRITE_MUL_REGCNT_OFF] << 8 );
         usRegCount |= ( USHORT )( pucFrame[MB_PDU_FUNC_WRITE_MUL_REGCNT_OFF + 1] );
@@ -140,7 +140,7 @@ eMBFuncWriteMultipleHoldingRegister( UCHAR * pucFrame, USHORT * usLen )
             ( ucRegByteCount == ( UCHAR ) ( 2 * usRegCount ) ) )
         {
 #if (MODBUS_DEBUG_MODE && MODBUS_DEBUG_PRINT)
-        	logPrintNew(0); //K.O.
+        	logPrintNew(0); /* K.O. */
         	auxiliaryPrintString("\r\nusRegAddress=");
         	auxiliaryPrintUInt16((uint16_t)usRegAddress);
         	auxiliaryPrintString("; usRegCount=");
@@ -199,7 +199,7 @@ eMBFuncReadHoldingRegister( UCHAR * pucFrame, USHORT * usLen )
     {
         usRegAddress = ( USHORT )( pucFrame[MB_PDU_FUNC_READ_ADDR_OFF] << 8 );
         usRegAddress |= ( USHORT )( pucFrame[MB_PDU_FUNC_READ_ADDR_OFF + 1] );
-//        usRegAddress++; //K.O. This is a bug in my opinion (substantial modification)
+/*        usRegAddress++;     K.O. This is a bug in my opinion (substantial modification) */
 
         usRegCount = ( USHORT )( pucFrame[MB_PDU_FUNC_READ_REGCNT_OFF] << 8 );
         usRegCount = ( USHORT )( pucFrame[MB_PDU_FUNC_READ_REGCNT_OFF + 1] );

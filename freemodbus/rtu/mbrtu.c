@@ -32,7 +32,7 @@
 #include "string.h"
 
 /* ----------------------- Platform includes --------------------------------*/
-#include "../../portfreemodbus/port.h" //K.O. modification
+#include "../../portfreemodbus/port.h" /* K.O. modification */
 
 /* ----------------------- Modbus includes ----------------------------------*/
 #include "mb.h"
@@ -41,7 +41,7 @@
 
 #include "mbcrc.h"
 #include "mbport.h"
-#include "../../debuggingTools.h" //K.O. modification
+#include "../../debuggingTools.h" /* K.O. modification */
 
 
 
@@ -145,7 +145,7 @@ eMBRTUStart( void )
     EXIT_CRITICAL_SECTION(  );
 }
 
-#ifdef NOT_USED_FUNCTIONS_ALLOWED //K.O.
+#ifdef NOT_USED_FUNCTIONS_ALLOWED /* K.O. */
 void
 eMBRTUStop( void )
 {
@@ -159,19 +159,19 @@ eMBRTUStop( void )
 eMBErrorCode
 eMBRTUReceive( UCHAR * pucRcvAddress, UCHAR ** pucFrame, USHORT * pusLength )
 {
-//    BOOL            xFrameReceived = FALSE; //K.O.
+/*     BOOL            xFrameReceived = FALSE;            K.O. */
     eMBErrorCode    eStatus = MB_ENOERR;
 
     ENTER_CRITICAL_SECTION(  );
 
-    if(usRcvBufferPos >= MB_SER_PDU_SIZE_MAX){//K.O.
-    	ModbusAssertionFailed = true;//K.O.
+    if(usRcvBufferPos >= MB_SER_PDU_SIZE_MAX){/* K.O. */
+    	ModbusAssertionFailed = true;/* K.O. */
 #if MODBUS_DEBUG_MODE
-    	logAddEvent("Assert",1);//K.O.
+    	logAddEvent("Assert",1);/* K.O. */
 #endif
-    	return(true);//K.O.
-    }//K.O.
-//K.O.    assert( usRcvBufferPos < MB_SER_PDU_SIZE_MAX );
+    	return(true);/* K.O. */
+    }/* K.O. */
+/* K.O.    assert( usRcvBufferPos < MB_SER_PDU_SIZE_MAX ); */
 
     /* Length and CRC check */
     if( ( usRcvBufferPos >= MB_SER_PDU_SIZE_MIN )
@@ -189,7 +189,7 @@ eMBRTUReceive( UCHAR * pucRcvAddress, UCHAR ** pucFrame, USHORT * pusLength )
 
         /* Return the start of the Modbus PDU to the caller. */
         *pucFrame = ( UCHAR * ) & ucRTUBuf[MB_SER_PDU_PDU_OFF];
-//        xFrameReceived = TRUE; //K.O.
+/*         xFrameReceived = TRUE;           K.O. */
     }
     else
     {
@@ -239,7 +239,7 @@ eMBRTUSend( UCHAR ucSlaveAddress, const UCHAR * pucFrame, USHORT usLength )
         eSndState = STATE_TX_XMIT;
 
 #if MODBUS_DEBUG_MODE
-       	logAddEvent("eMBRTUSnd", 0xFFFFu); //K.O.
+       	logAddEvent("eMBRTUSnd", 0xFFFFu); /* K.O. */
 #endif
 
         vMBPortSerialEnable( FALSE, TRUE );
@@ -258,14 +258,14 @@ xMBRTUReceiveFSM( void )
     BOOL            xTaskNeedSwitch = FALSE;
     UCHAR           ucByte;
 
-    if(eSndState != STATE_TX_IDLE){//K.O. modification
-    	ModbusAssertionFailed = true;//K.O.
+    if(eSndState != STATE_TX_IDLE){/* K.O. modification */
+    	ModbusAssertionFailed = true;/* K.O. */
 #if MODBUS_DEBUG_MODE
-    	logAddEvent("Assert",2);//K.O.
+    	logAddEvent("Assert",2);/* K.O. */
 #endif
-    	return(true);//K.O.
-    }//K.O.
-//K.O.    assert( eSndState == STATE_TX_IDLE );
+    	return(true);/* K.O. */
+    }/* K.O. */
+/* K.O.    assert( eSndState == STATE_TX_IDLE ); */
 
     /* Always read the character. */
     ( void )xMBPortSerialGetByte( ( CHAR * ) & ucByte );
@@ -324,14 +324,14 @@ xMBRTUTransmitFSM( void )
 {
     BOOL            xNeedPoll = FALSE;
 
-    if(eRcvState != STATE_RX_IDLE){//K.O.
-    	ModbusAssertionFailed = true;//K.O.
+    if(eRcvState != STATE_RX_IDLE){/* K.O. */
+    	ModbusAssertionFailed = true;/* K.O. */
 #if MODBUS_DEBUG_MODE
-    	logAddEvent("Assert",3);//K.O.
+    	logAddEvent("Assert",3);/* K.O. */
 #endif
-    	return(true);//K.O.
-    }//K.O.
-//K.O.    assert( eRcvState == STATE_RX_IDLE );
+    	return(true);/* K.O. */
+    }/* K.O. */
+/* K.O.    assert( eRcvState == STATE_RX_IDLE ); */
 
     switch ( eSndState )
     {
@@ -388,14 +388,14 @@ xMBRTUTimerT35Expired( void )
 
         /* Function called in an illegal state. */
     default:
-    	vMBPortTimersDisable(  );//K.O.
-    	ModbusAssertionFailed = true;//K.O.
+    	vMBPortTimersDisable(  );/* K.O. */
+    	ModbusAssertionFailed = true;/* K.O. */
 #if MODBUS_DEBUG_MODE
-    	logAddEvent("Assert",4);//K.O.
+    	logAddEvent("Assert",4);/* K.O. */
 #endif
-    	return(false);//K.O.
-//K.O.    	assert( ( eRcvState == STATE_RX_INIT ) ||
-//                ( eRcvState == STATE_RX_RCV ) || ( eRcvState == STATE_RX_ERROR ) );
+    	return(false);/* K.O. */
+/* K.O.    	assert( ( eRcvState == STATE_RX_INIT ) ||
+                 ( eRcvState == STATE_RX_RCV ) || ( eRcvState == STATE_RX_ERROR ) ); */
     }
 
     vMBPortTimersDisable(  );

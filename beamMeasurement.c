@@ -210,15 +210,6 @@ int main(){
     		}
     	}
     } // The main loop
-
-// These lines are to make doxygen take into account the interrupt handling routines
-// This is intentionally dead code
-#ifdef TO_BE_REMOVED
-    if(false){
-    	prvvUARTxISR();
-    	prvvTIMERExpiredISR(0,NULL);
-    }
-#endif // TO_BE_REMOVED
 }
 
 

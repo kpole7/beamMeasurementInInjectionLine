@@ -22,7 +22,7 @@
 /* ----------------------- Modbus includes ----------------------------------*/
 #include "mb.h"
 #include "mbport.h"
-#include "../../debuggingTools.h" //K.O. modification
+#include "../../debuggingTools.h" /* K.O. modification */
 
 /* ----------------------- Variables ----------------------------------------*/
 static volatile eMBEventType eQueuedEvent;
@@ -43,7 +43,7 @@ xMBPortEventPost( eMBEventType eEvent )
     eQueuedEvent = eEvent;
 
 #if MODBUS_DEBUG_MODE
-    logAddEvent("Event",eQueuedEvent); //K.O. modification
+    logAddEvent("Event",eQueuedEvent); /* K.O. modification */
 #endif
 
     return TRUE;

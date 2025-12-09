@@ -1,29 +1,27 @@
-/*
- * FreeModbus Libary: BARE Port
- * Copyright (C) 2006 Christian Walter <wolti@sil.at>
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * File: $Id$
- */
+// FreeModbus Libary: BARE Port
+// Copyright (C) 2006 Christian Walter <wolti@sil.at>
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation; either
+// version 2.1 of the License, or (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+//
+// File: $Id$
 
 
 // The file has been modified by K.Olejarczyk.
 
 
-/* ----------------------- Platform includes --------------------------------*/
+// ----------------------- Platform includes --------------------------------
 #include "hardware/timer.h"
 #include "hardware/uart.h"
 #include "hardware/irq.h"
@@ -31,7 +29,7 @@
 
 #include "../../portfreemodbus/port.h"
 
-/* ----------------------- Modbus includes ----------------------------------*/
+// ----------------------- Modbus includes ----------------------------------
 #include "mb.h"
 #include "mbport.h"
 #include "../debuggingTools.h" //K.O. modification
@@ -41,15 +39,15 @@
 #include "mbrtu.h"
 #endif
 
-/* ----------------------- Static functions ---------------------------------*/
+// ----------------------- Static functions ---------------------------------
 static void prvvUARTxISR( void );
 
-/* ----------------------- Static variables ---------------------------------*/
+// ----------------------- Static variables ---------------------------------
 //static uart_inst_t*     uart            = NULL;	//K.O. modification
 static volatile bool    is_rx           = TRUE;
 static volatile bool    is_tx           = FALSE;
 
-/* ----------------------- Start implementation -----------------------------*/
+// ----------------------- Start implementation -----------------------------
 void
 vMBPortSerialEnable( BOOL xRxEnable, BOOL xTxEnable )
 {
@@ -117,30 +115,27 @@ xMBPortSerialPutByte( CHAR ucByte )
 BOOL
 xMBPortSerialGetByte( CHAR * pucByte )
 {
-    /* Return the byte in the UARTs receive buffer. This function is called
-     * by the protocol stack after pxMBFrameCBByteReceived( ) has been called.
-     */
+// Return the byte in the UARTs receive buffer. This function is called
+// by the protocol stack after pxMBFrameCBByteReceived( ) has been called.
     *pucByte = uart_getc( MODBUS_UART_ID ); //K.O.
     return TRUE;
 }
 
 #ifndef VARIABLE_POINTERS_TO_FUNCTIONS_NOT_ALLOWED //K.O.
-/* Create an interrupt handler for the transmit buffer empty interrupt
- * (or an equivalent) for your target processor. This function should then
- * call pxMBFrameCBTransmitterEmpty( ) which tells the protocol stack that
- * a new character can be sent. The protocol stack will then call
- * xMBPortSerialPutByte( ) to send the character.
- */
+// Create an interrupt handler for the transmit buffer empty interrupt
+// (or an equivalent) for your target processor. This function should then
+// call pxMBFrameCBTransmitterEmpty( ) which tells the protocol stack that
+// a new character can be sent. The protocol stack will then call
+// xMBPortSerialPutByte( ) to send the character.
 static void prvvUARTTxReadyISR( void )
 {
     pxMBFrameCBTransmitterEmpty(  );
 }
 
-/* Create an interrupt handler for the receive interrupt for your target
- * processor. This function should then call pxMBFrameCBByteReceived( ). The
- * protocol stack will then call xMBPortSerialGetByte( ) to retrieve the
- * character.
- */
+// Create an interrupt handler for the receive interrupt for your target
+// processor. This function should then call pxMBFrameCBByteReceived( ). The
+// protocol stack will then call xMBPortSerialGetByte( ) to retrieve the
+// character.
 static void prvvUARTRxISR( void )
 {
     pxMBFrameCBByteReceived(  );
@@ -149,6 +144,8 @@ static void prvvUARTRxISR( void )
 
 // This function was rewritten by K.O. based on the original one.
 // This function is an interrupt handler.
+/// @callgraph
+/// @callergraph
 static void prvvUARTxISR( void )
 {
 	if(ModbusAssertionFailed){
