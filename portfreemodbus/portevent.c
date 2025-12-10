@@ -36,6 +36,7 @@ xMBPortEventInit( void )
     return TRUE;
 }
 
+/* This function is called both in the main loop and in the clock interrupt handler   (K.O.) */
 BOOL
 xMBPortEventPost( eMBEventType eEvent )
 {

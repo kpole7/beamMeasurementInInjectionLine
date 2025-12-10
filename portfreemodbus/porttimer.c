@@ -54,7 +54,7 @@ xMBPortTimersInit( USHORT usTim1Timerout50us )
     return TRUE;
 }
 
-
+/* This function is called by the UART interrupt handler and during initialization.    K.O. */
 inline void
 vMBPortTimersEnable(  )
 {
@@ -68,6 +68,7 @@ vMBPortTimersEnable(  )
 
 }
 
+/* This function is called by the timer interrupt handler   (K.O.) */
 inline void
 vMBPortTimersDisable(  )
 {
@@ -83,8 +84,9 @@ vMBPortTimersDisable(  )
 Create an ISR which is called whenever the timer has expired. This function
  must then call pxMBPortCBTimerExpired( ) to notify the protocol stack that
  the timer has expired.
- @callgraph
- @callergraph
+ @callgraph  (K.O.)
+ @callergraph  (K.O.)
+ This function is a timer interrupt handler   (K.O.)
 */
 static int64_t prvvTIMERExpiredISR(alarm_id_t id, void *user_data) /* K.O. */
 {

@@ -266,6 +266,7 @@ eMBRTUSend( UCHAR ucSlaveAddress, const UCHAR * pucFrame, USHORT usLength )
     return eStatus;
 }
 
+/* This function is called by the UART interrupt handler K.O. */
 BOOL
 xMBRTUReceiveFSM( void )
 {
@@ -378,6 +379,7 @@ xMBRTUTransmitFSM( void )
     return xNeedPoll;
 }
 
+/* This function is called by the timer interrupt handler   (K.O.) */
 BOOL
 xMBRTUTimerT35Expired( void )
 {

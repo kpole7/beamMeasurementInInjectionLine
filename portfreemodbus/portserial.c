@@ -112,6 +112,7 @@ xMBPortSerialPutByte( CHAR ucByte )
    return TRUE;
 }
 
+/* This function is called by the UART interrupt handler K.O. */
 BOOL
 xMBPortSerialGetByte( CHAR * pucByte )
 {
@@ -142,8 +143,8 @@ static void prvvUARTRxISR( void )
 }
 #endif
 
-// This function was rewritten by K.O. based on the original one.
-// This function is an interrupt handler.
+/// This function was rewritten by K.O. based on the original one.
+/// This function is an UART interrupt handler.
 /// @callgraph
 /// @callergraph
 static void prvvUARTxISR( void )

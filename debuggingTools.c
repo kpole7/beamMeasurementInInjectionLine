@@ -74,6 +74,7 @@ void auxiliaryPrintUInt16(uint16_t Data){
 // The record is of type LogEventType.
 // All records are stored in LogTable.
 // When the LogTable is full, no new record can be saved.
+// This function is in the main loop in the UART interrupt handler and in the timer interrupt handler.
 void logAddEvent(const char* Name,uint16_t NewValue){
 	if (LogIndex >= LOG_SIZE){
 		return;
