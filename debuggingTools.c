@@ -18,8 +18,8 @@ static uint64_t AuxiliaryPrintTime;
 static char AuxiliaryPrintOldCharacter;
 
 static LogEventType LogTable[LOG_SIZE];
-static volatile uint16_t LogIndex, LogPrintLast;
-
+static volatile uint16_t LogPrintLast;
+static atomic_uint_fast16_t LogIndex;
 
 //..............................................................................
 // Definitions of interface functions
@@ -76,21 +76,28 @@ void auxiliaryPrintUInt16(uint16_t Data){
 // When the LogTable is full, no new record can be saved.
 // This function is in the main loop in the UART interrupt handler and in the timer interrupt handler.
 void logAddEvent(const char* Name,uint16_t NewValue){
-	if (LogIndex >= LOG_SIZE){
+	uint16_t TemporaryIndex = atomic_load_explicit( &LogIndex, memory_order_acquire );
+
+	if (TemporaryIndex >= LOG_SIZE){
 		return;
 	}
-	LogTable[LogIndex].time = (uint32_t)time_us_64();
-	strncpy(LogTable[LogIndex].name,Name,LOG_EVENT_NAME_SIZE);
-	LogTable[LogIndex].name[LOG_EVENT_NAME_SIZE-1] = 0;
-	LogTable[LogIndex].value = NewValue;
-	LogIndex++;
+	LogTable[TemporaryIndex].time = (uint32_t)time_us_64();
+	strncpy(LogTable[TemporaryIndex].name,Name,LOG_EVENT_NAME_SIZE);
+	LogTable[TemporaryIndex].name[LOG_EVENT_NAME_SIZE-1] = 0;
+	LogTable[TemporaryIndex].value = NewValue;
+
+	if (atomic_load_explicit( &LogIndex, memory_order_acquire ) == TemporaryIndex){
+		atomic_store_explicit( &LogIndex, TemporaryIndex+1, memory_order_release );
+	}
 }
 
 // This function is similar to logAddEvent, but only stores a record only if the Name
 // is different from the previous one.
 void logOnceAddEvent(const char* Name,uint16_t NewValue){
-	if(LogIndex>0){
-		if(0==strncmp(LogTable[LogIndex-1].name,Name,LOG_EVENT_NAME_SIZE)){
+	if(atomic_load_explicit( &LogIndex, memory_order_acquire ) > 0){
+		if(0 == strncmp( LogTable[atomic_load_explicit( &LogIndex, memory_order_acquire )-1].name,
+				Name, LOG_EVENT_NAME_SIZE ))
+		{
 			return;
 		}
 	}
@@ -109,13 +116,14 @@ void logPrintAll(uint16_t WaitMilliseconds){
 void logPrintNew(uint16_t WaitMilliseconds){
 	double Second;
 	uint16_t P;
-	if (0==LogPrintLast){
+	if (0 == LogPrintLast){
 		printf("\r\n\r\nLog\r\n-------------------------\r\n");
 	}
 	else{
 		printf("\r\n");
 	}
-	for(P=LogPrintLast;P<LogIndex;P++){
+	uint16_t TemporaryIndex = atomic_load_explicit( &LogIndex, memory_order_acquire );
+	for( P=LogPrintLast; P < TemporaryIndex; P++){
 		Second = (double)LogTable[P].time;
 		Second *= 1e-6;
 		if(LogTable[P].value != 0xFFFFu){
@@ -125,7 +133,7 @@ void logPrintNew(uint16_t WaitMilliseconds){
 			printf("%4u %9.6f %s\r\n",P,Second,LogTable[P].name);
 		}
 	}
-	LogPrintLast = LogIndex;
+	LogPrintLast = TemporaryIndex;
 	if(WaitMilliseconds > 0){
 		sleep_ms(WaitMilliseconds);
 	}

@@ -149,7 +149,7 @@ static void prvvUARTRxISR( void )
 /// @callergraph
 static void prvvUARTxISR( void )
 {
-	if(ModbusAssertionFailed){
+	if(atomic_load_explicit( &ModbusAssertionFailed, memory_order_acquire )){
 		is_rx = false;
 	}
     if ( is_rx )
@@ -161,7 +161,7 @@ static void prvvUARTxISR( void )
     	pxMBFrameCBByteReceived();
 #else
     	xMBRTUReceiveFSM();
-    	ModbusActiveLedShort=true; //K.O.
+    	atomic_store_explicit( &ModbusActiveLedShort, true, memory_order_release ); /* K.O. */
 #endif
     }
     else{
@@ -173,4 +173,3 @@ static void prvvUARTxISR( void )
     logAddEvent("reti uart", 0xFFFFu);
 #endif
 }
-

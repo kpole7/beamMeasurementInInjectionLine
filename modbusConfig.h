@@ -3,6 +3,7 @@
 #ifndef _MODBUS_CONFIG_H
 #define _MODBUS_CONFIG_H
 
+#include <stdatomic.h>
 #include "hardware/uart.h"
 
 // Which uart is used by Pico
@@ -72,10 +73,10 @@ static_assert(MODBUS_REGISTERS_TOTAL_NUMBER == MODBUS_AREA_RW_REGISTERS + MODBUS
 // This variable enables stopping the modbus state machine instead of executing the function
 // 'assert' that was in the original freemodbus source code.
 // That enables failover and debugging.
-extern volatile bool ModbusAssertionFailed;
+extern atomic_bool ModbusAssertionFailed;
 
 // This is a flag indicating that the LED should flash due to transmission from the master
-extern volatile bool ModbusActiveLedShort;
+extern atomic_bool ModbusActiveLedShort;
 
 // This is a flag indicating that the LED should shine longer, due to sending
 // a response back to the master

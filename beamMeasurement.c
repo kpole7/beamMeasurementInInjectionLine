@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdatomic.h>
 #include "pico/stdlib.h"
 #include "modbusConfig.h"
 #include "masterConfig.h"
@@ -41,10 +42,10 @@ bool IsWriteRequest;
 // This variable enables stopping the modbus state machine instead of executing the function
 // 'assert' that was in the original freemodbus source code.
 // That enables failover and debugging.
-volatile bool ModbusAssertionFailed;
+atomic_bool ModbusAssertionFailed;
 
 // This is a flag indicating that the LED should flash due to transmission from the master
-volatile bool ModbusActiveLedShort;
+atomic_bool ModbusActiveLedShort;
 
 // This is a flag indicating that the LED should shine longer, due to sending
 // a response back to the master
@@ -109,7 +110,7 @@ int main(){
 	//...............
 
 
-	ModbusAssertionFailed = false;
+	atomic_store_explicit( &ModbusAssertionFailed, false, memory_order_release );
 
 	stdio_init_all();
 	turnOnLedOnBoard();
@@ -196,7 +197,7 @@ int main(){
 #endif
 
     	// Modbus communication service
-    	if(!ModbusAssertionFailed){
+    	if(!atomic_load_explicit( &ModbusAssertionFailed, memory_order_acquire )){
 
     		eMBPoll();
 
@@ -233,14 +234,14 @@ void initModbusActivityLed(void){
 
 	ModbusActiveLedIsOnShort=false;
 	ModbusActiveLedIsOnLong=false;
-	ModbusActiveLedShort=false;
+	atomic_store_explicit( &ModbusActiveLedShort, false, memory_order_release );
 	ModbusActiveLedLong=false;
 }
 
 // This function supports the LED that indicates Modbus transmission (provides
 // the correct timing and strength of illumination).
 void modbusActivityLedService(void){
-	if(ModbusActiveLedShort && !ModbusActiveLedIsOnShort){
+	if(atomic_load_explicit( &ModbusActiveLedShort, memory_order_acquire ) && !ModbusActiveLedIsOnShort){
 		ModbusActiveLedIsOnShort=true;
 		gpio_put(MODBUS_ACTIVITY_LED, true);
 		gpio_set_drive_strength(MODBUS_ACTIVITY_LED,GPIO_DRIVE_STRENGTH_2MA);
@@ -256,8 +257,7 @@ void modbusActivityLedService(void){
 		gpio_put(MODBUS_ACTIVITY_LED, false);
 		ModbusActiveLedIsOnShort=false;
 		ModbusActiveLedIsOnLong=false;
-		ModbusActiveLedShort=false;
+		atomic_store_explicit( &ModbusActiveLedShort, false, memory_order_release ); /* K.O. */
 		ModbusActiveLedLong=false;
 	}
 }
-

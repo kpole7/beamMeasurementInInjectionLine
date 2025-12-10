@@ -176,10 +176,11 @@ eMBRTUReceive( UCHAR * pucRcvAddress, UCHAR ** pucFrame, USHORT * pusLength )
     critical_section_enter_blocking( &ModbusRtuCriticalSection ); /* K.O. modification */
 
     if(usRcvBufferPos >= MB_SER_PDU_SIZE_MAX){/* K.O. */
-    	ModbusAssertionFailed = true;/* K.O. */
+    	atomic_store_explicit( &ModbusAssertionFailed, true, memory_order_release ); /* K.O. */
 #if MODBUS_DEBUG_MODE
     	logAddEvent("Assert",1);/* K.O. */
 #endif
+        critical_section_exit( &ModbusRtuCriticalSection ); /* K.O. modification */
     	return(true);/* K.O. */
     }/* K.O. */
 /* K.O.    assert( usRcvBufferPos < MB_SER_PDU_SIZE_MAX ); */
@@ -274,7 +275,7 @@ xMBRTUReceiveFSM( void )
     UCHAR           ucByte;
 
     if(eSndState != STATE_TX_IDLE){/* K.O. modification */
-    	ModbusAssertionFailed = true;/* K.O. */
+    	atomic_store_explicit( &ModbusAssertionFailed, true, memory_order_release ); /* K.O. */
 #if MODBUS_DEBUG_MODE
     	logAddEvent("Assert",2);/* K.O. */
 #endif
@@ -340,7 +341,7 @@ xMBRTUTransmitFSM( void )
     BOOL            xNeedPoll = FALSE;
 
     if(eRcvState != STATE_RX_IDLE){/* K.O. */
-    	ModbusAssertionFailed = true;/* K.O. */
+    	atomic_store_explicit( &ModbusAssertionFailed, true, memory_order_release ); /* K.O. */
 #if MODBUS_DEBUG_MODE
     	logAddEvent("Assert",3);/* K.O. */
 #endif
@@ -405,7 +406,7 @@ xMBRTUTimerT35Expired( void )
         /* Function called in an illegal state. */
     default:
     	vMBPortTimersDisable(  );/* K.O. */
-    	ModbusAssertionFailed = true;/* K.O. */
+    	atomic_store_explicit( &ModbusAssertionFailed, true, memory_order_release ); /* K.O. */
 #if MODBUS_DEBUG_MODE
     	logAddEvent("Assert",4);/* K.O. */
 #endif

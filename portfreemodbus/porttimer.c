@@ -93,7 +93,7 @@ static int64_t prvvTIMERExpiredISR(alarm_id_t id, void *user_data) /* K.O. */
 #if MODBUS_DEBUG_MODE
 	logAddEvent("irq time", (uint16_t)id); /* K.O. */
 #endif
-	if(ModbusAssertionFailed){ /* K.O. */
+	if(atomic_load_explicit( &ModbusAssertionFailed, memory_order_acquire )){ /* K.O. */
 		vMBPortTimersDisable(); /* K.O. */
 		return(0); /* K.O. */
 	}
