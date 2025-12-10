@@ -33,6 +33,8 @@
 
 /* ----------------------- Platform includes --------------------------------*/
 #include "../../portfreemodbus/port.h" /* K.O. modification */
+#include "pico/stdlib.h" /* K.O. modification */
+#include "pico/sync.h"   /* K.O. modification */
 
 /* ----------------------- Modbus includes ----------------------------------*/
 #include "mb.h"
@@ -83,6 +85,8 @@ static volatile USHORT usSndBufferCount;
 
 static volatile USHORT usRcvBufferPos;
 
+static critical_section_t ModbusRtuCriticalSection; /* K.O. modification */
+
 /* ----------------------- Start implementation -----------------------------*/
 eMBErrorCode
 eMBRTUInit( UCHAR ucSlaveAddress, UCHAR ucPort, ULONG ulBaudRate, eMBParity eParity )
@@ -91,7 +95,9 @@ eMBRTUInit( UCHAR ucSlaveAddress, UCHAR ucPort, ULONG ulBaudRate, eMBParity ePar
     ULONG           usTimerT35_50us;
 
     ( void )ucSlaveAddress;
-    ENTER_CRITICAL_SECTION(  );
+    /* ENTER_CRITICAL_SECTION(  );    K.O. modification */
+    critical_section_init( &ModbusRtuCriticalSection ); /* K.O. modification */
+    critical_section_enter_blocking( &ModbusRtuCriticalSection ); /* K.O. modification */
 
     /* Modbus RTU uses 8 Databits. */
     if( xMBPortSerialInit( ucPort, ulBaudRate, 8, eParity ) != TRUE )
@@ -124,7 +130,8 @@ eMBRTUInit( UCHAR ucSlaveAddress, UCHAR ucPort, ULONG ulBaudRate, eMBParity ePar
             eStatus = MB_EPORTERR;
         }
     }
-    EXIT_CRITICAL_SECTION(  );
+    /* EXIT_CRITICAL_SECTION(  );    K.O. modification */
+    critical_section_exit( &ModbusRtuCriticalSection ); /* K.O. modification */
 
     return eStatus;
 }
@@ -132,7 +139,9 @@ eMBRTUInit( UCHAR ucSlaveAddress, UCHAR ucPort, ULONG ulBaudRate, eMBParity ePar
 void
 eMBRTUStart( void )
 {
-    ENTER_CRITICAL_SECTION(  );
+    /* ENTER_CRITICAL_SECTION(  );    K.O. modification */
+    critical_section_enter_blocking( &ModbusRtuCriticalSection ); /* K.O. modification */
+
     /* Initially the receiver is in the state STATE_RX_INIT. we start
      * the timer and if no character is received within t3.5 we change
      * to STATE_RX_IDLE. This makes sure that we delay startup of the
@@ -142,7 +151,8 @@ eMBRTUStart( void )
     vMBPortSerialEnable( TRUE, FALSE );
     vMBPortTimersEnable(  );
 
-    EXIT_CRITICAL_SECTION(  );
+    /* EXIT_CRITICAL_SECTION(  );    K.O. modification */
+    critical_section_exit( &ModbusRtuCriticalSection ); /* K.O. modification */
 }
 
 #ifdef NOT_USED_FUNCTIONS_ALLOWED /* K.O. */
@@ -162,7 +172,8 @@ eMBRTUReceive( UCHAR * pucRcvAddress, UCHAR ** pucFrame, USHORT * pusLength )
 /*     BOOL            xFrameReceived = FALSE;            K.O. */
     eMBErrorCode    eStatus = MB_ENOERR;
 
-    ENTER_CRITICAL_SECTION(  );
+    /* ENTER_CRITICAL_SECTION(  );    K.O. modification */
+    critical_section_enter_blocking( &ModbusRtuCriticalSection ); /* K.O. modification */
 
     if(usRcvBufferPos >= MB_SER_PDU_SIZE_MAX){/* K.O. */
     	ModbusAssertionFailed = true;/* K.O. */
@@ -196,7 +207,8 @@ eMBRTUReceive( UCHAR * pucRcvAddress, UCHAR ** pucFrame, USHORT * pusLength )
         eStatus = MB_EIO;
     }
 
-    EXIT_CRITICAL_SECTION(  );
+    /* EXIT_CRITICAL_SECTION(  );    K.O. modification */
+    critical_section_exit( &ModbusRtuCriticalSection ); /* K.O. modification */
     return eStatus;
 }
 
@@ -206,7 +218,8 @@ eMBRTUSend( UCHAR ucSlaveAddress, const UCHAR * pucFrame, USHORT usLength )
     eMBErrorCode    eStatus = MB_ENOERR;
     USHORT          usCRC16;
 
-    ENTER_CRITICAL_SECTION(  );
+    /* ENTER_CRITICAL_SECTION(  );    K.O. modification */
+    critical_section_enter_blocking( &ModbusRtuCriticalSection ); /* K.O. modification */
 
     /* Check if the receiver is still in idle state. If not we where to
      * slow with processing the received frame and the master sent another
@@ -248,7 +261,8 @@ eMBRTUSend( UCHAR ucSlaveAddress, const UCHAR * pucFrame, USHORT usLength )
     {
         eStatus = MB_EIO;
     }
-    EXIT_CRITICAL_SECTION(  );
+    /* EXIT_CRITICAL_SECTION(  );    K.O. modification */
+    critical_section_exit( &ModbusRtuCriticalSection ); /* K.O. modification */
     return eStatus;
 }
 
