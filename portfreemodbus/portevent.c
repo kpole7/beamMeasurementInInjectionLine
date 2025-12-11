@@ -25,14 +25,14 @@
 #include "../../debuggingTools.h" /* K.O. modification */
 
 /* ----------------------- Variables ----------------------------------------*/
-static volatile eMBEventType eQueuedEvent;
-static volatile BOOL     xEventInQueue;
+static atomic_uint_fast16_t eQueuedEvent; /* K.O. */
+static atomic_bool xEventInQueue; /* K.O. */
 
 /* ----------------------- Start implementation -----------------------------*/
 BOOL
 xMBPortEventInit( void )
 {
-    xEventInQueue = FALSE;
+	atomic_store_explicit( &xEventInQueue, false, memory_order_release ); /* K.O. */
     return TRUE;
 }
 
@@ -40,11 +40,11 @@ xMBPortEventInit( void )
 BOOL
 xMBPortEventPost( eMBEventType eEvent )
 {
-    xEventInQueue = TRUE;
-    eQueuedEvent = eEvent;
+	atomic_store_explicit( &xEventInQueue, true, memory_order_release ); /* K.O. */
+	atomic_store_explicit( &eQueuedEvent, eEvent, memory_order_release ); /* K.O. */
 
 #if MODBUS_DEBUG_MODE
-    logAddEvent("Event",eQueuedEvent); /* K.O. modification */
+    logAddEvent("Event",atomic_load_explicit( &eQueuedEvent, memory_order_acquire )); /* K.O. modification */
 #endif
 
     return TRUE;
@@ -55,10 +55,10 @@ xMBPortEventGet( eMBEventType * eEvent )
 {
     BOOL            xEventHappened = FALSE;
 
-    if( xEventInQueue )
+    if( atomic_load_explicit( &xEventInQueue, memory_order_acquire )) /* K.O. */
     {
-        *eEvent = eQueuedEvent;
-        xEventInQueue = FALSE;
+        *eEvent = atomic_load_explicit( &eQueuedEvent, memory_order_acquire ); /* K.O. */
+        atomic_store_explicit( &xEventInQueue, false, memory_order_release ); /* K.O. */
         xEventHappened = TRUE;
     }
     return xEventHappened;

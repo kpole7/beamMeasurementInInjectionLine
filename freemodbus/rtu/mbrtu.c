@@ -76,7 +76,7 @@ typedef enum
 
 /* ----------------------- Static variables ---------------------------------*/
 static volatile eMBSndState eSndState;
-static volatile eMBRcvState eRcvState;
+static atomic_uint_fast16_t eRcvState; /* K.O. modification */
 
 volatile UCHAR  ucRTUBuf[MB_SER_PDU_SIZE_MAX];
 
@@ -147,7 +147,7 @@ eMBRTUStart( void )
      * to STATE_RX_IDLE. This makes sure that we delay startup of the
      * modbus protocol stack until the bus is free.
      */
-    eRcvState = STATE_RX_INIT;
+    atomic_store_explicit( &eRcvState, STATE_RX_INIT, memory_order_release ); /* K.O. */
     vMBPortSerialEnable( TRUE, FALSE );
     vMBPortTimersEnable(  );
 
@@ -226,7 +226,7 @@ eMBRTUSend( UCHAR ucSlaveAddress, const UCHAR * pucFrame, USHORT usLength )
      * slow with processing the received frame and the master sent another
      * frame on the network. We have to abort sending the frame.
      */
-    if( eRcvState == STATE_RX_IDLE )
+    if( atomic_load_explicit( &eRcvState, memory_order_acquire ) == STATE_RX_IDLE ) /* K.O. modification */
     {
         /* First byte before the Modbus-PDU is the slave address. */
         pucSndBufferCur = ( UCHAR * ) pucFrame - 1;
@@ -286,7 +286,7 @@ xMBRTUReceiveFSM( void )
     /* Always read the character. */
     ( void )xMBPortSerialGetByte( ( CHAR * ) & ucByte );
 
-    switch ( eRcvState )
+    switch ( atomic_load_explicit( &eRcvState, memory_order_acquire )) /* K.O. modification */
     {
         /* If we have received a character in the init state we have to
          * wait until the frame is finished.
@@ -309,7 +309,7 @@ xMBRTUReceiveFSM( void )
     case STATE_RX_IDLE:
         usRcvBufferPos = 0;
         ucRTUBuf[usRcvBufferPos++] = ucByte;
-        eRcvState = STATE_RX_RCV;
+        atomic_store_explicit( &eRcvState, STATE_RX_RCV, memory_order_release ); /* K.O. */
 
         /* Enable t3.5 timers. */
         vMBPortTimersEnable(  );
@@ -327,7 +327,7 @@ xMBRTUReceiveFSM( void )
         }
         else
         {
-            eRcvState = STATE_RX_ERROR;
+        	atomic_store_explicit( &eRcvState, STATE_RX_ERROR, memory_order_release ); /* K.O. */
         }
         vMBPortTimersEnable(  );
         break;
@@ -340,7 +340,7 @@ xMBRTUTransmitFSM( void )
 {
     BOOL            xNeedPoll = FALSE;
 
-    if(eRcvState != STATE_RX_IDLE){/* K.O. */
+    if(atomic_load_explicit( &eRcvState, memory_order_acquire ) != STATE_RX_IDLE){/* K.O. */
     	atomic_store_explicit( &ModbusAssertionFailed, true, memory_order_release ); /* K.O. */
 #if MODBUS_DEBUG_MODE
     	logAddEvent("Assert",3);/* K.O. */
@@ -386,7 +386,7 @@ xMBRTUTimerT35Expired( void )
 {
     BOOL            xNeedPoll = FALSE;
 
-    switch ( eRcvState )
+    switch ( atomic_load_explicit( &eRcvState, memory_order_acquire ))  /* K.O. */
     {
         /* Timer t35 expired. Startup phase is finished. */
     case STATE_RX_INIT:
@@ -416,7 +416,7 @@ xMBRTUTimerT35Expired( void )
     }
 
     vMBPortTimersDisable(  );
-    eRcvState = STATE_RX_IDLE;
+    atomic_store_explicit( &eRcvState, STATE_RX_IDLE, memory_order_release ); /* K.O. */
 
     return xNeedPoll;
 }
