@@ -86,5 +86,29 @@ eMBErrorCode    eMBRegCoilsCB( UCHAR * pucRegBuffer, USHORT usAddress,
 eMBErrorCode    eMBRegInputCB( UCHAR * pucRegBuffer, USHORT usAddress,
                                USHORT usNRegs )
 {
-	return MB_ENOREG;
+	uint8_t K;
+
+	if (usAddress < MODBUS_AREA_INPUTS_ADDRESS){
+		return(MB_ENOREG);
+	}
+	if (usNRegs > MODBUS_AREA_RO_INPUTS){
+		return(MB_ENOREG);
+	}
+	if (usAddress+usNRegs > MODBUS_AREA_INPUTS_ADDRESS+MODBUS_AREA_RO_INPUTS){
+		return(MB_ENOREG);
+	}
+#if MODBUS_DEBUG_MODE
+	logAddEvent("Inputs",0xFFFFu);
+#endif
+
+	calculateStatistics(); // randomness in simulation
+	for(K=0;K<usNRegs;K++){
+		uint32_t TemporaryValue = (uint32_t)ModbusRegisters[MODBUS_REGISTER_I_MEAN];
+		TemporaryValue *= 1000;
+		TemporaryValue /= 307;
+		TemporaryValue += ((usAddress - MODBUS_AREA_INPUTS_ADDRESS) + K) * 100;
+		pucRegBuffer[2*K]   = (uint8_t)(TemporaryValue >> 8);
+		pucRegBuffer[2*K+1] = (uint8_t)(TemporaryValue & 0xFFu);
+	}
+	return(MB_ENOERR);
 }

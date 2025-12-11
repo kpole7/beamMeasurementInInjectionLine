@@ -70,6 +70,13 @@ static_assert(MODBUS_REGISTERS_TOTAL_NUMBER == MODBUS_AREA_RW_REGISTERS + MODBUS
 #define MODBUS_STATUS_EXTERNAL_ERROR	4
 #define MODBUS_STATUS_SUM_ERROR			8
 
+
+
+#define MODBUS_AREA_RO_INPUTS			5
+#define MODBUS_AREA_INPUTS_ADDRESS		3000
+
+
+
 // This variable enables stopping the modbus state machine instead of executing the function
 // 'assert' that was in the original freemodbus source code.
 // That enables failover and debugging.

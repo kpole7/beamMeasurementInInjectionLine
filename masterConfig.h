@@ -30,7 +30,7 @@
 
 // This directive allows for printouts while processing Modbus commands
 // (debugging Modbus state machine)
-#define MODBUS_DEBUG_PRINT			0
+#define MODBUS_DEBUG_PRINT			1
 
 // By inserting a jumper you can block a write signal to power source.
 #define WRITING_ERROR_TEST			0

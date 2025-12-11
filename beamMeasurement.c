@@ -80,11 +80,6 @@ static bool OldIsJumperJP1, OldIsJumperJP2;
 //..............................................................................
 
 
-#ifdef TO_BE_REMOVED
-extern void prvvUARTxISR( void );
-extern int64_t prvvTIMERExpiredISR(alarm_id_t id, void *user_data);
-#endif
-
 // This function initializes and turns on the LED on pico board.
 void turnOnLedOnBoard(void);
 

@@ -1,0 +1,1 @@
+mbpoll -m rtu -o 0.1 -a 1 -t 3 -0 -r 3000 -c 5 /dev/ttyUSB0
