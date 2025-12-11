@@ -112,7 +112,7 @@ xMBPortSerialPutByte( CHAR ucByte )
    return TRUE;
 }
 
-/* This function is called by the UART interrupt handler K.O. */
+// This function is called by the UART interrupt handler K.O.
 BOOL
 xMBPortSerialGetByte( CHAR * pucByte )
 {
@@ -161,7 +161,7 @@ static void prvvUARTxISR( void )
     	pxMBFrameCBByteReceived();
 #else
     	xMBRTUReceiveFSM();
-    	atomic_store_explicit( &ModbusActiveLedShort, true, memory_order_release ); /* K.O. */
+    	atomic_store_explicit( &ModbusActiveLedShort, true, memory_order_release ); // K.O.
 #endif
     }
     else{

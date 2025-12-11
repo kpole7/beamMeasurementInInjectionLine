@@ -80,11 +80,11 @@ eMBErrorCode    eMBRegHoldingCB( UCHAR * pucRegBuffer, USHORT usAddress,
 eMBErrorCode    eMBRegCoilsCB( UCHAR * pucRegBuffer, USHORT usAddress,
                                USHORT usNCoils, eMBRegisterMode eMode )
 {
-	return MB_ENOERR;
+	return MB_ENOREG;
 }
 
 eMBErrorCode    eMBRegInputCB( UCHAR * pucRegBuffer, USHORT usAddress,
                                USHORT usNRegs )
 {
-	return MB_ENOERR;
+	return MB_ENOREG;
 }
