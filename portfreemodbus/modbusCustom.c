@@ -1,37 +1,42 @@
-// This source code file was written by K.O. (2024 - 2025)
+// This source code file was written by K.O. (2025 - 2026)
 
 #include <inttypes.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include "pico/stdlib.h"
 #include "../modbusConfig.h"
 #include "../debuggingTools.h"
 #include "../spiCommunication.h"
 #include "mb.h"
 
-// This a table of Modbus registers; initial registers are of type r/w,
-// subsequent registers are of type ro.
-extern uint16_t ModbusRegisters[MODBUS_AREA_RW_REGISTERS+MODBUS_AREA_RO_REGISTERS];
+extern uint16_t ModbusInputRegisters[MODBUS_INPUT_REGISTERS_NUMBER];
 
-// This flag indicates that the Modbus state machine has written a new value to a register
-// so writing to the power source should be activated by the SPI.
-extern bool IsWriteRequest;
+extern bool ModbusCoils[MODBUS_COILS_NUMBER];
 
-// This is callback function for reading and writing registers
+extern bool CoilsChanged[MODBUS_COILS_NUMBER];
+
+// This a table of Modbus registers
+extern uint16_t ModbusHoldingRegisters[MODBUS_HOLDING_REGISTERS_NUMBER];
+
+/// This is callback function for reading and writing registers
+/// @callgraph
+/// @callergraph
 eMBErrorCode    eMBRegHoldingCB( UCHAR * pucRegBuffer, USHORT usAddress,
                                  USHORT usNRegs, eMBRegisterMode eMode )
 {
 	uint8_t K;
 
-	if (usAddress < MODBUS_AREA_BEGIN_ADDRESS){
+	if (usAddress < MODBUS_HOLDING_REGISTERS_ADDRESS){
 		return(MB_ENOREG);
 	}
-	if(MB_REG_WRITE==eMode){
+	if(MB_REG_WRITE==eMode){ // write to holding registers
 		if (usNRegs > 1){
 #if MODBUS_DEBUG_MODE
 	    	logAddEvent("Holding3",0xFFFFu);
 #endif
 			return(MB_ENOREG);
 		}
-		if (usAddress > MODBUS_AREA_BEGIN_ADDRESS+MODBUS_AREA_RW_REGISTERS-1){
+		if (usAddress > MODBUS_HOLDING_REGISTERS_ADDRESS+MODBUS_HOLDING_REGISTERS_NUMBER-1){
 #if MODBUS_DEBUG_MODE
 			logAddEvent("Holding4",usAddress+usNRegs);
 #endif
@@ -42,73 +47,129 @@ eMBErrorCode    eMBRegHoldingCB( UCHAR * pucRegBuffer, USHORT usAddress,
     	IsChangeModbusWrite = false;
 #endif
 
-		if(ModbusRegisters[usAddress-MODBUS_AREA_BEGIN_ADDRESS] != (uint16_t)pucRegBuffer[0]*256 + (uint16_t)pucRegBuffer[1]){
-			if(MODBUS_AREA_BEGIN_ADDRESS+MODBUS_REGISTER_SET_POWER == usAddress){
-				// This is a special case, as described in the K.O. documentation (section 2.5)
-				// Any change of Power On/Off state implies zeroing setting of output current value
-				ModbusRegisters[MODBUS_REGISTER_SET_CURRENT] = 0;
-			}
-#if MODBUS_DEBUG_MODE
-			IsChangeModbusWrite = true;
-#endif
+		ModbusHoldingRegisters[usAddress-MODBUS_HOLDING_REGISTERS_ADDRESS] = (uint16_t)pucRegBuffer[0]*256 + (uint16_t)pucRegBuffer[1];
+
+
+
+
+		// for debugging purpose
+
+		printf("Inputs= ");
+
+		static_assert(MODBUS_INPUT_REGISTERS_NUMBER <= MODBUS_HOLDING_REGISTERS_NUMBER, "Error (static_assert)");
+
+		for(K=0;K<MODBUS_INPUT_REGISTERS_NUMBER;K++){
+			ModbusInputRegisters[K] = ModbusHoldingRegisters[K];
+			printf(" %04X", (unsigned)ModbusInputRegisters[K]);
 		}
-		ModbusRegisters[usAddress-MODBUS_AREA_BEGIN_ADDRESS] = (uint16_t)pucRegBuffer[0]*256 + (uint16_t)pucRegBuffer[1];
-		IsWriteRequest = true; // This SPI write request is caused by the Modbus command
+
+		printf("\n");
+
+
+
 	}
-	else{
-		if (usNRegs > MODBUS_AREA_RW_REGISTERS+MODBUS_AREA_RO_REGISTERS){
+	else{ // read holding registers
+		if (usNRegs > MODBUS_HOLDING_REGISTERS_NUMBER){
 			return(MB_ENOREG);
 		}
-		if (usAddress+usNRegs > MODBUS_AREA_BEGIN_ADDRESS+MODBUS_AREA_RW_REGISTERS+MODBUS_AREA_RO_REGISTERS){
+		if (usAddress+usNRegs > MODBUS_HOLDING_REGISTERS_ADDRESS+MODBUS_HOLDING_REGISTERS_NUMBER){
 			return(MB_ENOREG);
 		}
 #if MODBUS_DEBUG_MODE
-    	logAddEvent("Stat->",0xFFFFu);
-#endif
-		calculateStatistics();
-#if MODBUS_DEBUG_MODE
-    	logAddEvent("<-Stat",0xFFFFu);
+    	logAddEvent("Holding6",0xFFFFu);
 #endif
 		for(K=0;K<usNRegs;K++){
-			pucRegBuffer[2*K]   = (uint8_t)(ModbusRegisters[K+usAddress-MODBUS_AREA_BEGIN_ADDRESS] >> 8);
-			pucRegBuffer[2*K+1] = (uint8_t)(ModbusRegisters[K+usAddress-MODBUS_AREA_BEGIN_ADDRESS] & 0xFFu);
+			pucRegBuffer[2*K]   = (uint8_t)(ModbusHoldingRegisters[K+usAddress-MODBUS_HOLDING_REGISTERS_ADDRESS] >> 8);
+			pucRegBuffer[2*K+1] = (uint8_t)(ModbusHoldingRegisters[K+usAddress-MODBUS_HOLDING_REGISTERS_ADDRESS] & 0xFFu);
 		}
 	}
 	return(MB_ENOERR);
 }
 
+static_assert(MODBUS_COILS_NUMBER <= 8, "Error (static_assert)");
+
+/// @callgraph
+/// @callergraph
 eMBErrorCode    eMBRegCoilsCB( UCHAR * pucRegBuffer, USHORT usAddress,
                                USHORT usNCoils, eMBRegisterMode eMode )
 {
+	if (usAddress < MODBUS_COILS_ADDRESS){
+		return(MB_ENOREG);
+	}
+
+#if MODBUS_DEBUG_MODE
+	logAddEvent("Inputs",0xFFFFu);
+#endif
+
+	if(MB_REG_WRITE==eMode){
+		if (usAddress+1 > MODBUS_COILS_ADDRESS+MODBUS_COILS_NUMBER){
+			return(MB_ENOREG);
+		}
+
+		bool TemporaryValue;
+		if ((0xFF == pucRegBuffer[0]) && (0 == pucRegBuffer[1])){
+			TemporaryValue = true;
+		}
+		else if ((0 == pucRegBuffer[0]) && (0 == pucRegBuffer[1])){
+			TemporaryValue = false;
+		}
+		else{
+			return(MB_EINVAL);
+		}
+
+		uint16_t TemporaryIndex = usAddress - MODBUS_COILS_ADDRESS;
+		assert( TemporaryIndex < MODBUS_COILS_NUMBER );
+
+		ModbusCoils[TemporaryIndex] = TemporaryValue;
+		CoilsChanged[TemporaryIndex] = true;
+	}
+	else{ // read coils status
+		if (usNCoils > MODBUS_COILS_NUMBER){
+			return(MB_ENOREG);
+		}
+		if (usAddress+usNCoils > MODBUS_COILS_ADDRESS+MODBUS_COILS_NUMBER){
+			return(MB_ENOREG);
+		}
+
+		uint16_t TemporaryValue = 0;
+		uint16_t TemporaryIndex = usAddress - MODBUS_COILS_ADDRESS;
+
+		for(uint16_t K = 0; K < usNCoils; K++){
+			assert( TemporaryIndex < MODBUS_COILS_NUMBER );
+			if (ModbusCoils[TemporaryIndex]){
+				TemporaryValue |= (1 << K);
+			}
+			TemporaryIndex++;
+		}
+		pucRegBuffer[0] = (UCHAR)TemporaryValue;
+	}
+
 	return MB_ENOREG;
 }
 
+/// @callgraph
+/// @callergraph
 eMBErrorCode    eMBRegInputCB( UCHAR * pucRegBuffer, USHORT usAddress,
                                USHORT usNRegs )
 {
 	uint8_t K;
 
-	if (usAddress < MODBUS_AREA_INPUTS_ADDRESS){
+	if (usAddress < MODBUS_INPUT_REGISTERS_ADDRESS){
 		return(MB_ENOREG);
 	}
-	if (usNRegs > MODBUS_AREA_RO_INPUTS){
+	if (usNRegs > MODBUS_INPUT_REGISTERS_NUMBER){
 		return(MB_ENOREG);
 	}
-	if (usAddress+usNRegs > MODBUS_AREA_INPUTS_ADDRESS+MODBUS_AREA_RO_INPUTS){
+	if (usAddress+usNRegs > MODBUS_INPUT_REGISTERS_ADDRESS+MODBUS_INPUT_REGISTERS_NUMBER){
 		return(MB_ENOREG);
 	}
 #if MODBUS_DEBUG_MODE
 	logAddEvent("Inputs",0xFFFFu);
 #endif
 
-	calculateStatistics(); // randomness in simulation
 	for(K=0;K<usNRegs;K++){
-		uint32_t TemporaryValue = (uint32_t)ModbusRegisters[MODBUS_REGISTER_I_MEAN];
-		TemporaryValue *= 1000;
-		TemporaryValue /= 307;
-		TemporaryValue += ((usAddress - MODBUS_AREA_INPUTS_ADDRESS) + K) * 100;
-		pucRegBuffer[2*K]   = (uint8_t)(TemporaryValue >> 8);
-		pucRegBuffer[2*K+1] = (uint8_t)(TemporaryValue & 0xFFu);
+		pucRegBuffer[2*K]   = (uint8_t)(ModbusInputRegisters[K+usAddress-MODBUS_INPUT_REGISTERS_ADDRESS] >> 8);
+		pucRegBuffer[2*K+1] = (uint8_t)(ModbusInputRegisters[K+usAddress-MODBUS_INPUT_REGISTERS_ADDRESS] & 0xFFu);
 	}
 	return(MB_ENOERR);
 }

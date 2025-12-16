@@ -1,4 +1,4 @@
-// This source code file was written by K.O. (2024 - 2025)
+// This source code file was written by K.O. (2025 - 2026)
 
 #include <stdio.h>
 #include <stdbool.h>

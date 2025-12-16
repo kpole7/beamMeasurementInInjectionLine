@@ -1,4 +1,4 @@
-// This header file was written by K.O. (2024 - 2025)
+// This header file was written by K.O. (2025 - 2026)
 
 #ifndef _SPI_COMMUNICATION_H
 #define _SPI_COMMUNICATION_H
@@ -13,10 +13,10 @@ void initializeSPI(void);
 // This function stores current and voltage samples but does not calculate their statistical values.
 // The function handles special situations described in the documentation (such as appearance of
 // errors in the PSU)
-bool communicateHighCurrentSource(bool IsWriting);
+//bool communicateHighCurrentSource(bool IsWriting);
 
 // The function calculates statistical values of current and voltage based on samples
 // stored in memory.
-void calculateStatistics(void);
+//void calculateStatistics(void);
 
 #endif // _SPI_COMMUNICATION_H

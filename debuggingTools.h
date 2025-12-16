@@ -1,4 +1,4 @@
-// This header file was written by K.O. (2024 - 2025)
+// This header file was written by K.O. (2025 - 2026)
 
 #ifndef _DEBUGGING_TOOLS_H
 #define _DEBUGGING_TOOLS_H

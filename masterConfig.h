@@ -1,11 +1,10 @@
-// This header file was written by K.O. (2024 - 2025)
+// This header file was written by K.O. (2025 - 2026)
 
 #ifndef _MASTER_CONFIG_H
 #define _MASTER_CONFIG_H
 
 #define VARIABLE_POINTERS_TO_FUNCTIONS_NOT_ALLOWED
 #undef NOT_USED_FUNCTIONS_ALLOWED
-#define TO_BE_REMOVED
 
 // The concept that the data from the measurement path of the power supply should be divided by 2;
 #define SCALE_MEASURED_CURRENT_IN_HALF		1
@@ -21,16 +20,11 @@
 // in the 'debug' mode are more extensive.
 #define MODBUS_DEBUG_MODE			1
 
-// This directive allows the data received by SPI to be replaced by simulation data
-#define SPI_SIMULATION				1
-
-#define SPI_SIMULATION_JP4			1
-
 #define AUXILIARY_OUTPUT_PINS		0
 
 // This directive allows for printouts while processing Modbus commands
 // (debugging Modbus state machine)
-#define MODBUS_DEBUG_PRINT			1
+#define MODBUS_DEBUG_PRINT			0
 
 // By inserting a jumper you can block a write signal to power source.
 #define WRITING_ERROR_TEST			0

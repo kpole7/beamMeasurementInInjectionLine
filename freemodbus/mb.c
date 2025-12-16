@@ -431,7 +431,7 @@ eMBPoll( void )
                 if( ( eMBCurrentMode == MB_ASCII ) && MB_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS )
                 {
                     vMBPortTimersDelay( MB_ASCII_TIMEOUT_WAIT_BEFORE_SEND_MS );
-                }                
+                }
 #ifndef VARIABLE_POINTERS_TO_FUNCTIONS_NOT_ALLOWED /* K.O. modification */
                 eStatus = peMBFrameSendCur( ucMBAddress, ucMBFrame, usLength );
 #else
@@ -453,5 +453,16 @@ eMBPoll( void )
     else{
     	xMBPortSerialPoll(); /* K.O. Substantial modification of the source code */
     }
+
+#if 0
+
+    /* Intentionally dead code */
+    eMBFuncReadInputRegister( ucMBFrame, &usLength );
+    eMBFuncReadHoldingRegister( ucMBFrame, &usLength );
+    eMBFuncWriteHoldingRegister( ucMBFrame, &usLength );
+    eMBFuncReadCoils( ucMBFrame, &usLength );
+    eMBFuncWriteCoil( ucMBFrame, &usLength );
+#endif
+
     return MB_ENOERR;
 }

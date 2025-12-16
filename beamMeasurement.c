@@ -1,7 +1,5 @@
-// This source code file was written by K.O. (2024 - 2025)
+// This source code file was written by K.O. (2025 - 2026)
 
-// Modifications in the original Freemodbus code have been labeled "K.O."
-// Particularly non-obvious portions of the code described in the documentation are labeled "K.O. documentation"
 
 
 #include <stdio.h>
@@ -22,22 +20,18 @@
 // This directive specifies the time resolution for checking jumper states and LED light time
 #define SLOWER_DEVICES_TIME_TICK	0x400
 
-// This constant determines the frequency of communication over SPI with the power current source.
-// This constant is related to REPEATING_WRITE_COMMAND
-#define FREQUENCY_DIVIDER_SPI		10
-
 //..............................................................................
 // Variables for Modbus communication
 //..............................................................................
 
+uint16_t ModbusInputRegisters[MODBUS_INPUT_REGISTERS_NUMBER];
 
-// This a table of Modbus registers; initial registers are of type r/w,
-// subsequent registers are of type ro.
-uint16_t ModbusRegisters[MODBUS_AREA_RW_REGISTERS+MODBUS_AREA_RO_REGISTERS];
+bool ModbusCoils[MODBUS_COILS_NUMBER];
 
-// This flag indicates that the Modbus state machine has written a new value to a register
-// so writing to the power source should be activated by the SPI.
-bool IsWriteRequest;
+bool CoilsChanged[MODBUS_COILS_NUMBER];
+
+// This is a table of Modbus registers;
+uint16_t ModbusHoldingRegisters[MODBUS_HOLDING_REGISTERS_NUMBER];
 
 // This variable enables stopping the modbus state machine instead of executing the function
 // 'assert' that was in the original freemodbus source code.
@@ -60,7 +54,6 @@ volatile bool ModbusActiveLedLong;
 static bool ModbusActiveLedIsOnShort, ModbusActiveLedIsOnLong;
 static uint64_t ModbusActiveLedTime;
 static uint64_t CurrentTime, SampleTime;
-static uint8_t FrequencyDividerSpiCounter;
 
 //..............................................................................
 // Variables for debugging
@@ -98,7 +91,6 @@ void modbusActivityLedService(void);
 
 int main(){
 	uint8_t J;
-	bool IsNewWriteRequest;
 
 	//...............
 	// Initializations of variables, peripherals, etc.
@@ -112,11 +104,13 @@ int main(){
 	initModbusActivityLed();
 	initializeSPI();
 
-	for (J=0; J<MODBUS_AREA_RW_REGISTERS+MODBUS_AREA_RO_REGISTERS;J++){
-		ModbusRegisters[J] = 0;
+	for (J=0; J<MODBUS_HOLDING_REGISTERS_NUMBER;J++){
+		ModbusHoldingRegisters[J] = 0;
 	}
-	IsWriteRequest = false;
-	IsNewWriteRequest = false;
+	for (J=0; J<MODBUS_COILS_NUMBER; J++){
+		ModbusCoils[J] = false;
+		CoilsChanged[J] = false;
+	}
 
 #if MODBUS_DEBUG_MODE
 	initInputPortJP1();
@@ -138,7 +132,6 @@ int main(){
 #endif
 
 	SampleTime = (uint64_t)0;
-    FrequencyDividerSpiCounter = 1;
 
 	eMBInit(MB_RTU,MODBUS_SLAVE_ID,0,MODBUS_BAUD_RATE,MODBUS_PARITY); // The parameter ucPort is a dummy and will be ignored
 	eMBEnable();
@@ -155,25 +148,9 @@ int main(){
     	if(CurrentTime>SampleTime){
     		SampleTime = CurrentTime + (uint64_t)SLOWER_DEVICES_TIME_TICK;
 
-    		// SPI communication with high-current source is slowed down
-    		if(0 == FrequencyDividerSpiCounter){
-    			FrequencyDividerSpiCounter = FREQUENCY_DIVIDER_SPI;
-
-    			IsNewWriteRequest = communicateHighCurrentSource(IsWriteRequest);
-
-#if MODBUS_DEBUG_MODE
-    			if(IsWriteRequest){
-    	    		logAddEvent("m.loop",1);
-    	    	}
-#endif
-
-    			IsWriteRequest = IsNewWriteRequest; // normally 'false'
-    		}
-    		else{
-    			FrequencyDividerSpiCounter--;
-    		}
-
     		modbusActivityLedService();
+
+
 
 #if MODBUS_DEBUG_MODE
     		// Reading the states of jumpers.

@@ -47,11 +47,6 @@
 
 
 
-#if MODBUS_DEBUG_MODE
-extern char SimulationFrameError;
-#endif
-
-
 /* ----------------------- Defines ------------------------------------------*/
 #define MB_SER_PDU_SIZE_MIN     4       /*!< Minimum size of a Modbus RTU frame. */
 #define MB_SER_PDU_SIZE_MAX     256     /*!< Maximum size of a Modbus RTU frame. */
@@ -240,10 +235,10 @@ eMBRTUSend( UCHAR ucSlaveAddress, const UCHAR * pucFrame, USHORT usLength )
         usCRC16 = usMBCRC16( ( UCHAR * ) pucSndBufferCur, usSndBufferCount );
 
 
-#if MODBUS_DEBUG_MODE
-        if (SimulationFrameError != 0){
-        	usCRC16++;
-        }
+#if MODBUS_DEBUG_MODE /* K.O. */
+//        if (SimulationFrameError != 0){
+//        	usCRC16++;
+//        }
 #endif
 
         ucRTUBuf[usSndBufferCount++] = ( UCHAR )( usCRC16 & 0xFF );

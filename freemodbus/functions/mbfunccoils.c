@@ -64,8 +64,9 @@ eMBException    prveMBError2Exception( eMBErrorCode eErrorCode );
 
 #if MB_FUNC_READ_COILS_ENABLED > 0
 
-eMBException
-eMBFuncReadCoils( UCHAR * pucFrame, USHORT * usLen )
+/// @callgraph  (K.O.)
+/// @callergraph  (K.O.)
+eMBException eMBFuncReadCoils( UCHAR * pucFrame, USHORT * usLen )
 {
     USHORT          usRegAddress;
     USHORT          usCoilCount;
@@ -143,6 +144,9 @@ eMBFuncReadCoils( UCHAR * pucFrame, USHORT * usLen )
 }
 
 #if MB_FUNC_WRITE_COIL_ENABLED > 0
+/*
+ @callgraph  (K.O.)
+ @callergraph  (K.O.) */
 eMBException
 eMBFuncWriteCoil( UCHAR * pucFrame, USHORT * usLen )
 {
