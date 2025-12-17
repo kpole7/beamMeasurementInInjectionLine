@@ -80,13 +80,12 @@ vMBPortTimersDisable(  )
     }
 }
 
-/*
+/**
 Create an ISR which is called whenever the timer has expired. This function
  must then call pxMBPortCBTimerExpired( ) to notify the protocol stack that
  the timer has expired.
  @callgraph  (K.O.)
  @callergraph  (K.O.)
- This function is a timer interrupt handler   (K.O.)
 */
 static int64_t prvvTIMERExpiredISR(alarm_id_t id, void *user_data) /* K.O. */
 {

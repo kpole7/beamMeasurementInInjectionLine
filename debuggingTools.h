@@ -1,3 +1,4 @@
+/// @file debuggingTools.h
 // This header file was written by K.O. (2025 - 2026)
 
 #ifndef _DEBUGGING_TOOLS_H

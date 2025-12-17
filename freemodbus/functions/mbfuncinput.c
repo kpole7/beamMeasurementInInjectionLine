@@ -55,9 +55,10 @@ eMBException    prveMBError2Exception( eMBErrorCode eErrorCode );
 /* ----------------------- Start implementation -----------------------------*/
 #if MB_FUNC_READ_INPUT_ENABLED > 0
 
-/*
- @callgraph  (K.O.)
- @callergraph  (K.O.) */
+/**
+ * @callgraph  (K.O.)
+ * @callergraph  (K.O.)
+*/
 eMBException
 eMBFuncReadInputRegister( UCHAR * pucFrame, USHORT * usLen )
 {

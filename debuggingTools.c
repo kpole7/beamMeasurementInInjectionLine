@@ -1,3 +1,4 @@
+/// @file debuggingTools.c
 // This source code file was written by K.O. (2025 - 2026)
 
 #include <stdio.h>

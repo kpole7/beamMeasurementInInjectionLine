@@ -1,3 +1,4 @@
+/// @file modbusCustom.c
 // This source code file was written by K.O. (2025 - 2026)
 
 #include <inttypes.h>
@@ -15,7 +16,7 @@ extern bool ModbusCoils[MODBUS_COILS_NUMBER];
 
 extern bool CoilsChanged[MODBUS_COILS_NUMBER];
 
-// This a table of Modbus registers
+// This is a table of Modbus registers
 extern uint16_t ModbusHoldingRegisters[MODBUS_HOLDING_REGISTERS_NUMBER];
 
 /// This is callback function for reading and writing registers

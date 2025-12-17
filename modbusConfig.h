@@ -1,3 +1,4 @@
+/// @file modbusConfig.h
 // This header file was written by K.O. (2025 - 2026)
 
 #ifndef _MODBUS_CONFIG_H

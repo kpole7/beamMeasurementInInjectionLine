@@ -1,4 +1,11 @@
-// This source code file was written by K.O. (2025 - 2026)
+/// @file beamMeasurement.c
+/// This source code file was written by K.O. (2025 - 2026)
+///
+///
+/// Abbreviations:
+/// PSU = power supply unit
+/// FSM = finite state machine
+/// ISR = interrupt service routine
 
 
 

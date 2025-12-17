@@ -73,9 +73,10 @@ eMBException    prveMBError2Exception( eMBErrorCode eErrorCode );
 
 #if MB_FUNC_WRITE_HOLDING_ENABLED > 0
 
-/*
- @callgraph  (K.O.)
- @callergraph  (K.O.) */
+/**
+ * @callgraph  (K.O.)
+ * @callergraph  (K.O.)
+*/
 eMBException
 eMBFuncWriteHoldingRegister( UCHAR * pucFrame, USHORT * usLen )
 {
@@ -188,9 +189,10 @@ eMBFuncWriteMultipleHoldingRegister( UCHAR * pucFrame, USHORT * usLen )
 
 #if MB_FUNC_READ_HOLDING_ENABLED > 0
 
-/*
- @callgraph  (K.O.)
- @callergraph  (K.O.) */
+/**
+ * @callgraph  (K.O.)
+ * @callergraph  (K.O.)
+*/
 eMBException
 eMBFuncReadHoldingRegister( UCHAR * pucFrame, USHORT * usLen )
 {
