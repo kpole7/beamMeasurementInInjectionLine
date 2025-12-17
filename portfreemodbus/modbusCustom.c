@@ -7,7 +7,6 @@
 #include "pico/stdlib.h"
 #include "../modbusConfig.h"
 #include "../debuggingTools.h"
-#include "../spiCommunication.h"
 #include "mb.h"
 
 extern uint16_t ModbusInputRegisters[MODBUS_INPUT_REGISTERS_NUMBER];

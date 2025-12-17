@@ -16,7 +16,7 @@
 #include "pico/stdlib.h"
 #include "modbusConfig.h"
 #include "masterConfig.h"
-#include "spiCommunication.h"
+#include "mainTimer.h"
 #include "debuggingTools.h"
 #include "mb.h"
 
@@ -103,13 +103,11 @@ int main(){
 	// Initializations of variables, peripherals, etc.
 	//...............
 
-
 	atomic_store_explicit( &ModbusAssertionFailed, false, memory_order_release );
 
 	stdio_init_all();
 	turnOnLedOnBoard();
 	initModbusActivityLed();
-	initializeSPI();
 
 	for (J=0; J<MODBUS_HOLDING_REGISTERS_NUMBER;J++){
 		ModbusHoldingRegisters[J] = 0;
@@ -143,6 +141,7 @@ int main(){
 	eMBInit(MB_RTU,MODBUS_SLAVE_ID,0,MODBUS_BAUD_RATE,MODBUS_PARITY); // The parameter ucPort is a dummy and will be ignored
 	eMBEnable();
 
+	startPeriodicInterrupt();
 
 	//...............
 	// The main loop
