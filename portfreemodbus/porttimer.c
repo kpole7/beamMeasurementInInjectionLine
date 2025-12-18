@@ -68,7 +68,7 @@ vMBPortTimersEnable(  )
 
 }
 
-/* This function is called by the timer interrupt handler   (K.O.) */
+/** This function is called only by the timer ISR (prvvTIMERExpiredISR)     (K.O.) */
 inline void
 vMBPortTimersDisable(  )
 {

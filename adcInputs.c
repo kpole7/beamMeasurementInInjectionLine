@@ -45,7 +45,7 @@ void initializeAdcMeasurements(void){
 	adc_gpio_init(GPIO_FOR_ADC1);
 }
 
-/// @brief This function collects measurements from ADC; it is to be called by timer interrupt
+/// @brief This function collects measurements from ADC; it is called only by the timer ISR (repeatingTimerISR)
 void getVoltageSamples(void){
 
 	// Measure ADC0

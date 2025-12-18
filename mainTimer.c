@@ -25,10 +25,7 @@ static repeating_timer_t CyclicTimer;
 // Function prototypes
 //---------------------------------------------------------------------------------------------------
 
-/// @brief This is timer interrupt handler (callback function) for slow cyclic events
-/// @callgraph
-/// @callergraph
-static bool timerInterruptHandler(repeating_timer_t *rt);
+static bool repeatingTimerISR(repeating_timer_t *rt);
 
 //---------------------------------------------------------------------------------------------------
 // Function definitions
@@ -38,13 +35,16 @@ static bool timerInterruptHandler(repeating_timer_t *rt);
 void startPeriodicInterrupt(void){
     add_repeating_timer_us(
         -10000,                 // minus = absolute time
-		timerInterruptHandler,
+		repeatingTimerISR,
         NULL,
         &CyclicTimer
     );
 }
 
-static bool timerInterruptHandler(repeating_timer_t *rt){
+/// @brief This is timer interrupt handler (ISR) for slow cyclic events
+/// @callgraph
+/// @callergraph
+static bool repeatingTimerISR(repeating_timer_t *rt){
 //	changeDebugPin1(true);
 
 	// Analog-to-digital converter operation
