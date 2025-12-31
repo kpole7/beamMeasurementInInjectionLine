@@ -17,15 +17,13 @@
 #include "modbusConfig.h"
 #include "masterConfig.h"
 #include "mainTimer.h"
+#include "adcInputs.h"
 #include "debuggingTools.h"
 #include "mb.h"
 
 
 // This directive tells that the LED on pico PCB is connected to GPIO25 port
 #define PICO_ON_BOARD_LED_PIN		25
-
-// This directive specifies the time resolution for checking jumper states and LED light time
-#define SLOWER_DEVICES_TIME_TICK	0x400
 
 //..............................................................................
 // Variables for Modbus communication
@@ -59,8 +57,6 @@ volatile bool ModbusActiveLedLong;
 
 
 static bool ModbusActiveLedIsOnShort, ModbusActiveLedIsOnLong;
-static uint64_t ModbusActiveLedTime;
-static uint64_t CurrentTime, SampleTime;
 
 //..............................................................................
 // Variables for debugging
@@ -68,10 +64,9 @@ static uint64_t CurrentTime, SampleTime;
 
 
 #if MODBUS_DEBUG_MODE
-bool IsJumperJP2;
 bool IsChangeModbusWrite;
 static bool IsJumperJP1;
-static bool OldIsJumperJP1, OldIsJumperJP2;
+static bool OldIsJumperJP1;
 #endif
 
 
@@ -108,6 +103,7 @@ int main(){
 	stdio_init_all();
 	turnOnLedOnBoard();
 	initModbusActivityLed();
+	initializeAdcMeasurements();
 
 	for (J=0; J<MODBUS_HOLDING_REGISTERS_NUMBER;J++){
 		ModbusHoldingRegisters[J] = 0;
@@ -124,19 +120,7 @@ int main(){
 	printf("\r\nHello, world!\r\n");
 #endif
 
-#if AUXILIARY_OUTPUT_PINS
 	auxiliaryOutputsInitialize();
-#endif
-
-#if WRITING_ERROR_TEST
-	initInputPortJP3();
-#endif
-
-#if SPI_SIMULATION_JP4
-	initInputPortJP4();
-#endif
-
-	SampleTime = (uint64_t)0;
 
 	eMBInit(MB_RTU,MODBUS_SLAVE_ID,0,MODBUS_BAUD_RATE,MODBUS_PARITY); // The parameter ucPort is a dummy and will be ignored
 	eMBEnable();
@@ -147,21 +131,23 @@ int main(){
 	// The main loop
 	//...............
 
-
     while (1){
-    	// Timing for slower processes.
-    	CurrentTime = time_us_64();
-    	if(CurrentTime>SampleTime){
-    		SampleTime = CurrentTime + (uint64_t)SLOWER_DEVICES_TIME_TICK;
+
+    	if(atomic_load_explicit( &SixtyFourMillisecondsTimeTick, memory_order_acquire )){
+    		atomic_store_explicit( &SixtyFourMillisecondsTimeTick, false, memory_order_release );
+
+
+
+    	}
+
+    	if(atomic_load_explicit( &TwoMillisecondsTimeTick, memory_order_acquire )){
+    		atomic_store_explicit( &TwoMillisecondsTimeTick, false, memory_order_release );
 
     		modbusActivityLedService();
-
-
 
 #if MODBUS_DEBUG_MODE
     		// Reading the states of jumpers.
     		IsJumperJP1 = !readInputPortJP1(); // false;	// Modbus state machine debugging
-    		IsJumperJP2 = !readInputPortJP2(); // true;	// SPI communication debugging
 #endif
     	}
 
@@ -171,7 +157,6 @@ int main(){
     		logPrintAll(0);
     	}
     	OldIsJumperJP1 = IsJumperJP1;
-    	OldIsJumperJP2 = IsJumperJP2; // not used
 #endif
 
     	// Modbus communication service
@@ -190,7 +175,6 @@ int main(){
     	}
     } // The main loop
 }
-
 
 //..............................................................................
 // Definitions of functions
@@ -219,6 +203,8 @@ void initModbusActivityLed(void){
 // This function supports the LED that indicates Modbus transmission (provides
 // the correct timing and strength of illumination).
 void modbusActivityLedService(void){
+	static uint64_t ModbusActiveLedTime, CurrentTime;
+	CurrentTime = time_us_64();
 	if(atomic_load_explicit( &ModbusActiveLedShort, memory_order_acquire ) && !ModbusActiveLedIsOnShort){
 		ModbusActiveLedIsOnShort=true;
 		gpio_put(MODBUS_ACTIVITY_LED, true);
@@ -235,7 +221,7 @@ void modbusActivityLedService(void){
 		gpio_put(MODBUS_ACTIVITY_LED, false);
 		ModbusActiveLedIsOnShort=false;
 		ModbusActiveLedIsOnLong=false;
-		atomic_store_explicit( &ModbusActiveLedShort, false, memory_order_release ); /* K.O. */
+		atomic_store_explicit( &ModbusActiveLedShort, false, memory_order_release );
 		ModbusActiveLedLong=false;
 	}
 }

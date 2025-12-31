@@ -1,5 +1,8 @@
 /// @file adcInputs.c
 
+#include <stdbool.h>
+#include <stdatomic.h>
+#include "pico/stdlib.h"
 #include "adcInputs.h"
 #include <math.h>
 #include "hardware/adc.h"
@@ -8,26 +11,22 @@
 // Macro directives
 //---------------------------------------------------------------------------------------------------
 
-#define ADC_RAW_BUFFER_SIZE 	64
+#define ADC_RAW_BUFFER_SIZE 	4
 #define GPIO_FOR_ADC0			26
-#define GPIO_FOR_ADC1			27
 
 //---------------------------------------------------------------------------------------------------
 // Local constants
 //---------------------------------------------------------------------------------------------------
 
-static const float GetVoltageCoefficient = 20.0 / (ADC_RAW_BUFFER_SIZE * 4096.0);
-static const float GetVoltageOffset = 10.0;
+static const float GetVoltageCoefficient = 1.0 / ((float)ADC_RAW_BUFFER_SIZE);
+static const float GetVoltageOffset = 0.0;
 
 //---------------------------------------------------------------------------------------------------
 // Local variables
 //---------------------------------------------------------------------------------------------------
 
 /// @brief This variable is used in timer interrupt handler
-static uint16_t RawBufferAdc0[ADC_RAW_BUFFER_SIZE];
-
-/// @brief This variable is used in timer interrupt handler
-static uint16_t RawBufferAdc1[ADC_RAW_BUFFER_SIZE];
+static atomic_uint_fast16_t RawBufferAdc0[ADC_RAW_BUFFER_SIZE];
 
 /// @brief This variable is used in timer interrupt handler
 /// Index for writing new samples from ADC0 and ADC1
@@ -42,7 +41,6 @@ void initializeAdcMeasurements(void){
 	AdcBuffersHead = 0;
 	adc_init();
 	adc_gpio_init(GPIO_FOR_ADC0);
-	adc_gpio_init(GPIO_FOR_ADC1);
 }
 
 /// @brief This function collects measurements from ADC; it is called only by the timer ISR (repeatingTimerISR)
@@ -51,12 +49,7 @@ void getVoltageSamples(void){
 	// Measure ADC0
     adc_select_input(0);
     (void)adc_read();                // dummy read
-    RawBufferAdc0[AdcBuffersHead] = adc_read();
-
-    // Measure ADC1
-    adc_select_input(1);
-    (void)adc_read();                // dummy read
-    RawBufferAdc1[AdcBuffersHead] = adc_read();
+    atomic_store_explicit( &RawBufferAdc0[AdcBuffersHead], adc_read(), memory_order_release );
 
     AdcBuffersHead++;
     if (AdcBuffersHead >= ADC_RAW_BUFFER_SIZE){
@@ -66,21 +59,11 @@ void getVoltageSamples(void){
 
 /// @brief This function measures the voltage at ADC input and make some calculations
 /// The function acts in the main loop
-float getVoltage( uint8_t AdcIndex ){
-	if (0 == AdcIndex){
-		uint32_t Accumulator = 0;
-		for (uint8_t J = 0; J < ADC_RAW_BUFFER_SIZE; J++){
-			Accumulator += RawBufferAdc0[J];
-		}
-		return (float)Accumulator * GetVoltageCoefficient - GetVoltageOffset;
+float getVoltage(void){
+	uint32_t Accumulator = 0;
+	for (uint8_t J = 0; J < ADC_RAW_BUFFER_SIZE; J++){
+		Accumulator += atomic_load_explicit( &RawBufferAdc0[J], memory_order_acquire )                    ;
 	}
-	if (1 == AdcIndex){
-		uint32_t Accumulator = 0;
-		for (uint8_t J = 0; J < ADC_RAW_BUFFER_SIZE; J++){
-			Accumulator += RawBufferAdc1[J];
-		}
-		return (float)Accumulator * GetVoltageCoefficient - GetVoltageOffset;
-	}
-	return NAN;
+	return (float)Accumulator * GetVoltageCoefficient - GetVoltageOffset;
 }
 

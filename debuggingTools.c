@@ -152,42 +152,19 @@ bool readInputPortJP1(void){
 	return(gpio_get(AUXILIARY_INPUT_JP1));
 }
 
+#endif // MODBUS_DEBUG_MODE
+
 void initInputPortJP2(void){
 	gpio_init(AUXILIARY_INPUT_JP2);
 	gpio_set_dir(AUXILIARY_INPUT_JP2, GPIO_IN);
 	gpio_pull_up(AUXILIARY_INPUT_JP2);
 }
 
+// This function checks if the jumper JP1 is present.
 bool readInputPortJP2(void){
 	return(gpio_get(AUXILIARY_INPUT_JP2));
 }
-#endif // MODBUS_DEBUG_MODE
 
-#if WRITING_ERROR_TEST
-void initInputPortJP3(void){
-	gpio_init(AUXILIARY_INPUT_JP3);
-	gpio_set_dir(AUXILIARY_INPUT_JP3, GPIO_IN);
-	gpio_pull_up(AUXILIARY_INPUT_JP3);
-}
-
-bool readInputPortJP3(void){
-	return(gpio_get(AUXILIARY_INPUT_JP3));
-}
-#endif
-
-#if SPI_SIMULATION_JP4
-void initInputPortJP4(void){
-	gpio_init(AUXILIARY_INPUT_JP4);
-	gpio_set_dir(AUXILIARY_INPUT_JP4, GPIO_IN);
-	gpio_pull_up(AUXILIARY_INPUT_JP4);
-}
-
-bool readInputPortJP4(void){
-	return(gpio_get(AUXILIARY_INPUT_JP4));
-}
-#endif
-
-#if AUXILIARY_OUTPUT_PINS
 void auxiliaryOutputsInitialize(void){
 	gpio_init(AUXILIARY_PIN_1);
 	gpio_set_dir(AUXILIARY_PIN_1, GPIO_OUT);
@@ -196,10 +173,6 @@ void auxiliaryOutputsInitialize(void){
 	gpio_init(AUXILIARY_PIN_2);
 	gpio_set_dir(AUXILIARY_PIN_2, GPIO_OUT);
 	gpio_put(AUXILIARY_PIN_2, false);
-
-	gpio_init(AUXILIARY_PIN_3);
-	gpio_set_dir(AUXILIARY_PIN_3, GPIO_OUT);
-	gpio_put(AUXILIARY_PIN_3, false);
 }
 
 void auxiliaryPinOutputValue1(bool Value){
@@ -209,8 +182,3 @@ void auxiliaryPinOutputValue1(bool Value){
 void auxiliaryPinOutputValue2(bool Value){
 	gpio_put(AUXILIARY_PIN_2, Value);
 }
-
-void auxiliaryPinOutputValue3(bool Value){
-	gpio_put(AUXILIARY_PIN_3, Value);
-}
-#endif

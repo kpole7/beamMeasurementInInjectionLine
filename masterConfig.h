@@ -19,15 +19,10 @@
 // This directive allows you to select one of the modes: debug (value '1') or release (value '0').
 // The 'release' mode is tested according to the same scenario as the 'debug' mode, but the tests
 // in the 'debug' mode are more extensive.
-#define MODBUS_DEBUG_MODE			1
-
-#define AUXILIARY_OUTPUT_PINS		0
+#define MODBUS_DEBUG_MODE			0
 
 // This directive allows for printouts while processing Modbus commands
 // (debugging Modbus state machine)
 #define MODBUS_DEBUG_PRINT			0
-
-// By inserting a jumper you can block a write signal to power source.
-#define WRITING_ERROR_TEST			0
 
 #endif // _MASTER_CONFIG_H

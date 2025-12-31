@@ -10,13 +10,10 @@
 // Function prototypes
 //---------------------------------------------------------------------------------------------------
 
-/// @brief This function initializes peripherals for ADC measuring and the state machine for measurements
 void initializeAdcMeasurements(void);
 
-/// @brief This function collects measurements from ADC; it is to be called by timer interrupt
 void getVoltageSamples(void);
 
-/// @brief This function measures the voltage at ADC input and make some calculations
-float getVoltage( uint8_t AdcIndex );
+float getVoltage(void);
 
 #endif // SOURCE_ADC_INPUTS_H_
