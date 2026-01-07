@@ -51,7 +51,7 @@ eMBErrorCode    eMBRegHoldingCB( UCHAR * pucRegBuffer, USHORT usAddress,
 
 
 
-
+#if 0
 		// for debugging purpose
 
 		printf("Inputs= ");
@@ -64,7 +64,7 @@ eMBErrorCode    eMBRegHoldingCB( UCHAR * pucRegBuffer, USHORT usAddress,
 		}
 
 		printf("\n");
-
+#endif
 
 
 	}

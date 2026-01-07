@@ -51,10 +51,9 @@ void initInputPortJP1(void);
 // This function checks if the jumper JP1 is present.
 bool readInputPortJP1(void);
 
-void initInputPortJP2(void);
-
 #endif // MODBUS_DEBUG_MODE
 
+void initInputPortJP2(void);
 bool readInputPortJP2(void);
 
 void auxiliaryOutputsInitialize(void);

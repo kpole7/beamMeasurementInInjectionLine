@@ -55,9 +55,6 @@ void startPeriodicInterrupt(void){
 static bool repeatingTimerISR(repeating_timer_t *rt){
 	static uint8_t TimeDivider;
 
-	static bool OldValueJP2;
-	bool TemporaryJP2;
-
 	auxiliaryPinOutputValue1(false);
 	auxiliaryPinOutputValue2(true);
 
@@ -69,14 +66,6 @@ static bool repeatingTimerISR(repeating_timer_t *rt){
 		auxiliaryPinOutputValue1(true);
 
 		atomic_store_explicit( &SixtyFourMillisecondsTimeTick, true, memory_order_release );
-	}
-
-	if (2 == (TimeDivider & 7)){
-		// frequency = 1000Hz / 8 = 125Hz
-		TemporaryJP2 = readInputPortJP2();
-		if (OldValueJP2 != TemporaryJP2){
-			OldValueJP2 = TemporaryJP2;
-		}
 	}
 
 	if (4 == (TimeDivider & 7)){

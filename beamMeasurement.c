@@ -115,10 +115,10 @@ int main(){
 
 #if MODBUS_DEBUG_MODE
 	initInputPortJP1();
-	initInputPortJP2();
 	initAuxiliaryPrintouts();
-	printf("\r\nHello, world!\r\n");
 #endif
+	initInputPortJP2();
+	printf("\r\nHello, world!\r\n");
 
 	auxiliaryOutputsInitialize();
 
@@ -136,8 +136,40 @@ int main(){
     	if(atomic_load_explicit( &SixtyFourMillisecondsTimeTick, memory_order_acquire )){
     		atomic_store_explicit( &SixtyFourMillisecondsTimeTick, false, memory_order_release );
 
+    		static uint8_t TicksCounter;
+    		TicksCounter++;
+    		TicksCounter &= 15;
 
+    		bool TemporaryJP2 = readInputPortJP2();
+    		static bool OldValueJP2;
 
+    		static uint8_t InputRegisterUnderTest;
+    		static uint8_t OldInputRegisterUnderTest;
+
+    		InputRegisterUnderTest &= 3;
+    		if (OldValueJP2 != TemporaryJP2){
+    			if (!TemporaryJP2){
+            		InputRegisterUnderTest++;
+            		InputRegisterUnderTest &= 3;
+    			}
+    			OldValueJP2 = TemporaryJP2;
+    		}
+
+    		static float OldAdcValue;
+    		float AdcValue = getVoltage();
+
+    		assert( InputRegisterUnderTest < MODBUS_INPUT_REGISTERS_NUMBER);
+    		ModbusInputRegisters[InputRegisterUnderTest] = (uint16_t)AdcValue;
+
+    		if ((0 == TicksCounter) || (OldInputRegisterUnderTest != InputRegisterUnderTest)){
+
+        		if ((OldAdcValue != AdcValue) || (OldInputRegisterUnderTest != InputRegisterUnderTest)){
+        			OldAdcValue = AdcValue;
+        			OldInputRegisterUnderTest = InputRegisterUnderTest;
+
+        			printf("adc: %7.2f  k=%d  i=%d\r\n", (double)AdcValue, TemporaryJP2? 1 : 0, (int)InputRegisterUnderTest );
+        		}
+    		}
     	}
 
     	if(atomic_load_explicit( &TwoMillisecondsTimeTick, memory_order_acquire )){
