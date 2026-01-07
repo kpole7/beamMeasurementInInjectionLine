@@ -167,8 +167,21 @@ int main(){
         			OldAdcValue = AdcValue;
         			OldInputRegisterUnderTest = InputRegisterUnderTest;
 
-        			printf("adc: %7.2f  k=%d  i=%d\r\n", (double)AdcValue, TemporaryJP2? 1 : 0, (int)InputRegisterUnderTest );
+        			printf("adc: %7.2f  k=%d  i=%d    %4d %4d %4d %4d\r\n",
+        					(double)AdcValue, TemporaryJP2? 1 : 0, (int)InputRegisterUnderTest,
+        							ModbusInputRegisters[0], ModbusInputRegisters[1], ModbusInputRegisters[2], ModbusInputRegisters[3] );
         		}
+    		}
+
+
+    		int c = getchar_timeout_us(0);  // non-blocking read
+    		if (c != PICO_ERROR_TIMEOUT) {
+    			if ((c >= ' ') && (c <= 'z')){
+    				printf("Odebrano znak: 0x%04X '%c'\r\n", (unsigned)c, (char)c);
+    			}
+    			else{
+    				printf("Odebrano znak: 0x%04X\r\n", (unsigned)c );
+    			}
     		}
     	}
 
