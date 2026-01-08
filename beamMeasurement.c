@@ -140,49 +140,12 @@ int main(){
     		TicksCounter++;
     		TicksCounter &= 15;
 
-    		bool TemporaryJP2 = readInputPortJP2();
-    		static bool OldValueJP2;
-
-    		static uint8_t InputRegisterUnderTest;
-    		static uint8_t OldInputRegisterUnderTest;
-
-    		InputRegisterUnderTest &= 3;
-    		if (OldValueJP2 != TemporaryJP2){
-    			if (!TemporaryJP2){
-            		InputRegisterUnderTest++;
-            		InputRegisterUnderTest &= 3;
-    			}
-    			OldValueJP2 = TemporaryJP2;
-    		}
-
-    		static float OldAdcValue;
-    		float AdcValue = getVoltage();
-
-    		assert( InputRegisterUnderTest < MODBUS_INPUT_REGISTERS_NUMBER);
-    		ModbusInputRegisters[InputRegisterUnderTest] = (uint16_t)AdcValue;
-
-    		if ((0 == TicksCounter) || (OldInputRegisterUnderTest != InputRegisterUnderTest)){
-
-        		if ((OldAdcValue != AdcValue) || (OldInputRegisterUnderTest != InputRegisterUnderTest)){
-        			OldAdcValue = AdcValue;
-        			OldInputRegisterUnderTest = InputRegisterUnderTest;
-
-        			printf("adc: %7.2f  k=%d  i=%d    %4d %4d %4d %4d\r\n",
-        					(double)AdcValue, TemporaryJP2? 1 : 0, (int)InputRegisterUnderTest,
-        							ModbusInputRegisters[0], ModbusInputRegisters[1], ModbusInputRegisters[2], ModbusInputRegisters[3] );
-        		}
-    		}
 
 
-    		int c = getchar_timeout_us(0);  // non-blocking read
-    		if (c != PICO_ERROR_TIMEOUT) {
-    			if ((c >= ' ') && (c <= 'z')){
-    				printf("Odebrano znak: 0x%04X '%c'\r\n", (unsigned)c, (char)c);
-    			}
-    			else{
-    				printf("Odebrano znak: 0x%04X\r\n", (unsigned)c );
-    			}
-    		}
+    		debugCommand();
+
+
+
     	}
 
     	if(atomic_load_explicit( &TwoMillisecondsTimeTick, memory_order_acquire )){

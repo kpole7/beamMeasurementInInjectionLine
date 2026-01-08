@@ -2,6 +2,7 @@
 // This source code file was written by K.O. (2025 - 2026)
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
 #include "pico/stdlib.h"
@@ -182,3 +183,70 @@ void auxiliaryPinOutputValue1(bool Value){
 void auxiliaryPinOutputValue2(bool Value){
 	gpio_put(AUXILIARY_PIN_2, Value);
 }
+
+void debugCommand(void){
+	static char Buffer[103];
+	static uint32_t Index, Tics;
+	int InputCharacter = getchar_timeout_us(0);  // non-blocking read
+	if (InputCharacter != PICO_ERROR_TIMEOUT) {
+		Tics = 0;
+//		if ((InputCharacter >= ' ') && (InputCharacter <= 'z')){
+//			printf("Odebrano znak: 0x%04X '%c'\r\n", (unsigned)InputCharacter, (char)InputCharacter);
+//		}
+//		else{
+//			printf("Odebrano znak: 0x%04X\r\n", (unsigned)InputCharacter );
+//		}
+		if (Index < sizeof(Buffer)-3){
+			Buffer[Index] = InputCharacter;
+			Index++;
+			if (';' == InputCharacter){
+				Buffer[Index] = 0;
+
+				uint32_t Argument;
+				char * EndPtr;
+				char * SemicolonPtr = strchr(Buffer, ';');
+				if (SemicolonPtr[1] != 0){ // check if the first semicolon is the only semicolon and if it is the last character
+					SemicolonPtr = NULL;
+				}
+				if (('A' <= Buffer[0]) && ('E' >= Buffer[0]) && ('=' == Buffer[1]) && (strlen(Buffer) >= 4) && (SemicolonPtr != NULL)){
+					if ((strstr(Buffer, "=0x") == Buffer+1) && (strlen(Buffer) >= 6)){
+						Argument = (uint32_t)strtoul( Buffer+4, &EndPtr, 16 );
+					}
+					else{
+						Argument = (uint32_t)strtoul( Buffer+2, &EndPtr, 10 );
+					}
+					if ((Argument < 0x10000) && (';' == EndPtr[0])){
+						printf("Command %c=%d=0x%04X\r\n", Buffer[0], Argument, Argument );
+					}
+					else{
+						printf("Wrong command <%s> \r\n", Buffer );
+					}
+				}
+				else{
+					printf("Unknown command <%s>\r\n", Buffer );
+				}
+
+
+
+				Index = 0;
+			}
+		}
+	}
+	else{
+		if (Tics < 10){
+			Tics++;
+		}
+		else{
+			if (0 != Index){
+				Index = 0; // timeout => clear the buffer
+				printf("Wyczyszczono bufor\r\n" );
+			}
+		}
+	}
+}
+
+
+
+
+
+

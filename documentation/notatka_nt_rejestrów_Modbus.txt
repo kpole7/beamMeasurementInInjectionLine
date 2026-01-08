@@ -1,0 +1,13 @@
+Informacje odczytane z kodu źródłowego
+
+Input registers
+3000    pomiar z kanału 0    | wyświetla się: "OK", jeśli wartość jest w zakresie [105; 125]; jeśli nie, pokazuje się "Błąd"
+3001    pomiar z kanału 1    | wyświetla się: X*10/254.8 dla slave=1, lub X*10/131.67 w innym przypadku; X=wartość rejestru
+3002    pomiar z kanału 2    | -//-
+3003    pomiar z kanału 3    | -//-
+3004    bit 0: błąd kanału 0 "N/A"
+        bit 1: błąd kanału 1 "N/A"
+        bit 2: błąd kanału 2 "N/A"
+        bit 3: błąd kanału 3 "N/A"
+
+
