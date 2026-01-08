@@ -48,25 +48,6 @@ eMBErrorCode    eMBRegHoldingCB( UCHAR * pucRegBuffer, USHORT usAddress,
 #endif
 
 		ModbusHoldingRegisters[usAddress-MODBUS_HOLDING_REGISTERS_ADDRESS] = (uint16_t)pucRegBuffer[0]*256 + (uint16_t)pucRegBuffer[1];
-
-
-
-#if 0
-		// for debugging purpose
-
-		printf("Inputs= ");
-
-		static_assert(MODBUS_INPUT_REGISTERS_NUMBER <= MODBUS_HOLDING_REGISTERS_NUMBER, "Error (static_assert)");
-
-		for(K=0;K<MODBUS_INPUT_REGISTERS_NUMBER;K++){
-			ModbusInputRegisters[K] = ModbusHoldingRegisters[K];
-			printf(" %04X", (unsigned)ModbusInputRegisters[K]);
-		}
-
-		printf("\n");
-#endif
-
-
 	}
 	else{ // read holding registers
 		if (usNRegs > MODBUS_HOLDING_REGISTERS_NUMBER){
@@ -96,31 +77,23 @@ eMBErrorCode    eMBRegCoilsCB( UCHAR * pucRegBuffer, USHORT usAddress,
 	if (usAddress < MODBUS_COILS_ADDRESS){
 		return(MB_ENOREG);
 	}
-
-#if MODBUS_DEBUG_MODE
-	logAddEvent("Inputs",0xFFFFu);
-#endif
-
 	if(MB_REG_WRITE==eMode){
 		if (usAddress+1 > MODBUS_COILS_ADDRESS+MODBUS_COILS_NUMBER){
 			return(MB_ENOREG);
 		}
-
-		bool TemporaryValue;
-		if ((0xFF == pucRegBuffer[0]) && (0 == pucRegBuffer[1])){
-			TemporaryValue = true;
-		}
-		else if ((0 == pucRegBuffer[0]) && (0 == pucRegBuffer[1])){
-			TemporaryValue = false;
-		}
-		else{
-			return(MB_EINVAL);
+		if (1 != usNCoils){
+			return(MB_ENOREG);
 		}
 
 		uint16_t TemporaryIndex = usAddress - MODBUS_COILS_ADDRESS;
 		assert( TemporaryIndex < MODBUS_COILS_NUMBER );
 
-		ModbusCoils[TemporaryIndex] = TemporaryValue;
+		if (0 != pucRegBuffer[0]){
+			ModbusCoils[TemporaryIndex] = true;
+		}
+		else{
+			ModbusCoils[TemporaryIndex] = false;
+		}
 		CoilsChanged[TemporaryIndex] = true;
 	}
 	else{ // read coils status
@@ -144,7 +117,7 @@ eMBErrorCode    eMBRegCoilsCB( UCHAR * pucRegBuffer, USHORT usAddress,
 		pucRegBuffer[0] = (UCHAR)TemporaryValue;
 	}
 
-	return MB_ENOREG;
+	return MB_ENOERR;
 }
 
 /// @callgraph

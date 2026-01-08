@@ -140,10 +140,17 @@ int main(){
     		TicksCounter++;
     		TicksCounter &= 15;
 
+    		debugCommand( &ModbusInputRegisters[0] );
 
 
-    		debugCommand();
-
+#if 1	// just for debugging
+    		for (J = 0; J < MODBUS_COILS_NUMBER; J++){
+    			if (CoilsChanged[J]){
+    				printf("coil number %d value set to %c\r\n", J, ModbusCoils[J]? '1' : '0' );
+    				CoilsChanged[J] = false;
+    			}
+    		}
+#endif
 
 
     	}

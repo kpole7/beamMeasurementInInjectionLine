@@ -184,18 +184,12 @@ void auxiliaryPinOutputValue2(bool Value){
 	gpio_put(AUXILIARY_PIN_2, Value);
 }
 
-void debugCommand(void){
+void debugCommand(uint16_t * RegistersToBeChanged){
 	static char Buffer[103];
 	static uint32_t Index, Tics;
 	int InputCharacter = getchar_timeout_us(0);  // non-blocking read
 	if (InputCharacter != PICO_ERROR_TIMEOUT) {
 		Tics = 0;
-//		if ((InputCharacter >= ' ') && (InputCharacter <= 'z')){
-//			printf("Odebrano znak: 0x%04X '%c'\r\n", (unsigned)InputCharacter, (char)InputCharacter);
-//		}
-//		else{
-//			printf("Odebrano znak: 0x%04X\r\n", (unsigned)InputCharacter );
-//		}
 		if (Index < sizeof(Buffer)-3){
 			Buffer[Index] = InputCharacter;
 			Index++;
@@ -226,7 +220,10 @@ void debugCommand(void){
 					printf("Unknown command <%s>\r\n", Buffer );
 				}
 
-
+				uint8_t J = Buffer[0] - 'A';
+				if (J < MODBUS_INPUT_REGISTERS_NUMBER){
+					RegistersToBeChanged[J] = Argument;
+				}
 
 				Index = 0;
 			}

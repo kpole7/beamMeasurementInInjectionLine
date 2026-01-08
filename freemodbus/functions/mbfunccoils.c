@@ -82,7 +82,7 @@ eMBException eMBFuncReadCoils( UCHAR * pucFrame, USHORT * usLen )
     {
         usRegAddress = ( USHORT )( pucFrame[MB_PDU_FUNC_READ_ADDR_OFF] << 8 );
         usRegAddress |= ( USHORT )( pucFrame[MB_PDU_FUNC_READ_ADDR_OFF + 1] );
-        usRegAddress++;
+/*        usRegAddress++;		K.O. This is a bug in my opinion (substantial modification) */
 
         usCoilCount = ( USHORT )( pucFrame[MB_PDU_FUNC_READ_COILCNT_OFF] << 8 );
         usCoilCount |= ( USHORT )( pucFrame[MB_PDU_FUNC_READ_COILCNT_OFF + 1] );
@@ -163,7 +163,7 @@ eMBFuncWriteCoil( UCHAR * pucFrame, USHORT * usLen )
     {
         usRegAddress = ( USHORT )( pucFrame[MB_PDU_FUNC_WRITE_ADDR_OFF] << 8 );
         usRegAddress |= ( USHORT )( pucFrame[MB_PDU_FUNC_WRITE_ADDR_OFF + 1] );
-        usRegAddress++;
+/*        usRegAddress++;		K.O. This is a bug in my opinion (substantial modification) */
 
         if( ( pucFrame[MB_PDU_FUNC_WRITE_VALUE_OFF + 1] == 0x00 ) &&
             ( ( pucFrame[MB_PDU_FUNC_WRITE_VALUE_OFF] == 0xFF ) ||
