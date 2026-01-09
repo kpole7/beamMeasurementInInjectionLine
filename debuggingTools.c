@@ -184,7 +184,15 @@ void auxiliaryPinOutputValue2(bool Value){
 	gpio_put(AUXILIARY_PIN_2, Value);
 }
 
-void debugCommand(uint16_t * RegistersToBeChanged){
+/// @brief This function reads text commands entered in the terminal and executes them.
+/// @param RegistersToBeChangedPtr pointer to a uint16_t variable (for example, a Modbus register) that is to be modified
+/// @param RegistersToBeChangedNumber number of elements in the table pointed to by RegistersToBeChangedPtr
+/// @param FirstName single-letter name used in a command to modify the first element
+/// The commands have the form "A=num;" where num is a decimal or hexadecimal number.
+/// Exemplary commands:
+/// A=123;      means RegistersToBeChangedPtr[0] = 123
+/// B=0xA5;		means RegistersToBeChangedPtr[1] = 0xA5
+void debugTerminalCommandInterpreter(uint16_t * RegistersToBeChangedPtr, uint16_t RegistersToBeChangedNumber, char FirstName){
 	static char Buffer[103];
 	static uint32_t Index, Tics;
 	int InputCharacter = getchar_timeout_us(0);  // non-blocking read
@@ -202,7 +210,7 @@ void debugCommand(uint16_t * RegistersToBeChanged){
 				if (SemicolonPtr[1] != 0){ // check if the first semicolon is the only semicolon and if it is the last character
 					SemicolonPtr = NULL;
 				}
-				if (('A' <= Buffer[0]) && ('E' >= Buffer[0]) && ('=' == Buffer[1]) && (strlen(Buffer) >= 4) && (SemicolonPtr != NULL)){
+				if ((FirstName <= Buffer[0]) && (FirstName+(char)RegistersToBeChangedNumber > Buffer[0]) && ('=' == Buffer[1]) && (strlen(Buffer) >= 4) && (SemicolonPtr != NULL)){
 					if ((strstr(Buffer, "=0x") == Buffer+1) && (strlen(Buffer) >= 6)){
 						Argument = (uint32_t)strtoul( Buffer+4, &EndPtr, 16 );
 					}
@@ -220,9 +228,9 @@ void debugCommand(uint16_t * RegistersToBeChanged){
 					printf("Unknown command <%s>\r\n", Buffer );
 				}
 
-				uint8_t J = Buffer[0] - 'A';
-				if (J < MODBUS_INPUT_REGISTERS_NUMBER){
-					RegistersToBeChanged[J] = Argument;
+				uint8_t J = Buffer[0] - FirstName;
+				if (J < RegistersToBeChangedNumber){
+					RegistersToBeChangedPtr[J] = Argument;
 				}
 
 				Index = 0;

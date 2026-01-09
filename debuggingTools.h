@@ -60,6 +60,6 @@ void auxiliaryOutputsInitialize(void);
 void auxiliaryPinOutputValue1(bool Value);
 void auxiliaryPinOutputValue2(bool Value);
 
-void debugCommand(uint16_t * RegistersToBeChanged);
+void debugTerminalCommandInterpreter(uint16_t * RegistersToBeChangedPtr, uint16_t RegistersToBeChangedNumber, char FirstName);
 
 #endif // _DEBUGGING_TOOLS_H

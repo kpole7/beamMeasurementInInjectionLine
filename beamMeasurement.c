@@ -140,7 +140,7 @@ int main(){
     		TicksCounter++;
     		TicksCounter &= 15;
 
-    		debugCommand( &ModbusInputRegisters[0] );
+    		debugTerminalCommandInterpreter( &ModbusInputRegisters[0], MODBUS_INPUT_REGISTERS_NUMBER, 'a' );
 
 
 #if 1	// just for debugging
