@@ -27,12 +27,12 @@
 #define MODBUS_ACTIVITY_LED					5
 
 // This directive specifies how long the LED should be lit, if any transmission from the master
-// have been received; it should be a multiple of USER_INTERFACE_TIME_TICK
-#define MODBUS_ACTIVITY_SHORT_TICKS			0x2000
+// have been received; it should be coherent with timing of MainTimer
+#define MODBUS_ACTIVITY_SHORT_TICKS			0x1500	// a bit less than 2 ms
 
 // This directive specifies how long the LED should be lit, if the slave sends a response
-// to the master; it should be a multiple of USER_INTERFACE_TIME_TICK
-#define MODBUS_ACTIVITY_LONG_TICKS			0x10000ul
+// to the master; it should be coherent with timing of MainTimer
+#define MODBUS_ACTIVITY_LONG_TICKS			0x9500ul	// a bit less than 10 ms
 
 // This directive specifies the address of the slave
 #define MODBUS_SLAVE_ID						1
@@ -41,11 +41,11 @@
 
 #define MODBUS_INPUT_REGISTERS_ADDRESS		3000
 
-#define MODBUS_INPUT_REGISTERS_NUMBER		5
+#define MODBUS_INPUT_REGISTERS_NUMBER		15	//	5
 
 #define MODBUS_COILS_ADDRESS				1
 
-#define MODBUS_COILS_NUMBER					1
+#define MODBUS_COILS_NUMBER					3	//	1
 
 static_assert(MODBUS_COILS_NUMBER <= 8, "Error (static_assert)");
 
