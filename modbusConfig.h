@@ -24,7 +24,7 @@
 #define MODBUS_UART0_IRQ					UART0_IRQ
 
 // The LED connected to GP5 flashes when the slave receives the Modbus frame
-#define MODBUS_ACTIVITY_LED					5
+#define GPIO_MODBUS_ACTIVITY_LED			5
 
 // This directive specifies how long the LED should be lit, if any transmission from the master
 // have been received; it should be coherent with timing of MainTimer
@@ -39,21 +39,33 @@
 
 
 
-#define MODBUS_INPUT_REGISTERS_ADDRESS		3000
+#define MODBUS_INPUT_REGISTERS_ADDRESS		3001
 
-#define MODBUS_INPUT_REGISTERS_NUMBER		15	//	5
+/// This is the number of read-only input registers
+#define MODBUS_INPUT_REGISTERS_NUMBER		15	// 3 cups x 5 registers per cup
 
 #define MODBUS_COILS_ADDRESS				1
 
-#define MODBUS_COILS_NUMBER					3	//	1
+/// This is the number of read-only coils (in the sense of Modbus)
+#define MODBUS_COILS_NUMBER					9	// 3 cups x 3 coils per cup
 
-static_assert(MODBUS_COILS_NUMBER <= 8, "Error (static_assert)");
+#define NUMBER_OF_BYTES_SUFFICIENT_TO_STORE_COILS	((MODBUS_COILS_NUMBER+7)/8)
+static_assert( NUMBER_OF_BYTES_SUFFICIENT_TO_STORE_COILS*8 >= MODBUS_COILS_NUMBER, "Error" );
+
+/// Read/write coil (in the sense of Modbus) used for the cup no. 1
+#define MODBUS_RW_COIL_FOR_CUP_1			1
+
+/// Read/write coil (in the sense of Modbus) used for the cup no. 2
+#define MODBUS_RW_COIL_FOR_CUP_2			4
+
+/// Read/write coil (in the sense of Modbus) used for the cup no. 3
+#define MODBUS_RW_COIL_FOR_CUP_3			7
 
 // This directive specifies the starting address of the register area
 #define MODBUS_HOLDING_REGISTERS_ADDRESS	1000
 
 // The initial registers are of type r/w; this directive specifies number of the r/w registers
-#define MODBUS_HOLDING_REGISTERS_NUMBER		10
+#define MODBUS_HOLDING_REGISTERS_NUMBER		20
 
 //static_assert(MODBUS_REGISTERS_TOTAL_NUMBER == MODBUS_AREA_RW_REGISTERS + MODBUS_AREA_RO_REGISTERS, "Error (static_assert)");
 

@@ -67,8 +67,6 @@ eMBErrorCode    eMBRegHoldingCB( UCHAR * pucRegBuffer, USHORT usAddress,
 	return(MB_ENOERR);
 }
 
-static_assert(MODBUS_COILS_NUMBER <= 8, "Error (static_assert)");
-
 /// @callgraph
 /// @callergraph
 eMBErrorCode    eMBRegCoilsCB( UCHAR * pucRegBuffer, USHORT usAddress,
@@ -78,10 +76,13 @@ eMBErrorCode    eMBRegCoilsCB( UCHAR * pucRegBuffer, USHORT usAddress,
 		return(MB_ENOREG);
 	}
 	if(MB_REG_WRITE==eMode){
-		if (usAddress+1 > MODBUS_COILS_ADDRESS+MODBUS_COILS_NUMBER){
+		if (    (usAddress != MODBUS_RW_COIL_FOR_CUP_1) &&
+				(usAddress != MODBUS_RW_COIL_FOR_CUP_2) &&
+				(usAddress != MODBUS_RW_COIL_FOR_CUP_3))
+		{
 			return(MB_ENOREG);
 		}
-		if (1 != usNCoils){
+		if (1 != usNCoils){		// "Write single coil" command is implemented; "write multiple coils" command is not
 			return(MB_ENOREG);
 		}
 
@@ -104,17 +105,18 @@ eMBErrorCode    eMBRegCoilsCB( UCHAR * pucRegBuffer, USHORT usAddress,
 			return(MB_ENOREG);
 		}
 
-		uint16_t TemporaryValue = 0;
 		uint16_t TemporaryIndex = usAddress - MODBUS_COILS_ADDRESS;
 
 		for(uint16_t K = 0; K < usNCoils; K++){
+			if ((K % 8) == 0){ // if the coil no. K is the first bit (LSB) in the byte
+				pucRegBuffer[K / 8] = 0;
+			}
 			assert( TemporaryIndex < MODBUS_COILS_NUMBER );
 			if (ModbusCoils[TemporaryIndex]){
-				TemporaryValue |= (1 << K);
+				pucRegBuffer[K / 8] |= (1 << (K % 8));
 			}
 			TemporaryIndex++;
 		}
-		pucRegBuffer[0] = (UCHAR)TemporaryValue;
 	}
 
 	return MB_ENOERR;

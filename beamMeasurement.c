@@ -92,8 +92,6 @@ void modbusActivityLedService(void);
 
 
 int main(){
-	uint8_t J;
-
 	//...............
 	// Initializations of variables, peripherals, etc.
 	//...............
@@ -105,10 +103,10 @@ int main(){
 	initModbusActivityLed();
 	initializeAdcMeasurements();
 
-	for (J=0; J<MODBUS_HOLDING_REGISTERS_NUMBER;J++){
+	for (int J=0; J<MODBUS_HOLDING_REGISTERS_NUMBER; J++){
 		ModbusHoldingRegisters[J] = 0;
 	}
-	for (J=0; J<MODBUS_COILS_NUMBER; J++){
+	for (int J=0; J<MODBUS_COILS_NUMBER; J++){
 		ModbusCoils[J] = false;
 		CoilsChanged[J] = false;
 	}
@@ -140,11 +138,44 @@ int main(){
     		TicksCounter++;
     		TicksCounter &= 15;
 
-    		debugTerminalCommandInterpreter( &ModbusInputRegisters[0], MODBUS_INPUT_REGISTERS_NUMBER, 'a' );
+    		debugTerminalCommandInterpreter( &ModbusHoldingRegisters[0], MODBUS_HOLDING_REGISTERS_NUMBER, 'a' );
+    		for (int J=0; J< MODBUS_INPUT_REGISTERS_NUMBER; J++){
+    			ModbusInputRegisters[J] = ModbusHoldingRegisters[J];
+    		}
+    		if (ModbusHoldingRegisters[19] != 0){	// e.g. "t=1;"
+    			ModbusHoldingRegisters[19] = 0;
+        		for (int J=0; J< MODBUS_INPUT_REGISTERS_NUMBER; J++){
+    				printf("  %02X", ModbusInputRegisters[J]);
+    				if ((J % 5) == 4){
+    					printf("\r\n");
+    				}
+        		}
+        		for (int J=0; J< MODBUS_COILS_NUMBER; J++){
+    				printf("%c", ModbusCoils[J]? '1':'0' );
+    				if ((J % 3) == 2){
+    					printf("   ");
+    				}
+        		}
+				printf("\r\n");
+    		}
+    		if (ModbusHoldingRegisters[17] != 0){	// e.g. "r=4;"
+    			if (ModbusHoldingRegisters[17] < MODBUS_COILS_NUMBER){
+    				ModbusCoils[ModbusHoldingRegisters[17]] = false;
+    				CoilsChanged[ModbusHoldingRegisters[17]] = true;
+    			}
+    			ModbusHoldingRegisters[17] = 0;
+    		}
+    		if (ModbusHoldingRegisters[18] != 0){	// e.g. "s=1;"
+    			if (ModbusHoldingRegisters[18] < MODBUS_COILS_NUMBER){
+    				ModbusCoils[ModbusHoldingRegisters[18]] = true;
+    				CoilsChanged[ModbusHoldingRegisters[18]] = true;
+    			}
+    			ModbusHoldingRegisters[18] = 0;
+    		}
 
 
 #if 1	// just for debugging
-    		for (J = 0; J < MODBUS_COILS_NUMBER; J++){
+    		for (int J = 0; J < MODBUS_COILS_NUMBER; J++){
     			if (CoilsChanged[J]){
     				printf("coil number %d value set to %c\r\n", J, ModbusCoils[J]? '1' : '0' );
     				CoilsChanged[J] = false;
@@ -205,9 +236,9 @@ void turnOnLedOnBoard(void){
 
 // This function initializes the operation of the LED that indicates Modbus transmission.
 void initModbusActivityLed(void){
-	gpio_init(MODBUS_ACTIVITY_LED);
-	gpio_set_dir(MODBUS_ACTIVITY_LED, GPIO_OUT);
-	gpio_put(MODBUS_ACTIVITY_LED, false);
+	gpio_init(GPIO_MODBUS_ACTIVITY_LED);
+	gpio_set_dir(GPIO_MODBUS_ACTIVITY_LED, GPIO_OUT);
+	gpio_put(GPIO_MODBUS_ACTIVITY_LED, false);
 
 	ModbusActiveLedIsOnShort=false;
 	ModbusActiveLedIsOnLong=false;
@@ -222,18 +253,18 @@ void modbusActivityLedService(void){
 	CurrentTime = time_us_64();
 	if(atomic_load_explicit( &ModbusActiveLedShort, memory_order_acquire ) && !ModbusActiveLedIsOnShort){
 		ModbusActiveLedIsOnShort=true;
-		gpio_put(MODBUS_ACTIVITY_LED, true);
-		gpio_set_drive_strength(MODBUS_ACTIVITY_LED,GPIO_DRIVE_STRENGTH_2MA);
+		gpio_put(GPIO_MODBUS_ACTIVITY_LED, true);
+		gpio_set_drive_strength(GPIO_MODBUS_ACTIVITY_LED,GPIO_DRIVE_STRENGTH_2MA);
 		ModbusActiveLedTime = CurrentTime + (uint64_t)MODBUS_ACTIVITY_SHORT_TICKS;
 	}
 	if(ModbusActiveLedLong && !ModbusActiveLedIsOnLong){
 		ModbusActiveLedIsOnLong=true;
-		gpio_put(MODBUS_ACTIVITY_LED, true);
-		gpio_set_drive_strength(MODBUS_ACTIVITY_LED,GPIO_DRIVE_STRENGTH_12MA);
+		gpio_put(GPIO_MODBUS_ACTIVITY_LED, true);
+		gpio_set_drive_strength(GPIO_MODBUS_ACTIVITY_LED,GPIO_DRIVE_STRENGTH_12MA);
 		ModbusActiveLedTime = CurrentTime + (uint64_t)MODBUS_ACTIVITY_LONG_TICKS;
 	}
 	if(CurrentTime > ModbusActiveLedTime){
-		gpio_put(MODBUS_ACTIVITY_LED, false);
+		gpio_put(GPIO_MODBUS_ACTIVITY_LED, false);
 		ModbusActiveLedIsOnShort=false;
 		ModbusActiveLedIsOnLong=false;
 		atomic_store_explicit( &ModbusActiveLedShort, false, memory_order_release );
