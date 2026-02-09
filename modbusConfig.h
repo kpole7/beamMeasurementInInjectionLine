@@ -46,8 +46,10 @@
 
 #define MODBUS_COILS_ADDRESS				1
 
-/// This is the number of read-only coils (in the sense of Modbus)
+/// This is the number of coils (as defined by Modbus); some of them are read-only, while others are read-write
 #define MODBUS_COILS_NUMBER					9	// 3 cups x 3 coils per cup
+
+#define MODBUS_CUPS_NUMBER					3	// auxiliary constant, rather for debugging purposes
 
 #define NUMBER_OF_BYTES_SUFFICIENT_TO_STORE_COILS	((MODBUS_COILS_NUMBER+7)/8)
 static_assert( NUMBER_OF_BYTES_SUFFICIENT_TO_STORE_COILS*8 >= MODBUS_COILS_NUMBER, "Error" );

@@ -145,45 +145,57 @@ int main(){
     		if (ModbusHoldingRegisters[19] != 0){	// e.g. "t=1;"
     			ModbusHoldingRegisters[19] = 0;
         		for (int J=0; J< MODBUS_INPUT_REGISTERS_NUMBER; J++){
-    				printf("  %02X", ModbusInputRegisters[J]);
+    				printf("  %04X", ModbusInputRegisters[J]);
     				if ((J % 5) == 4){
     					printf("\r\n");
     				}
         		}
         		for (int J=0; J< MODBUS_COILS_NUMBER; J++){
-    				printf("%c", ModbusCoils[J]? '1':'0' );
+    				printf(" %c", ModbusCoils[J]? '1':'0' );
     				if ((J % 3) == 2){
-    					printf("   ");
+    					printf(" |");
     				}
         		}
 				printf("\r\n");
     		}
-    		if (ModbusHoldingRegisters[17] != 0){	// e.g. "r=4;"
-    			if (ModbusHoldingRegisters[17] < MODBUS_COILS_NUMBER){
-    				ModbusCoils[ModbusHoldingRegisters[17]] = false;
-    				CoilsChanged[ModbusHoldingRegisters[17]] = true;
-    			}
-    			ModbusHoldingRegisters[17] = 0;
-    		}
-    		if (ModbusHoldingRegisters[18] != 0){	// e.g. "s=1;"
-    			if (ModbusHoldingRegisters[18] < MODBUS_COILS_NUMBER){
-    				ModbusCoils[ModbusHoldingRegisters[18]] = true;
-    				CoilsChanged[ModbusHoldingRegisters[18]] = true;
-    			}
-    			ModbusHoldingRegisters[18] = 0;
-    		}
 
+    		// ModbusHoldingRegisters[16] contains coils 0,1,2;  e.g. "q=2;"
+    		// ModbusHoldingRegisters[16] contains coils 3,4,5;  e.g. "r=5;"
+    		// ModbusHoldingRegisters[16] contains coils 6,7,8;  e.g. "s=7;"
+			assert( MODBUS_CUPS_NUMBER == 3);
 
-#if 1	// just for debugging
-    		for (int J = 0; J < MODBUS_COILS_NUMBER; J++){
-    			if (CoilsChanged[J]){
+			for (int J = 0; J < MODBUS_COILS_NUMBER; J++){
+    			if (CoilsChanged[J]){	// if the coil state changed via Modbus
     				printf("coil number %d value set to %c\r\n", J, ModbusCoils[J]? '1' : '0' );
     				CoilsChanged[J] = false;
+
+    				if (ModbusCoils[J]){
+    					ModbusHoldingRegisters[16 + J/(MODBUS_COILS_NUMBER/MODBUS_CUPS_NUMBER)] |=
+    							(1 << (J % (MODBUS_COILS_NUMBER/MODBUS_CUPS_NUMBER)));
+    				}
+    				else{
+    					ModbusHoldingRegisters[16 + J/(MODBUS_COILS_NUMBER/MODBUS_CUPS_NUMBER)] &=
+    							(0xFFFFu - (1 << (J % (MODBUS_COILS_NUMBER/MODBUS_CUPS_NUMBER))));
+    				}
     			}
     		}
-#endif
 
+			for (int J=0; J < MODBUS_COILS_NUMBER; J++){
+				ModbusCoils[J] = false;
+			}
 
+			for (int J=0; J < MODBUS_COILS_NUMBER/MODBUS_CUPS_NUMBER; J++){
+				uint16_t Mask = (1 << J);
+				if (0 != (ModbusHoldingRegisters[16] & Mask)){
+					ModbusCoils[J] = true;
+				}
+				if (0 != (ModbusHoldingRegisters[17] & Mask)){
+					ModbusCoils[3+J] = true;
+				}
+				if (0 != (ModbusHoldingRegisters[18] & Mask)){
+					ModbusCoils[6+J] = true;
+				}
+			}
     	}
 
     	if(atomic_load_explicit( &TwoMillisecondsTimeTick, memory_order_acquire )){
