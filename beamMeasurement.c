@@ -50,7 +50,6 @@ atomic_bool ModbusActiveLedShort;
 // a response back to the master
 volatile bool ModbusActiveLedLong;
 
-
 //..............................................................................
 // Local variables concerning checking jumper states and LED light time
 //..............................................................................
@@ -97,6 +96,8 @@ int main(){
 	//...............
 
 	atomic_store_explicit( &ModbusAssertionFailed, false, memory_order_release );
+	atomic_store_explicit( &DebugCountdownPropagationFromCoilToSwitch, 0, memory_order_release );
+	atomic_store_explicit( &DebugCompletedPropagationFromCoilToSwitch, false, memory_order_release );
 
 	stdio_init_all();
 	turnOnLedOnBoard();
@@ -207,6 +208,12 @@ int main(){
     		// Reading the states of jumpers.
     		IsJumperJP1 = !readInputPortJP1(); // false;	// Modbus state machine debugging
 #endif
+
+    		if(atomic_load_explicit( &DebugCompletedPropagationFromCoilToSwitch, memory_order_acquire )){
+    			atomic_store_explicit( &DebugCompletedPropagationFromCoilToSwitch, false, memory_order_release );
+    			ModbusCoils[2] = ModbusCoils[0];
+    			printf("Coil->Switch\r\n");
+    		}
     	}
 
 #if MODBUS_DEBUG_MODE

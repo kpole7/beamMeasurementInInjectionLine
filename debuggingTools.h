@@ -4,6 +4,7 @@
 #ifndef _DEBUGGING_TOOLS_H
 #define _DEBUGGING_TOOLS_H
 
+#include <stdatomic.h>
 #include "masterConfig.h"
 
 #define AUXILIARY_INPUT_JP1		14	// The jumper JP1 tells pico whether printing should be enabled
@@ -61,5 +62,11 @@ void auxiliaryPinOutputValue1(bool Value);
 void auxiliaryPinOutputValue2(bool Value);
 
 void debugTerminalCommandInterpreter(uint16_t * RegistersToBeChangedPtr, uint16_t RegistersToBeChangedNumber, char FirstName);
+
+
+extern atomic_uint_fast16_t DebugCountdownPropagationFromCoilToSwitch;
+extern atomic_bool DebugCompletedPropagationFromCoilToSwitch;
+
+
 
 #endif // _DEBUGGING_TOOLS_H

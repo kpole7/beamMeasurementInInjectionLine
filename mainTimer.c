@@ -71,6 +71,13 @@ static bool repeatingTimerISR(repeating_timer_t *rt){
 	if (4 == (TimeDivider & 7)){
 		// frequency = 1000Hz / 8 = 125Hz
 		getVoltageSamples();
+
+		if(atomic_load_explicit( &DebugCountdownPropagationFromCoilToSwitch, memory_order_acquire ) > 0){
+			if(atomic_load_explicit( &DebugCountdownPropagationFromCoilToSwitch, memory_order_acquire ) == 1){
+				atomic_store_explicit( &DebugCompletedPropagationFromCoilToSwitch, true, memory_order_release );
+			}
+			atomic_fetch_add_explicit(&DebugCountdownPropagationFromCoilToSwitch, -1, memory_order_acq_rel);
+		}
 	}
 
 	if (1 == (TimeDivider & 1)){

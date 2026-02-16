@@ -10,6 +10,15 @@
 #include "masterConfig.h"
 #include "debuggingTools.h"
 
+
+
+
+
+atomic_uint_fast16_t DebugCountdownPropagationFromCoilToSwitch;
+atomic_bool DebugCompletedPropagationFromCoilToSwitch;
+
+
+
 #if MODBUS_DEBUG_MODE
 
 //..............................................................................

@@ -96,6 +96,11 @@ eMBErrorCode    eMBRegCoilsCB( UCHAR * pucRegBuffer, USHORT usAddress,
 			ModbusCoils[TemporaryIndex] = false;
 		}
 		CoilsChanged[TemporaryIndex] = true;
+
+
+		// debug propagation from a coil to a limit switch
+		atomic_store_explicit( &DebugCountdownPropagationFromCoilToSwitch, ModbusHoldingRegisters[15], memory_order_release );
+
 	}
 	else{ // read coils status
 		if (usNCoils > MODBUS_COILS_NUMBER){
