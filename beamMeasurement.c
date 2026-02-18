@@ -161,8 +161,8 @@ int main(){
     		}
 
     		// ModbusHoldingRegisters[16] contains coils 0,1,2;  e.g. "q=2;"
-    		// ModbusHoldingRegisters[16] contains coils 3,4,5;  e.g. "r=5;"
-    		// ModbusHoldingRegisters[16] contains coils 6,7,8;  e.g. "s=7;"
+    		// ModbusHoldingRegisters[17] contains coils 3,4,5;  e.g. "r=5;"
+    		// ModbusHoldingRegisters[18] contains coils 6,7,8;  e.g. "s=7;"
 			assert( MODBUS_CUPS_NUMBER == 3);
 
 			for (int J = 0; J < MODBUS_COILS_NUMBER; J++){
@@ -208,12 +208,6 @@ int main(){
     		// Reading the states of jumpers.
     		IsJumperJP1 = !readInputPortJP1(); // false;	// Modbus state machine debugging
 #endif
-
-    		if(atomic_load_explicit( &DebugCompletedPropagationFromCoilToSwitch, memory_order_acquire )){
-    			atomic_store_explicit( &DebugCompletedPropagationFromCoilToSwitch, false, memory_order_release );
-    			ModbusCoils[2] = ModbusCoils[0];
-    			printf("Coil->Switch\r\n");
-    		}
     	}
 
 #if MODBUS_DEBUG_MODE
@@ -238,6 +232,13 @@ int main(){
     		    irq_set_enabled(MODBUS_UART0_IRQ, false);
     		}
     	}
+
+		if(atomic_load_explicit( &DebugCompletedPropagationFromCoilToSwitch, memory_order_acquire )){
+			atomic_store_explicit( &DebugCompletedPropagationFromCoilToSwitch, false, memory_order_release );
+			ModbusCoils[2] = ModbusCoils[0];
+			CoilsChanged[2] = true;
+   			printf("Coil->Switch\r\n");
+		}
     } // The main loop
 }
 
