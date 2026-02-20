@@ -98,8 +98,16 @@ eMBErrorCode    eMBRegCoilsCB( UCHAR * pucRegBuffer, USHORT usAddress,
 		CoilsChanged[TemporaryIndex] = true;
 
 
-		// debug propagation from a coil to a limit switch
-		atomic_store_explicit( &DebugCountdownPropagationFromCoilToSwitch, ModbusHoldingRegisters[15], memory_order_release );
+		// simulation of signal propagation from user request to insert/remove cup to feedback from limit switch
+		if (0 == TemporaryIndex){
+			atomic_store_explicit( &DebugCountdownPropagationFromCoilToSwitch1, ModbusHoldingRegisters[15], memory_order_release );
+		}
+		if (3 == TemporaryIndex){
+			atomic_store_explicit( &DebugCountdownPropagationFromCoilToSwitch2, ModbusHoldingRegisters[15], memory_order_release );
+		}
+		if (6 == TemporaryIndex){
+			atomic_store_explicit( &DebugCountdownPropagationFromCoilToSwitch3, ModbusHoldingRegisters[15], memory_order_release );
+		}
 
 	}
 	else{ // read coils status

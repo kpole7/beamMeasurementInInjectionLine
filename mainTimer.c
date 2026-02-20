@@ -72,11 +72,24 @@ static bool repeatingTimerISR(repeating_timer_t *rt){
 		// frequency = 1000Hz / 8 = 125Hz
 		getVoltageSamples();
 
-		if(atomic_load_explicit( &DebugCountdownPropagationFromCoilToSwitch, memory_order_acquire ) > 0){
-			if(atomic_load_explicit( &DebugCountdownPropagationFromCoilToSwitch, memory_order_acquire ) == 1){
-				atomic_store_explicit( &DebugCompletedPropagationFromCoilToSwitch, true, memory_order_release );
+		// simulation of signal propagation from user request to insert/remove cup to feedback from limit switch
+		if(atomic_load_explicit( &DebugCountdownPropagationFromCoilToSwitch1, memory_order_acquire ) > 0){
+			if(atomic_load_explicit( &DebugCountdownPropagationFromCoilToSwitch1, memory_order_acquire ) == 1){
+				atomic_store_explicit( &DebugCompletedPropagationFromCoilToSwitch1, true, memory_order_release );
 			}
-			atomic_fetch_add_explicit(&DebugCountdownPropagationFromCoilToSwitch, -1, memory_order_acq_rel);
+			atomic_fetch_add_explicit(&DebugCountdownPropagationFromCoilToSwitch1, -1, memory_order_acq_rel);
+		}
+		if(atomic_load_explicit( &DebugCountdownPropagationFromCoilToSwitch2, memory_order_acquire ) > 0){
+			if(atomic_load_explicit( &DebugCountdownPropagationFromCoilToSwitch2, memory_order_acquire ) == 1){
+				atomic_store_explicit( &DebugCompletedPropagationFromCoilToSwitch2, true, memory_order_release );
+			}
+			atomic_fetch_add_explicit(&DebugCountdownPropagationFromCoilToSwitch2, -1, memory_order_acq_rel);
+		}
+		if(atomic_load_explicit( &DebugCountdownPropagationFromCoilToSwitch3, memory_order_acquire ) > 0){
+			if(atomic_load_explicit( &DebugCountdownPropagationFromCoilToSwitch3, memory_order_acquire ) == 1){
+				atomic_store_explicit( &DebugCompletedPropagationFromCoilToSwitch3, true, memory_order_release );
+			}
+			atomic_fetch_add_explicit(&DebugCountdownPropagationFromCoilToSwitch3, -1, memory_order_acq_rel);
 		}
 	}
 

@@ -96,8 +96,6 @@ int main(){
 	//...............
 
 	atomic_store_explicit( &ModbusAssertionFailed, false, memory_order_release );
-	atomic_store_explicit( &DebugCountdownPropagationFromCoilToSwitch, 0, memory_order_release );
-	atomic_store_explicit( &DebugCompletedPropagationFromCoilToSwitch, false, memory_order_release );
 
 	stdio_init_all();
 	turnOnLedOnBoard();
@@ -111,6 +109,15 @@ int main(){
 		ModbusCoils[J] = false;
 		CoilsChanged[J] = false;
 	}
+
+	// simulation of signal propagation from user request to insert/remove cup to feedback from limit switch
+	atomic_store_explicit( &DebugCountdownPropagationFromCoilToSwitch1, 0, memory_order_release );
+	atomic_store_explicit( &DebugCountdownPropagationFromCoilToSwitch2, 0, memory_order_release );
+	atomic_store_explicit( &DebugCountdownPropagationFromCoilToSwitch3, 0, memory_order_release );
+	atomic_store_explicit( &DebugCompletedPropagationFromCoilToSwitch1, false, memory_order_release );
+	atomic_store_explicit( &DebugCompletedPropagationFromCoilToSwitch2, false, memory_order_release );
+	atomic_store_explicit( &DebugCompletedPropagationFromCoilToSwitch3, false, memory_order_release );
+	ModbusHoldingRegisters[15] = 100;
 
 #if MODBUS_DEBUG_MODE
 	initInputPortJP1();
@@ -233,11 +240,23 @@ int main(){
     		}
     	}
 
-		if(atomic_load_explicit( &DebugCompletedPropagationFromCoilToSwitch, memory_order_acquire )){
-			atomic_store_explicit( &DebugCompletedPropagationFromCoilToSwitch, false, memory_order_release );
+		if(atomic_load_explicit( &DebugCompletedPropagationFromCoilToSwitch1, memory_order_acquire )){
+			atomic_store_explicit( &DebugCompletedPropagationFromCoilToSwitch1, false, memory_order_release );
 			ModbusCoils[2] = ModbusCoils[0];
 			CoilsChanged[2] = true;
-   			printf("Coil->Switch\r\n");
+   			printf("Coil->Switch(0->2)\r\n");
+		}
+		if(atomic_load_explicit( &DebugCompletedPropagationFromCoilToSwitch2, memory_order_acquire )){
+			atomic_store_explicit( &DebugCompletedPropagationFromCoilToSwitch2, false, memory_order_release );
+			ModbusCoils[5] = ModbusCoils[3];
+			CoilsChanged[5] = true;
+   			printf("Coil->Switch(3->5)\r\n");
+		}
+		if(atomic_load_explicit( &DebugCompletedPropagationFromCoilToSwitch3, memory_order_acquire )){
+			atomic_store_explicit( &DebugCompletedPropagationFromCoilToSwitch3, false, memory_order_release );
+			ModbusCoils[8] = ModbusCoils[6];
+			CoilsChanged[8] = true;
+   			printf("Coil->Switch(6->8)\r\n");
 		}
     } // The main loop
 }

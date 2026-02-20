@@ -11,12 +11,13 @@
 #include "debuggingTools.h"
 
 
-
-
-
-atomic_uint_fast16_t DebugCountdownPropagationFromCoilToSwitch;
-atomic_bool DebugCompletedPropagationFromCoilToSwitch;
-
+// simulation of signal propagation from user request to insert/remove cup to feedback from limit switch
+atomic_uint_fast16_t DebugCountdownPropagationFromCoilToSwitch1;
+atomic_uint_fast16_t DebugCountdownPropagationFromCoilToSwitch2;
+atomic_uint_fast16_t DebugCountdownPropagationFromCoilToSwitch3;
+atomic_bool DebugCompletedPropagationFromCoilToSwitch1;
+atomic_bool DebugCompletedPropagationFromCoilToSwitch2;
+atomic_bool DebugCompletedPropagationFromCoilToSwitch3;
 
 
 #if MODBUS_DEBUG_MODE
