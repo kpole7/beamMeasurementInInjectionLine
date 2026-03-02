@@ -20,6 +20,7 @@
 #include "adcInputs.h"
 #include "debuggingTools.h"
 #include "mb.h"
+#include "compilationTime.h"
 
 
 // This directive tells that the LED on pico PCB is connected to GPIO25 port
@@ -124,7 +125,7 @@ int main(){
 	initAuxiliaryPrintouts();
 #endif
 	initInputPortJP2();
-	printf("\r\nHello, world!\r\n");
+	printf("\r\nHello!\r\nCompilation time is %s\r\n", CompilationTime );
 
 	auxiliaryOutputsInitialize();
 

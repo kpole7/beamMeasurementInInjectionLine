@@ -1,4 +1,4 @@
-cd /home/krzysztof/pico/pico-examples/beamMeasurementInInjectionLine
+cd /home/krzysztof/LocalSoftware/raspberrypi-pico/beamMeasurementInInjectionLine
 git gui &
 exit
 

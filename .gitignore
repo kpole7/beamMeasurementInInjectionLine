@@ -1,8 +1,9 @@
-# Ignoruj katalog temporary
-/temporary/
+# Ignore working subdirectories
+build*/
+temporary/
 
-# Ignoruj pliki i katalogi Eclipse
-/.settings/
+# Ignore Eclipse files
+.settings/
 .cproject
 .project
 
