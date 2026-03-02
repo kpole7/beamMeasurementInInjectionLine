@@ -9,6 +9,7 @@
 #include "modbusConfig.h"
 #include "masterConfig.h"
 #include "debuggingTools.h"
+#include "compilationTime.h"
 
 
 // simulation of signal propagation from user request to insert/remove cup to feedback from limit switch
@@ -235,7 +236,12 @@ void debugTerminalCommandInterpreter(uint16_t * RegistersToBeChangedPtr, uint16_
 					}
 				}
 				else{
-					printf("Unknown command <%s>\r\n", Buffer );
+                    if (NULL != strstr(Buffer,"ver;")){
+                    	printf("Time stamp=%s\r\n", CompilationTime );
+                    }
+                    else{
+    					printf("Unknown command <%s>\r\n", Buffer );
+                    }
 				}
 
 				uint8_t J = Buffer[0] - FirstName;

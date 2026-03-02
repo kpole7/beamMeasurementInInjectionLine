@@ -23,6 +23,9 @@ add_executable(beamMeasurementInInjectionLine
     compilationTime.c
 )
 
+# Picotool/uf2 conversion in your SDK setup expects an .elf extension
+set_target_properties(beamMeasurementInInjectionLine PROPERTIES SUFFIX ".elf")
+
 # compilationTime.c rebuilding mechanism
 add_custom_target(
     force_compilationTime_for_beamMeasurement ALL
