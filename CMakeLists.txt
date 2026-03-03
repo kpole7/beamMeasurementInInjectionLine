@@ -23,6 +23,10 @@ add_executable(beamMeasurementInInjectionLine
     compilationTime.c
 )
 
+target_include_directories(beamMeasurementInInjectionLine PRIVATE
+    ${CMAKE_CURRENT_LIST_DIR}
+)
+
 # Picotool/uf2 conversion in your SDK setup expects an .elf extension
 set_target_properties(beamMeasurementInInjectionLine PROPERTIES SUFFIX ".elf")
 
