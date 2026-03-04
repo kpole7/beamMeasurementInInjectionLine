@@ -55,6 +55,11 @@ target_link_libraries(beamMeasurementInInjectionLine
     hardware_adc
 )
 
+add_custom_target(writeBuildTime ALL
+  COMMAND /bin/sh -c "date '+%Y-%m-%d %H:%M:%S' > '${CMAKE_CURRENT_LIST_DIR}/bin/compilationTime.txt'"
+  VERBATIM
+)
+
 # enable usb output, disable uart output
 pico_enable_stdio_usb(beamMeasurementInInjectionLine 1)
 pico_enable_stdio_uart(beamMeasurementInInjectionLine 0)
