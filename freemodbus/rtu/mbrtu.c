@@ -161,6 +161,7 @@ eMBRTUStop( void )
 }
 #endif
 
+/* This function is called only in the main loop (K.O.) */
 eMBErrorCode
 eMBRTUReceive( UCHAR * pucRcvAddress, UCHAR ** pucFrame, USHORT * pusLength )
 {
@@ -208,6 +209,7 @@ eMBRTUReceive( UCHAR * pucRcvAddress, UCHAR ** pucFrame, USHORT * pusLength )
     return eStatus;
 }
 
+/* This function is called only in the main loop (K.O.) */
 eMBErrorCode
 eMBRTUSend( UCHAR ucSlaveAddress, const UCHAR * pucFrame, USHORT usLength )
 {

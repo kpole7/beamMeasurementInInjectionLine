@@ -341,6 +341,7 @@ eMBDisable( void )
 }
 #endif
 
+/* This function is called only in the main loop (K.O.) */
 eMBErrorCode
 eMBPoll( void )
 {
