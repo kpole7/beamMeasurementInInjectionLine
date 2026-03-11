@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "*.c": "c"
+    },
+    "C_Cpp.default.compileCommands": "${workspaceFolder}/build/pico-release/compile_commands.json",
+    "C_Cpp.default.compilerPath": "/usr/bin/arm-none-eabi-gcc",
+    "C_Cpp.default.intelliSenseMode": "linux-gcc-arm"
+}
