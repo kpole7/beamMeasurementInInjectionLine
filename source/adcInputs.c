@@ -18,8 +18,8 @@
 // Local constants
 //---------------------------------------------------------------------------------------------------
 
-static const float GetVoltageCoefficient = 1.0 / ((float)ADC_RAW_BUFFER_SIZE);
-static const float GetVoltageOffset = 0.0;
+static const float GetVoltageCoefficient = (float)1.0 / ((float)ADC_RAW_BUFFER_SIZE);
+static const float GetVoltageOffset = (float)0.0;
 
 //---------------------------------------------------------------------------------------------------
 // Local variables

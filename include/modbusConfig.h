@@ -1,8 +1,8 @@
 /// @file modbusConfig.h
 // This header file was written by K.O. (2025 - 2026)
 
-#ifndef _MODBUS_CONFIG_H
-#define _MODBUS_CONFIG_H
+#ifndef MODBUS_CONFIG_H
+#define MODBUS_CONFIG_H
 
 #include "hardware/uart.h"
 #include <stdatomic.h>
@@ -81,4 +81,4 @@ extern atomic_bool ModbusActiveLedShort;
 // a response back to the master
 extern volatile bool ModbusActiveLedLong;
 
-#endif // _MODBUS_CONFIG_H
+#endif // MODBUS_CONFIG_H

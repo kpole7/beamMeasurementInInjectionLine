@@ -1,8 +1,8 @@
 /// @file debuggingTools.h
 // This header file was written by K.O. (2025 - 2026)
 
-#ifndef _DEBUGGING_TOOLS_H
-#define _DEBUGGING_TOOLS_H
+#ifndef DEBUGGING_TOOLS_H
+#define DEBUGGING_TOOLS_H
 
 #include "masterConfig.h"
 #include <stdatomic.h>
@@ -70,4 +70,4 @@ extern atomic_bool DebugCompletedPropagationFromCoilToSwitch1;
 extern atomic_bool DebugCompletedPropagationFromCoilToSwitch2;
 extern atomic_bool DebugCompletedPropagationFromCoilToSwitch3;
 
-#endif // _DEBUGGING_TOOLS_H
+#endif // DEBUGGING_TOOLS_H

@@ -10,7 +10,7 @@
 // Macro directives
 //---------------------------------------------------------------------------------------------------
 
-#define TIMER_INTERRUPT_INTERVAL_US -1000 // minus = absolute time
+#define TIMER_INTERRUPT_INTERVAL_US (-1000) // minus = absolute time
 
 //---------------------------------------------------------------------------------------------------
 // Global variables

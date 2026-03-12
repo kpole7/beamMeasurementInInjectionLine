@@ -1,8 +1,8 @@
 /// @file masterConfig.h
 // This header file was written by K.O. (2025 - 2026)
 
-#ifndef _MASTER_CONFIG_H
-#define _MASTER_CONFIG_H
+#ifndef MASTER_CONFIG_H
+#define MASTER_CONFIG_H
 
 #define VARIABLE_POINTERS_TO_FUNCTIONS_NOT_ALLOWED
 #undef NOT_USED_FUNCTIONS_ALLOWED
@@ -16,4 +16,4 @@
 // (debugging Modbus state machine)
 #define MODBUS_DEBUG_PRINT 0
 
-#endif // _MASTER_CONFIG_H
+#endif // MASTER_CONFIG_H
