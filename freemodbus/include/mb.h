@@ -30,7 +30,7 @@
 #ifndef _MB_H
 #define _MB_H
 
-#include "../../portfreemodbus/port.h" /* K.O. modification */
+#include "port.h" /* K.O. modification */
 
 #ifdef __cplusplus
 PR_BEGIN_EXTERN_C

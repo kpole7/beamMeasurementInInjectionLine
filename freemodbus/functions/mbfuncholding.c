@@ -32,14 +32,14 @@
 #include "string.h"
 
 /* ----------------------- Platform includes --------------------------------*/
-#include "../../portfreemodbus/port.h" /* K.O. modification */
+#include "port.h" /* K.O. modification */
 
 /* ----------------------- Modbus includes ----------------------------------*/
 #include "mb.h"
 #include "mbframe.h"
 #include "mbproto.h"
 #include "mbconfig.h"
-#include "../../debuggingTools.h" /* K.O. modification */
+#include "debuggingTools.h" /* K.O. modification */
 
 /* ----------------------- Defines ------------------------------------------*/
 #define MB_PDU_FUNC_READ_ADDR_OFF               ( MB_PDU_DATA_OFF + 0)

@@ -22,7 +22,7 @@
 /* ----------------------- Modbus includes ----------------------------------*/
 #include "mb.h"
 #include "mbport.h"
-#include "../../debuggingTools.h" /* K.O. modification */
+#include "debuggingTools.h" /* K.O. modification */
 
 /* ----------------------- Variables ----------------------------------------*/
 static atomic_uint_fast16_t eQueuedEvent; /* K.O. */

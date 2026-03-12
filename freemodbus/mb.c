@@ -32,7 +32,7 @@
 #include "string.h"
 
 /* ----------------------- Platform includes --------------------------------*/
-#include "../../portfreemodbus/port.h" /* K.O. modification */
+#include "port.h" /* K.O. modification */
 
 /* ----------------------- Modbus includes ----------------------------------*/
 #include "mb.h"
@@ -40,8 +40,8 @@
 #include "mbframe.h"
 #include "mbproto.h"
 #include "mbfunc.h"
-#include "../../debuggingTools.h" /* K.O. modification */
-#include "../../masterConfig.h" /* K.O. modification */
+#include "debuggingTools.h" /* K.O. modification */
+#include "masterConfig.h" /* K.O. modification */
 
 #include "mbport.h"
 #if MB_RTU_ENABLED == 1

@@ -27,13 +27,13 @@
 #include "hardware/irq.h"
 #include "hardware/gpio.h"
 
-#include "../../portfreemodbus/port.h"
+#include "port.h"
 
 // ----------------------- Modbus includes ----------------------------------
 #include "mb.h"
 #include "mbport.h"
-#include "../debuggingTools.h" //K.O. modification
-#include "../masterConfig.h" //K.O. modification
+#include "debuggingTools.h" //K.O. modification
+#include "masterConfig.h" //K.O. modification
 
 #ifdef VARIABLE_POINTERS_TO_FUNCTIONS_NOT_ALLOWED //K.O. modification
 #include "mbrtu.h"

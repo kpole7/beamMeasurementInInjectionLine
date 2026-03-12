@@ -35,7 +35,7 @@ PR_BEGIN_EXTERN_C
 #endif
 
 /* K.O. modification */
-#include "../../modbusConfig.h"
+#include "modbusConfig.h"
 
 /* ----------------------- Type definitions ---------------------------------*/
 

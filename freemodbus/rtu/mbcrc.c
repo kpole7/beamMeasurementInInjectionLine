@@ -28,7 +28,7 @@
  */
 
 /* ----------------------- Platform includes --------------------------------*/
-#include "../../portfreemodbus/port.h" //K.O. modification
+#include "port.h" //K.O. modification
 
 static const UCHAR aucCRCHi[] = {
     0x00, 0xC1, 0x81, 0x40, 0x01, 0xC0, 0x80, 0x41, 0x01, 0xC0, 0x80, 0x41,

@@ -5,8 +5,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include "pico/stdlib.h"
-#include "../modbusConfig.h"
-#include "../debuggingTools.h"
+#include "modbusConfig.h"
+#include "debuggingTools.h"
 #include "mb.h"
 
 extern uint16_t ModbusInputRegisters[MODBUS_INPUT_REGISTERS_NUMBER];

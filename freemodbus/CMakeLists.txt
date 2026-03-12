@@ -11,7 +11,11 @@ add_library(freemodbusForBeamMeasurement STATIC
 
 target_link_libraries(freemodbusForBeamMeasurement pico_stdlib)
 
-target_include_directories(freemodbusForBeamMeasurement PUBLIC
-    ${CMAKE_CURRENT_LIST_DIR}/rtu/
-    ${CMAKE_CURRENT_LIST_DIR}/include/
+target_include_directories(freemodbusForBeamMeasurement
+    PUBLIC
+        ${CMAKE_CURRENT_LIST_DIR}/rtu
+        ${CMAKE_CURRENT_LIST_DIR}/include
+    PRIVATE
+        ${CMAKE_CURRENT_LIST_DIR}/../include
+        ${CMAKE_CURRENT_LIST_DIR}/../portfreemodbus
 )

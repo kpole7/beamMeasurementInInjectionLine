@@ -32,7 +32,7 @@
 #include "string.h"
 
 /* ----------------------- Platform includes --------------------------------*/
-#include "../../portfreemodbus/port.h" /* K.O. modification */
+#include "port.h" /* K.O. modification */
 #include "pico/stdlib.h" /* K.O. modification */
 #include "pico/sync.h"   /* K.O. modification */
 
@@ -43,7 +43,7 @@
 
 #include "mbcrc.h"
 #include "mbport.h"
-#include "../../debuggingTools.h" /* K.O. modification */
+#include "debuggingTools.h" /* K.O. modification */
 
 
 

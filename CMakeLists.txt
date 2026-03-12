@@ -12,19 +12,21 @@ add_subdirectory(freemodbus)
 
 # Target of the application
 add_executable(beamMeasurementInInjectionLine
-    beamMeasurement.c
+    ${CMAKE_CURRENT_LIST_DIR}/source/beamMeasurement.c
     ${CMAKE_CURRENT_LIST_DIR}/portfreemodbus/portevent.c
     ${CMAKE_CURRENT_LIST_DIR}/portfreemodbus/portserial.c
     ${CMAKE_CURRENT_LIST_DIR}/portfreemodbus/porttimer.c
     ${CMAKE_CURRENT_LIST_DIR}/portfreemodbus/modbusCustom.c
-    mainTimer.c
-    adcInputs.c
-    debuggingTools.c
-    compilationTime.c
+    ${CMAKE_CURRENT_LIST_DIR}/source/mainTimer.c
+    ${CMAKE_CURRENT_LIST_DIR}/source/adcInputs.c
+    ${CMAKE_CURRENT_LIST_DIR}/source/debuggingTools.c
+    ${CMAKE_CURRENT_LIST_DIR}/source/compilationTime.c
 )
 
 target_include_directories(beamMeasurementInInjectionLine PRIVATE
-    ${CMAKE_CURRENT_LIST_DIR}
+    ${CMAKE_CURRENT_LIST_DIR}/include
+    ${CMAKE_CURRENT_LIST_DIR}/freemodbus/include
+    ${CMAKE_CURRENT_LIST_DIR}/portfreemodbus
 )
 
 # Picotool/uf2 conversion in your SDK setup expects an .elf extension
