@@ -4,9 +4,9 @@
 #ifndef SOURCE_MAIN_TIMER_H_
 #define SOURCE_MAIN_TIMER_H_
 
-#include <stdbool.h>
-#include <stdatomic.h>
 #include "pico/stdlib.h"
+#include <stdatomic.h>
+#include <stdbool.h>
 
 //---------------------------------------------------------------------------------------------------
 // Global variables
