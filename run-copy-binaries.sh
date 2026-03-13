@@ -1,2 +1,0 @@
-dd if=/home/krzysztof/pico/pico-examples/build/beamMeasurementInInjectionLine/CMakeFiles/beamMeasurementInInjectionLine.dir/compilationTime.c.obj of=/home/krzysztof/pico/pico-examples/beamMeasurementInInjectionLine/bin/compilationTime.txt bs=1 skip=52 count=21 2>/dev/null
-cp /home/krzysztof/pico/pico-examples/build/beamMeasurementInInjectionLine/beamMeasurementInInjectionLine.uf2 /home/krzysztof/pico/pico-examples/beamMeasurementInInjectionLine/bin
