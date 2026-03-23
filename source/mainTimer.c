@@ -16,10 +16,10 @@
 // Global variables
 //---------------------------------------------------------------------------------------------------
 
-/// @brief This flag is used in the timer ISR and in the main loop
+/// This flag is used in the timer ISR and in the main loop
 atomic_bool TwoMillisecondsTimeTick;
 
-/// @brief This flag is used in the timer ISR and in the main loop
+/// This flag is used in the timer ISR and in the main loop
 atomic_bool SixtyFourMillisecondsTimeTick;
 
 //---------------------------------------------------------------------------------------------------
@@ -38,7 +38,7 @@ static bool repeatingTimerISR(repeating_timer_t *rt);
 // Function definitions
 //---------------------------------------------------------------------------------------------------
 
-/// @brief This function initializes the timer interrupt
+/// This function initializes the timer interrupt
 void startPeriodicInterrupt(void) {
 	add_repeating_timer_us(TIMER_INTERRUPT_INTERVAL_US, // negative value -> absolute time
 	                       repeatingTimerISR, NULL, &CyclicTimer);

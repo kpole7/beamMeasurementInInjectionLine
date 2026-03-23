@@ -11,7 +11,10 @@
 // Macro directives
 //---------------------------------------------------------------------------------------------------
 
+/// This is size of the buffer for raw samples
 #define ADC_RAW_BUFFER_SIZE 4
+
+/// This directive indicates that the ADC0 on RP2040 is assigned to GPIO26 port
 #define GPIO_FOR_ADC0 26
 
 //---------------------------------------------------------------------------------------------------
@@ -25,25 +28,27 @@ static const float GetVoltageOffset = (float)0.0;
 // Local variables
 //---------------------------------------------------------------------------------------------------
 
-/// @brief This variable is used in timer interrupt handler
+/// @brief This is a buffer for raw samples from the ADC0 converter
+/// This variable is used in timer interrupt handler
 static atomic_uint_fast16_t RawBufferAdc0[ADC_RAW_BUFFER_SIZE];
 
-/// @brief This variable is used in timer interrupt handler
-/// Index for writing new samples from ADC0 and ADC1
+/// @brief Index for writing new samples from ADC0 and ADC1
+/// This variable is used in timer interrupt handler
 static volatile uint32_t AdcBuffersHead = 0;
 
 //---------------------------------------------------------------------------------------------------
 // Function definitions
 //---------------------------------------------------------------------------------------------------
 
-/// @brief This function initializes peripherals for ADC measuring and the state machine for measurements
+/// This function initializes peripherals for ADC measuring and the state machine for measurements
 void initializeAdcMeasurements(void) {
 	AdcBuffersHead = 0;
 	adc_init();
 	adc_gpio_init(GPIO_FOR_ADC0);
 }
 
-/// @brief This function collects measurements from ADC; it is called only by the timer ISR (repeatingTimerISR)
+/// @brief This function collects measurements from ADC
+/// It should be called only by the timer ISR (repeatingTimerISR)
 void getVoltageSamples(void) {
 
 	// Measure ADC0
@@ -58,7 +63,7 @@ void getVoltageSamples(void) {
 }
 
 /// @brief This function measures the voltage at ADC input and make some calculations
-/// The function acts in the main loop
+/// The function should be called only in the main loop
 float getVoltage(void) {
 	uint32_t Accumulator = 0;
 	for (uint8_t J = 0; J < ADC_RAW_BUFFER_SIZE; J++) {

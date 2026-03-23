@@ -8,15 +8,7 @@
 #include "modbusConfig.h"
 #include "debuggingTools.h"
 #include "mb.h"
-
-extern uint16_t ModbusInputRegisters[MODBUS_INPUT_REGISTERS_NUMBER];
-
-extern bool ModbusCoils[MODBUS_COILS_NUMBER];
-
-extern bool CoilsChanged[MODBUS_COILS_NUMBER];
-
-// This is a table of Modbus registers
-extern uint16_t ModbusHoldingRegisters[MODBUS_HOLDING_REGISTERS_NUMBER];
+#include "sharedData.h"
 
 /// This is callback function for reading and writing registers
 /// @callgraph

@@ -1,0 +1,5 @@
+cmake --preset pico-release
+cmake --build --preset pico-release
+cmake --preset pico-debug
+cmake --build --preset pico-debug
+

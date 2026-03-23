@@ -20,7 +20,6 @@ extern atomic_bool SixtyFourMillisecondsTimeTick;
 // Function prototypes
 //---------------------------------------------------------------------------------------------------
 
-/// @brief This function initializes the timer interrupt
 void startPeriodicInterrupt(void);
 
 #endif /* SOURCE_MAIN_TIMER_H_ */

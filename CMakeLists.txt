@@ -13,14 +13,15 @@ add_subdirectory(freemodbus)
 # Target of the application
 add_executable(beamMeasurementInInjectionLine
     ${CMAKE_CURRENT_LIST_DIR}/source/beamMeasurement.c
-    ${CMAKE_CURRENT_LIST_DIR}/portfreemodbus/portevent.c
-    ${CMAKE_CURRENT_LIST_DIR}/portfreemodbus/portserial.c
-    ${CMAKE_CURRENT_LIST_DIR}/portfreemodbus/porttimer.c
-    ${CMAKE_CURRENT_LIST_DIR}/portfreemodbus/modbusCustom.c
     ${CMAKE_CURRENT_LIST_DIR}/source/mainTimer.c
     ${CMAKE_CURRENT_LIST_DIR}/source/adcInputs.c
     ${CMAKE_CURRENT_LIST_DIR}/source/debuggingTools.c
     ${CMAKE_CURRENT_LIST_DIR}/source/compilationTime.c
+    ${CMAKE_CURRENT_LIST_DIR}/source/sharedData.c
+    ${CMAKE_CURRENT_LIST_DIR}/portfreemodbus/portevent.c
+    ${CMAKE_CURRENT_LIST_DIR}/portfreemodbus/portserial.c
+    ${CMAKE_CURRENT_LIST_DIR}/portfreemodbus/porttimer.c
+    ${CMAKE_CURRENT_LIST_DIR}/portfreemodbus/modbusCustom.c
 )
 
 target_include_directories(beamMeasurementInInjectionLine PRIVATE
