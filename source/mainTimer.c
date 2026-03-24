@@ -10,16 +10,20 @@
 // Macro directives
 //---------------------------------------------------------------------------------------------------
 
-#define TIMER_INTERRUPT_INTERVAL_US (-1000) // minus = absolute time
+/// This constant defines the timer interrupt interval in microseconds. 
+/// The negative value means that the time is absolute.
+#define TIMER_INTERRUPT_INTERVAL_US (-1000)
 
 //---------------------------------------------------------------------------------------------------
 // Global variables
 //---------------------------------------------------------------------------------------------------
 
-/// This flag is used in the timer ISR and in the main loop
+/// @brief This flag synchronizes some events in the main loop. 
+/// It is used in the timer ISR and in the main loop
 atomic_bool TwoMillisecondsTimeTick;
 
-/// This flag is used in the timer ISR and in the main loop
+/// @brief This flag synchronizes some events in the main loop. 
+/// It is used in the timer ISR and in the main loop
 atomic_bool SixtyFourMillisecondsTimeTick;
 
 //---------------------------------------------------------------------------------------------------
@@ -45,7 +49,7 @@ void startPeriodicInterrupt(void) {
 }
 
 /// @brief This is timer interrupt handler (ISR) for slow cyclic events
-/// The interrupt frequency is 1000 Hz.
+/// The interrupt frequency is defined by TIMER_INTERRUPT_INTERVAL_US.
 /// @callgraph
 /// @callergraph
 static bool repeatingTimerISR(repeating_timer_t *rt) {

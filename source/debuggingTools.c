@@ -165,6 +165,7 @@ void initInputPortJP2(void) {
 // This function checks if the jumper JP1 is present.
 bool readInputPortJP2(void) { return (gpio_get(AUXILIARY_INPUT_JP2)); }
 
+/// @brief This function initializes the auxiliary output pins for testing purposes.
 void auxiliaryOutputsInitialize(void) {
 	gpio_init(AUXILIARY_PIN_1);
 	gpio_set_dir(AUXILIARY_PIN_1, GPIO_OUT);
@@ -180,6 +181,10 @@ void auxiliaryPinOutputValue1(bool Value) { gpio_put(AUXILIARY_PIN_1, Value); }
 void auxiliaryPinOutputValue2(bool Value) { gpio_put(AUXILIARY_PIN_2, Value); }
 
 /// @brief This function reads text commands entered in the terminal and executes them.
+/// The above-mentioned terminal is the terminal of the computer connected to the microcontroller via USB.
+/// The Linux system uses usualy /dev/ttyACM0 serial port with the default settings (115200 baud, 8N1, hardware flow control). 
+/// The commands are entered in the terminal and sent to the microcontroller when the user presses the Enter key.
+/// The commands are used to modify the values of Modbus registers for testing purposes.
 /// @param RegistersToBeChangedPtr pointer to a uint16_t variable (for example, a Modbus register) that is to be modified
 /// @param RegistersToBeChangedNumber number of elements in the table pointed to by RegistersToBeChangedPtr
 /// @param FirstName single-letter name used in a command to modify the first element

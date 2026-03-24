@@ -1,4 +1,5 @@
 /// @file modbusCustom.c
+/// This file contains the implementation of callback functions for FreeModbus stack.
 // This source code file was written by K.O. (2025 - 2026)
 
 #include <inttypes.h>
@@ -10,7 +11,7 @@
 #include "mb.h"
 #include "sharedData.h"
 
-/// This is callback function for reading and writing registers
+/// This is callback function for reading and writing holding registers
 /// @callgraph
 /// @callergraph
 eMBErrorCode    eMBRegHoldingCB( UCHAR * pucRegBuffer, USHORT usAddress,
@@ -59,6 +60,7 @@ eMBErrorCode    eMBRegHoldingCB( UCHAR * pucRegBuffer, USHORT usAddress,
 	return(MB_ENOERR);
 }
 
+/// This is callback function for reading and writing coils
 /// @callgraph
 /// @callergraph
 eMBErrorCode    eMBRegCoilsCB( UCHAR * pucRegBuffer, USHORT usAddress,
@@ -127,6 +129,7 @@ eMBErrorCode    eMBRegCoilsCB( UCHAR * pucRegBuffer, USHORT usAddress,
 	return MB_ENOERR;
 }
 
+/// This is callback function for reading and writing input registers
 /// @callgraph
 /// @callergraph
 eMBErrorCode    eMBRegInputCB( UCHAR * pucRegBuffer, USHORT usAddress,
