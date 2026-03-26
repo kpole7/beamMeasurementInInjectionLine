@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 
-// This directive tells that the LED on pico PCB is connected to GPIO25 port
+/// This directive tells that the LED on pico PCB is connected to GPIO25 port
 #define PICO_ON_BOARD_LED_PIN 25
 
 //..............................................................................
@@ -45,14 +45,14 @@ static bool OldIsJumperJP1;
 // Prototypes of functions
 //..............................................................................
 
-// This function initializes and turns on the LED on pico board.
+/// This function initializes and turns on the LED on pico board.
 static void turnOnLedOnBoard(void);
 
-// This function initializes the operation of the LED that indicates Modbus transmission.
+/// This function initializes the operation of the LED that indicates Modbus transmission.
 static void initModbusActivityLed(void);
 
-// This function supports the LED that indicates Modbus transmission (provides
-// the correct timing and strength of illumination).
+/// This function supports the LED that indicates Modbus transmission (provides
+/// the correct timing and strength of illumination).
 static void modbusActivityLedService(void);
 
 static void printRegisters(void);
@@ -123,14 +123,14 @@ int main() {
 // Definitions of functions
 //..............................................................................
 
-// This function initializes and turns on the LED on pico board.
+/// This function initializes and turns on the LED on pico board.
 static void turnOnLedOnBoard(void) {
 	gpio_init(PICO_ON_BOARD_LED_PIN);
 	gpio_set_dir(PICO_ON_BOARD_LED_PIN, GPIO_OUT);
 	gpio_put(PICO_ON_BOARD_LED_PIN, true);
 }
 
-// This function initializes the operation of the LED that indicates Modbus transmission.
+/// This function initializes the operation of the LED that indicates Modbus transmission.
 static void initModbusActivityLed(void) {
 	gpio_init(GPIO_MODBUS_ACTIVITY_LED);
 	gpio_set_dir(GPIO_MODBUS_ACTIVITY_LED, GPIO_OUT);
@@ -142,8 +142,8 @@ static void initModbusActivityLed(void) {
 	ModbusActiveLedLong = false;
 }
 
-// This function supports the LED that indicates Modbus transmission (provides
-// the correct timing and strength of illumination).
+/// This function supports the LED that indicates Modbus transmission (provides
+/// the correct timing and strength of illumination).
 static void modbusActivityLedService(void) {
 	static uint64_t ModbusActiveLedTime;
 	static uint64_t CurrentTime;
