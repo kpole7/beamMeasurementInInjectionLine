@@ -30,6 +30,11 @@ target_include_directories(beamMeasurementInInjectionLine PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}/portfreemodbus
 )
 
+target_compile_definitions(beamMeasurementInInjectionLine PRIVATE
+    $<$<CONFIG:Debug>:APP_DEBUG_BUILD=1>
+    $<$<CONFIG:Release>:APP_RELEASE_BUILD=1>
+)
+
 # Picotool/uf2 conversion in your SDK setup expects an .elf extension
 set_target_properties(beamMeasurementInInjectionLine PROPERTIES SUFFIX ".elf")
 

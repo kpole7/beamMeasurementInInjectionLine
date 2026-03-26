@@ -14,6 +14,12 @@
 #define AUXILIARY_PIN_1 18
 #define AUXILIARY_PIN_2 19
 
+#if defined(APP_DEBUG_BUILD)
+#define APP_DEBUG 1
+#else
+#define APP_DEBUG 0
+#endif
+
 #if MODBUS_DEBUG_MODE
 
 // Debugging of Modbus state machine.
