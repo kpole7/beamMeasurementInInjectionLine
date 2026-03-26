@@ -1,47 +1,56 @@
 {
-  "version": 6,
-  "cmakeMinimumRequired": {
-    "major": 3,
-    "minor": 23,
-    "patch": 0
-  },
-  "configurePresets": [
-    {
-      "name": "pico-release",
-      "displayName": "Pico RP2040 (Release, Ninja)",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/pico-release",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "PICO_SDK_PATH": "$env{PICO_SDK_PATH}",
-        "CMAKE_TOOLCHAIN_FILE": "$env{PICO_SDK_PATH}/cmake/preload/toolchains/pico_arm_cortex_m0plus_gcc.cmake"
-      }
+    "version": 6,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 23,
+        "patch": 0
     },
-    {
-      "name": "pico-debug",
-      "displayName": "Pico RP2040 (Debug, Ninja)",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/pico-debug",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "PICO_SDK_PATH": "$env{PICO_SDK_PATH}",
-        "CMAKE_TOOLCHAIN_FILE": "$env{PICO_SDK_PATH}/cmake/preload/toolchains/pico_arm_cortex_m0plus_gcc.cmake"
-      }
-    }
-  ],
-  "buildPresets": [
-    {
-      "name": "pico-release",
-      "configurePreset": "pico-release",
-      "jobs": 0
-    },
-    {
-      "name": "pico-debug",
-      "configurePreset": "pico-debug",
-      "jobs": 0
-    }
-  ]
+    "configurePresets": [
+        {
+            "name": "pico-release",
+            "displayName": "Pico RP2040 (Release, Ninja)",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/pico-release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "PICO_SDK_PATH": "$env{PICO_SDK_PATH}",
+                "CMAKE_TOOLCHAIN_FILE": "$env{PICO_SDK_PATH}/cmake/preload/toolchains/pico_arm_cortex_m0plus_gcc.cmake"
+            }
+        },
+        {
+            "name": "pico-debug",
+            "displayName": "Pico RP2040 (Debug, Ninja)",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/pico-debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "PICO_SDK_PATH": "$env{PICO_SDK_PATH}",
+                "CMAKE_TOOLCHAIN_FILE": "$env{PICO_SDK_PATH}/cmake/preload/toolchains/pico_arm_cortex_m0plus_gcc.cmake"
+            }
+        },
+        {
+            "name": "default",
+            "displayName": "Default (Debug)",
+            "inherits": "pico-debug"
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "pico-release",
+            "configurePreset": "pico-release",
+            "jobs": 0
+        },
+        {
+            "name": "pico-debug",
+            "configurePreset": "pico-debug",
+            "jobs": 0
+        },
+        {
+            "name": "default",
+            "configurePreset": "default",
+            "jobs": 0
+        }
+    ]
 }
-
