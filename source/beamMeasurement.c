@@ -80,7 +80,8 @@ int main() {
 		if (atomic_load_explicit(&SixtyFourMillisecondsTimeTick, memory_order_acquire)) {
 			atomic_store_explicit(&SixtyFourMillisecondsTimeTick, false, memory_order_release);
 
-			slowProcessesService();}
+			slowProcessesService();
+		}
 
 		if (atomic_load_explicit(&TwoMillisecondsTimeTick, memory_order_acquire)) {
 			atomic_store_explicit(&TwoMillisecondsTimeTick, false, memory_order_release);
@@ -225,6 +226,7 @@ static void mainInitialization(void){
 	startPeriodicInterrupt();
 }
 
+/// This function is used for debugging purposes
 static void slowProcessesService(void){
 	debugTerminalCommandInterpreter(&ModbusHoldingRegisters[0], MODBUS_HOLDING_REGISTERS_NUMBER, 'a');
 	for (int J = 0; J < MODBUS_INPUT_REGISTERS_NUMBER; J++) {
@@ -275,6 +277,7 @@ static void slowProcessesService(void){
 	}
 }
 
+/// This function is used for debugging purposes
 static void propagationFromCoilsToSwitches(void){
 	if (atomic_load_explicit(&DebugCompletedPropagationFromCoilToSwitch1, memory_order_acquire)) {
 		atomic_store_explicit(&DebugCompletedPropagationFromCoilToSwitch1, false, memory_order_release);
