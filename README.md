@@ -6,14 +6,10 @@ The software performs the following tasks:
 ```
 1.  Reading logic inputs.
     Brief description.
-        Periodically reading the logical input ports and writing the data to the corresponding Modbus bit 
-        registers (coils).
+        Periodically reading the logical input ports and writing the data to the certain Modbus registers.
     Detailed description.
-        The input ports are as follows:
-        - the external lock signal,
-        - the limit switch of the pneumatic actuator 1,
-        - the limit switch of the pneumatic actuator 2,
-        - 2 limit switches of the motor actuator (actuator 3).
+        The input ports are are associated with the Modbus registers that have the entry “Reading logic
+        inputs” in the “Right to modify” column. 
 
 2.  Handling control logic.
     Brief description.
@@ -22,7 +18,7 @@ The software performs the following tasks:
         properly. 
     Detailed description.
         The task consists of the following components:
-        - Responding to a user request (stored in Modbus registers) to insert or remove a Faraday cup. 
+        - Responding to a user request (stored in Modbus registers) to insert or eject a Faraday cup. 
         The response involves writing to the appropriate Modbus registers (corresponding to 
         the parameters: actuator 1 control, ... actuator 3 control).
         - Measuring the duration of transient states for all actuators and checking whether timeouts 
@@ -36,19 +32,7 @@ The software performs the following tasks:
     Implementation and testing progress.
         Not implemented.
 
-2.  Modbus server support.
-    Brief description.
-        Support for the Modbus RTU server via a serial port in accordance with the standard. Support for the
-        LED indicating Modbus transmission. The server (slave) supports only one Modbus device address.
-    Detailed description.
-        The register address space contains:
-            - 20 read-only input registers (5 cups x 4 electrodes), 
-            - 12 single-bit registers, i.e., coils (3 coils x 4 electrodes).
-            - 20 memory registers (read/write) for monitoring health of the device, and for debugging purposes.
-    Implementation and testing progress.
-        The task has been implemented and tested to the extent possible at this stage.
-
-3. Periodic measurement of currents in the active Faraday cup.
+3. Periodic measurement of currents.
     Brief description.
         Control the multiplexer that selects the Faraday cup according to the Modbus register “active Faraday
         cup”. Periodic measurement of the currents flowing through the electrodes of an active Faraday cup. 
@@ -64,9 +48,24 @@ The software performs the following tasks:
 3.2.1.  Control of a 2-bit 
 This task is not implemented.
 
-4. Execution of user commands transmitted via 1-bit Modbus registers (coils).
+4. Calculation of ionic currents
 
-5. Support for debug mode (without connection to external devices: 
+5.  Free Modbus module.
+    Brief description.
+        Support for the Modbus RTU server via a serial port in accordance with the standard. Support for the
+        LED indicating Modbus transmission. The server (slave) supports only one Modbus device address.
+    Detailed description.
+        The register address space contains:
+            - 20 read-only input registers (5 cups x 4 electrodes), 
+            - 12 single-bit registers, i.e., coils (3 coils x 4 electrodes).
+            - 20 memory registers (read/write) for monitoring health of the device, and for debugging purposes.
+    Implementation and testing progress.
+        The task has been implemented and tested to the extent possible at this stage.
+
+
+6. Execution of user commands transmitted via 1-bit Modbus registers (coils).
+
+7. Support for debug mode (without connection to external devices: 
 
 ```
 
