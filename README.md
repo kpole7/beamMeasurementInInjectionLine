@@ -1,21 +1,37 @@
 # AppForFaradayCups
 The goal of this project is to develop software for the Raspberry Pi Pico.
 The software is written in C based on RaspberryPi Pico SDK.
-The software performs the following tasks:
 
 ```
-1.  Reading logic inputs.
+The software performs several tasks:
+1. The Modbus server.
+2. Reading logic inputs.
+3. The main state machine handler.
+4. Auxiliary state machines control individual Faraday cups and monitor their operation.
+4. Analog measurements handler.
+5. Calculation of ionic currents.
+6. Debugging terminal handler.
+
+1. Free Modbus module.
+    Brief description.
+        Support for the Modbus RTU server via a serial port in accordance with the standard. Support for the
+        LED indicating Modbus transmission. The server (slave) supports only one Modbus device address.
+    Detailed description.
+        The register address space is presented in the Modbus registers table.
+    Implementation and testing progress.
+        The task has been implemented and tested to the extent possible at this stage.
+
+2. Reading logic inputs.
     Brief description.
         Periodically reading the logical input ports and writing the data to the certain Modbus registers.
     Detailed description.
         The input ports are are associated with the Modbus registers that have the entry “Reading logic
-        inputs” in the “Right to modify” column. 
+        inputs” in the “Right to modify” column in the table of Modbus registers.
 
-2.  Handling control logic.
+3. The main state machine handler.
     Brief description.
-        Analysis of Modbus register values and implementation of a set of rules that trigger changes in 
-        the values of certain Modbus registers. Among other things, checking whether the device is working 
-        properly. 
+        Implementation of a finite-state machine; execution of a set of rules that determine transitions 
+        between states. Among other things, checking whether the device is working properly. 
     Detailed description.
         The task consists of the following components:
         - Responding to a user request (stored in Modbus registers) to insert or eject a Faraday cup. 
@@ -49,19 +65,6 @@ The software performs the following tasks:
 This task is not implemented.
 
 4. Calculation of ionic currents
-
-5.  Free Modbus module.
-    Brief description.
-        Support for the Modbus RTU server via a serial port in accordance with the standard. Support for the
-        LED indicating Modbus transmission. The server (slave) supports only one Modbus device address.
-    Detailed description.
-        The register address space contains:
-            - 20 read-only input registers (5 cups x 4 electrodes), 
-            - 12 single-bit registers, i.e., coils (3 coils x 4 electrodes).
-            - 20 memory registers (read/write) for monitoring health of the device, and for debugging purposes.
-    Implementation and testing progress.
-        The task has been implemented and tested to the extent possible at this stage.
-
 
 6. Execution of user commands transmitted via 1-bit Modbus registers (coils).
 
