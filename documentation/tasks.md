@@ -146,18 +146,19 @@ Add. 5  Mnemonic: AnalogInputs
         1.  The module reads the values of ADC0 and ADC1 (these are digital values corresponding to the same 
             analog signal, with the difference that the analog signal in the ADC1 channel is amplified 10 
             times more than in the ADC0 channel); ADC0 and ADC1 are the special registers in 
-            the microcontroller; 
+            the microcontroller.
         2.  Analog input value is selected for further calculations, as follows:
             if ADC1 < RangeChangeThreshold, then {LargeGain = true}, else {LargeGain = false}
             if LargeGain, then { X = ADC1} else { X = ADC0}
-            where LargeGain and X are module variables;
+            where LargeGain and X are module variables.
         2.  For the given values of LocalActiveCup and ActiveChannel the module calculates the electrode 
-            current using the formula Y = Factor * (X - Offset), where Factor is selected from the registers:
-            Cup1Channel1Gain1Factor ...Cup3Channel4Gain2Factor, and Offset is selected from the registers: 
-            Cup1Channel1Gain1Offset ...Cup3Channel4Gain2Offset; the result of the calculation Y is inserted 
-            into the appropriate register from the range Cup1Channel1Sample ...Cup3Channel4Sample;
-            at this point, the unit of current has not been specified (e.g., 0.1 μA), but it will be 
-            specified after the experiments are conducted;
+            current using the formula Y = (uint16)((FactorCoef * Factor) * (X - Offset)), where Factor is 
+            selected from the registers: Cup1Channel1Gain1Factor ...Cup3Channel4Gain2Factor, and Offset is 
+            selected from the registers: Cup1Channel1Gain1Offset ...Cup3Channel4Gain2Offset, 
+            FactorCoef is a constant (of type "double") that should be defined using the “#define” directive; 
+            the result of the calculation (that is Y) is inserted into the appropriate register from 
+            the range Cup1Channel1Sample ...Cup3Channel4Sample; at this point, the unit of current has not 
+            been specified (e.g., 0.1 μA), but it will be specified after the experiments are conducted.
         3.  The result of the calculation (the module variable Y) is compared with the corresponding lower 
             limit from the registers Cup1Channel1LowerLimit ...Cup3Channel4LowerLimit and with the 
             corresponding upper limit from the registers Cup1Channel1UpperLimit ...Cup3Channel4UpperLimit. 
