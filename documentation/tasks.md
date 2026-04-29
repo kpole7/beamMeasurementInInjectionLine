@@ -172,7 +172,7 @@ Add. 5  Mnemonic: AnalogInputs
             FactorCoef is a constant (of type "double") that should be defined using the “#define” directive; 
             the result of the calculation (that is Y) is inserted into the appropriate register from 
             the range Cup1Channel1Sample ...Cup3Channel4Sample; at this point, the unit of current has not 
-            been specified (e.g., 0.1 μA), but it will be specified after the experiments are conducted.
+            been specified, but it will be specified after the experiments are conducted (e.g., 0.1 μA).
         D.  The result of the calculation (the module variable Y) is compared with the corresponding lower 
             limit from the registers Cup1Channel1LowerLimit ...Cup3Channel4LowerLimit and with the 
             corresponding upper limit from the registers Cup1Channel1UpperLimit ...Cup3Channel4UpperLimit. 
