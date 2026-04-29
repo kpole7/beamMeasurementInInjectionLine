@@ -1,7 +1,12 @@
 # Project AppForFaradayCups
 ## Main tasks
 
+  The purpose of this project is to support several (up to 3) Faraday cups. These are measuring devices used to measure the ion beam in the ion beamline between the ion source and the cyclotron. During normal cyclotron operation, the Faraday cups are retracted from the ion beamline. The ion beam travels from the ion source, passes the first cup, the second, and possibly the third if installed, and continues toward the cyclotron. A Faraday cup is inserted into the ion beamline to perform measurements in such a way that the inserted cup covers the entire ion beamline. Therefore, measurements in the second cup are meaningful only when the first cup is withdrawn from the ion beamline and the second is inserted. Similarly, measurements in the third cup should be taken when the first and second cups are withdrawn and the third is inserted into the ion beamline. The first Faraday cup inserted into the ion channel (as viewed from the ion source) will be referred to as the active cup. The purpose of this project is to control the insertion and removal of Faraday cups, measure the currents in the electrodes of the active cup, and act as a Modbus server to enable remote operation.
+  The Faraday cup control device serves another important purpose. Specifically, it is one of the key components of the safety system. The safety system can send a signal to the Faraday cup control device to immediately block the ion beam entering the cyclotron. This signal involves a change in the logic level on the signal line and causes the last Faraday cup (i.e., the one closest to the cyclotron) to slide into the ion beamline.
+
+
 ```
+
 The software performs several tasks:
 1. The Modbus server.
 2. Reading logic inputs.
@@ -35,6 +40,8 @@ Add. 2  Mnemonic: LogicInputs
         lower layer (physical ports)
     Output data: 
         Cup1Switch, ExternalInhibition, Cup2Switch, Cup3Switch1, Cup3Switch2.
+    The frequency with which the task is processed:
+        400 Hz
     Implementation and testing progress.
         Not implemented.
 
@@ -74,25 +81,29 @@ Add. 3  Mnemonic: HighLevelCtrl
     Output data:
         ErrorCode, LastError, ErrorStorage, ActiveCup, 
         Cup1RequestedState, Cup2RequestedState, Cup3RequestedState
+    The frequency with which the task is processed:
+        400 Hz
     Implementation and testing progress.
         Not implemented.
 
 Add. 4  Mnemonic: AuxiliaryFSMs
     Brief description.
         This module contains 3 auxiliary state machines (auxiliary FSM) that handle the installed Faraday 
-        cups (in the range from 1 to 3). Each of the three state machines controls the Faraday cup (inserts 
+        cups (in the range from 1 to 3). Each of the auxiliary FSMs controls the Faraday cup (inserts 
         or withdraws it), checks whether the mechanism is operating correctly, and determines whether 
         the mechanism is in a steady state or a transient state.
     Detailed description.
         Each auxiliary FSM operates independently of the others. The mechanism for inserting and removing 
-        individual cups can be pneumatic or motor-driven. The cup type is specified in the Cup1Type, 
+        individual cups can be pneumatic or motor-driven. The mechanism type is specified in the Cup1Type, 
         Cup2Type, Cup3Type registers.
-        1.  The pneumatic mechanism has a single limit switch. When the cup is withdrawn, the signal from the 
-            limit switch has the value CupNSwitch = false (where N is the cup index); otherwise, when the cup 
-            is inserted, CupNSwitch = true; the actuator is a solenoid valve; the solenoid valve coil is 
-            powered continuously when the cup is to be inserted; the coil is powered if CupNRequestedState = 
-            true.
-            The mechanism can be in one of four states:
+        A.  The pneumatic mechanism has a solenoid valve that controls a pneumatic actuator. This mechanism 
+            uses a single switch that acts as a detector for the insertion of the Faraday cup into the ion 
+            beamline. In the idle state, i.e., when the solenoid valve is not energized, the cup is extended 
+            from the ion beamline. At that time, the signal from the switch is in the low state, meaning 
+            the CupNSwitch register takes the value "false" (where N denotes the cup index). The solenoid 
+            valve coil is energized when the CupNRequestedState register has the value true. While the cup is 
+            inserted and remains in a stable position, the solenoid valve coil remains energized. 
+            The operating cycle of the pneumatic mechanism is as follows:
             -   The cup is stationary and withdrawn; mechanism control signal CupNRequestedState = false; 
                 limit switch signal: CupNSwitch = false;
             -   The cup is being inserted; mechanism control signal CupNRequestedState = true; 
@@ -101,9 +112,10 @@ Add. 4  Mnemonic: AuxiliaryFSMs
                 limit switch signal: CupNSwitch = true;
             -   The cup is being withdrawn; mechanism control signal CupNRequestedState = false; 
                 limit switch signal: CupNSwitch = false;
-        2.  The motor mechanism has two limit switches. The limit switches serve a dual purpose: they 
+        B.  The motor mechanism has two limit switches. The limit switches serve a dual purpose: they 
             transmit information about the cup position and shut off the motor, keeping the cup within 
-            the permissible range of motion. The motor shut-off mechanism operates autonomously. 
+            the permissible range of motion. The motor shut-off mechanism operates autonomously. The motor is 
+            powered only when the cup is being pushed in or pulled out, i.e., during transient states.
             The mechanism can be in one of four states:
             -   The cup is stationary and withdrawn; mechanism control signal CupNRequestedState = false; 
                 limit switch signals: CupNSwitch1 = true, CupNSwitch2 = false;
@@ -113,16 +125,20 @@ Add. 4  Mnemonic: AuxiliaryFSMs
                 limit switch signals: CupNSwitch1 = false, CupNSwitch2 = true;
             -   The cup is being withdrawn; mechanism control signal CupNRequestedState = false; 
                 limit switch signals: CupNSwitch1 = false, CupNSwitch2 = false;
-        The auxiliary FSM must measure the duration of a transition state and check whether it has exceeded 
-        the limit. At every stage of the mechanism's operation, the signals from the limit switches must be 
-        checked for correctness (the rules for checking correctness should be derived from the description 
-        above).
+        The FSM auxiliary module must measure the duration of the transition state and check whether it has 
+        exceeded the limit (specified in the TimeLimitInserting1 ... TimeLimitWithdrawing3 registers). 
+        At every stage of the mechanism's operation, the signals from the switches must be checked for 
+        correctness (the rules for checking correctness should be derived from the description above).
+        Static local variables used by the module:
+            
     Input data:
         Cup1Switch, ExternalInhibition, Cup2Switch, Cup3Switch1, Cup3Switch2,
         Cup1RequestedState, Cup2RequestedState, Cup3RequestedState.
     Output data:
         signals on physical output ports, Cup1Error, Cup2Error, Cup3Error, 
         Cup1LastError, Cup2LastError, Cup3LastError, Cup1ErrorStorage, Cup2ErrorStorage, Cup3ErrorStorage.
+    The frequency with which the task is processed:
+        400 Hz
     Implementation and testing progress.
         Not implemented.
 
@@ -130,8 +146,6 @@ Add. 5  Mnemonic: AnalogInputs
     Brief description.
         This module measures analog signals from a multichannel input amplifier. 
     Detailed description.
-        The module is implemented as a simple state machine, called cyclically at a frequency of 10 Hz 
-        (an approximate value that should be defined as a constant using the “#define” directive). 
         Static local variables used by the module:
             LocalActiveCup - the local equivalent of the ActiveCup register; the ActiveCup register can be 
                             modified in another module at any time; if the value of ActiveCup changes, 
@@ -143,15 +157,15 @@ Add. 5  Mnemonic: AnalogInputs
                             for example, in the case of Cup 1, the ActiveChannel variable takes on values 
                             ranging from 0 to ElectrodesInsideCup1 - 1;
         During a cyclic call, the module performs the following steps:
-        1.  The module reads the values of ADC0 and ADC1 (these are digital values corresponding to the same 
+        A.  The module reads the values of ADC0 and ADC1 (these are digital values corresponding to the same 
             analog signal, with the difference that the analog signal in the ADC1 channel is amplified 10 
             times more than in the ADC0 channel); ADC0 and ADC1 are the special registers in 
             the microcontroller.
-        2.  Analog input value is selected for further calculations, as follows:
+        B.  Analog input value is selected for further calculations, as follows:
             if ADC1 < RangeChangeThreshold, then {LargeGain = true}, else {LargeGain = false}
             if LargeGain, then { X = ADC1} else { X = ADC0}
             where LargeGain and X are module variables.
-        2.  For the given values of LocalActiveCup and ActiveChannel the module calculates the electrode 
+        C.  For the given values of LocalActiveCup and ActiveChannel the module calculates the electrode 
             current using the formula Y = (uint16)((FactorCoef * Factor) * (X - Offset)), where Factor is 
             selected from the registers: Cup1Channel1Gain1Factor ...Cup3Channel4Gain2Factor, and Offset is 
             selected from the registers: Cup1Channel1Gain1Offset ...Cup3Channel4Gain2Offset, 
@@ -159,23 +173,23 @@ Add. 5  Mnemonic: AnalogInputs
             the result of the calculation (that is Y) is inserted into the appropriate register from 
             the range Cup1Channel1Sample ...Cup3Channel4Sample; at this point, the unit of current has not 
             been specified (e.g., 0.1 μA), but it will be specified after the experiments are conducted.
-        3.  The result of the calculation (the module variable Y) is compared with the corresponding lower 
+        D.  The result of the calculation (the module variable Y) is compared with the corresponding lower 
             limit from the registers Cup1Channel1LowerLimit ...Cup3Channel4LowerLimit and with the 
             corresponding upper limit from the registers Cup1Channel1UpperLimit ...Cup3Channel4UpperLimit. 
             If the result falls within the specified limits, the corresponding error register 
             (Cup3ChannelError, Cup2ChannelError, or Cup3ChannelError) is cleared; otherwise, an error code 
             is written to the error register. 
-        4.  The module begins preparing the next measurement. The variable LocalActiveCup takes on the value 
+        E.  The module begins preparing the next measurement. The variable LocalActiveCup takes on the value 
             ActiveCup as follows:
             if LocalActiveCup == ActiveCup, then {ActiveCupChanged = false} 
             else {ActiveCupChanged = true; LocalActiveCup = ActiveCup}
             where ActiveCupChanged is a module variable;
-        5.  The module controls the multiplexer that selects the Faraday cup for given value of 
+        F.  The module controls the multiplexer that selects the Faraday cup for given value of 
             LocalActiveCup.
-        6.  Set the ActiveChannel value as follows:
+        G.  Set the ActiveChannel value as follows:
             if ActiveCupChanged then { ActiveChannel=0 } 
             else { ActiveChannel++; if ActiveChannel==ElectrodesInsideCupN then { ActiveChannel=0 }}
-        7.  The module controls a multiplexer that selects the channel (i.e., which electrode to measure 
+        H.  The module controls a multiplexer that selects the channel (i.e., which electrode to measure 
             current from) for a given value of the ActiveChannel parameter.
     Input data:
         lower layer (physical ports),
@@ -183,6 +197,8 @@ Add. 5  Mnemonic: AnalogInputs
         Cup1Channel1Gain1Offset ...Cup3Channel4Gain2Offset, Cup1Channel1LowerLimit ...Cup3Channel4LowerLimit
     Output data:
         Cup1Channel1Sample ...Cup3Channel4Sample
+    The frequency with which the task is processed:
+        10 Hz
     Implementation and testing progress.
         Implemented to about 10%.
 
@@ -192,6 +208,8 @@ Add. 6  Mnemonic: DebugTerminal
         evaluating certain Modbus registers.
     Detailed description.
         This module acts as a kind of terminal; this tool is designed to work within the cutecom application.
+    The frequency with which the task is processed:
+        10 Hz
     Implementation and testing progress.
         The task has been implemented and tested only with regard to a few Modbus registers.
 
