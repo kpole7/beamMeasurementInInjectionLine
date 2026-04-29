@@ -129,8 +129,8 @@ Add. 4  Mnemonic: AuxiliaryFSMs
         exceeded the limit (specified in the TimeLimitInserting1 ... TimeLimitWithdrawing3 registers). 
         At every stage of the mechanism's operation, the signals from the switches must be checked for 
         correctness (the rules for checking correctness should be derived from the description above).
-        Static local variables used by the module:
-            
+        Static local variables in the module will be necessary to determine whether the mechanisms have 
+        reached a steady state.    
     Input data:
         Cup1Switch, ExternalInhibition, Cup2Switch, Cup3Switch1, Cup3Switch2,
         Cup1RequestedState, Cup2RequestedState, Cup3RequestedState.
