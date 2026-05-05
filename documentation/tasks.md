@@ -2,7 +2,10 @@
 ## Main tasks
 
   The purpose of this project is to support several (up to 3) Faraday cups. These are measuring devices used to measure the ion beam in the ion beamline between the ion source and the cyclotron. During normal cyclotron operation, the Faraday cups are retracted from the ion beamline. The ion beam travels from the ion source, passes the first cup, the second, and possibly the third if installed, and continues toward the cyclotron. A Faraday cup is inserted into the ion beamline to perform measurements in such a way that the inserted cup covers the entire ion beamline. Therefore, measurements in the second cup are meaningful only when the first cup is withdrawn from the ion beamline and the second is inserted. Similarly, measurements in the third cup should be taken when the first and second cups are withdrawn and the third is inserted into the ion beamline. The first Faraday cup inserted into the ion channel (as viewed from the ion source) will be referred to as the active cup. The purpose of this project is to control the insertion and removal of Faraday cups, measure the currents in the electrodes of the active cup, and act as a Modbus server to enable remote operation.
+
   The Faraday cup control device serves another important purpose. Specifically, it is one of the key components of the safety system. The safety system can send a signal to the Faraday cup control device to immediately block the ion beam entering the cyclotron. This signal involves a change in the logic level on the signal line and causes the last Faraday cup (i.e., the one closest to the cyclotron) to slide into the ion beamline.
+
+This project description uses the ModbusRegisters.csv file, which contains a list of Modbus registers. The ModbusRegisters.csv file is generated from the ModbusRegisters.ods file.
 
 
 ```
@@ -154,8 +157,8 @@ Add. 5  Mnemonic: AnalogInputs
             ActiveChannel - the index of the currently measured channel (in other words, the index of 
                             the electrode inside the Faraday cup whose current we want to measure); 
                             ActiveChannel is a module state variable; 
-                            for example, in the case of Cup 1, the ActiveChannel variable takes on values 
-                            ranging from 0 to ElectrodesInsideCup1 - 1;
+                            for example, when ActiveCup equals 1, the ActiveChannel variable takes on values 
+                            ranging from 0 to ElectrodesInsideCup1 - 1;;
         During a cyclic call, the module performs the following steps:
         A.  The module reads the values of ADC0 and ADC1 (these are digital values corresponding to the same 
             analog signal, with the difference that the analog signal in the ADC1 channel is amplified 10 
@@ -192,10 +195,11 @@ Add. 5  Mnemonic: AnalogInputs
         H.  The module controls a multiplexer that selects the channel (i.e., which electrode to measure 
             current from) for a given value of the ActiveChannel parameter.
     Input data:
-        lower layer (physical ports),
+        lower layer (physical ports) – measurement of analog signals,
         ActiveCup, RangeChangeThreshold, Cup1Channel1Gain1Factor ...Cup3Channel4Gain2Factor, 
         Cup1Channel1Gain1Offset ...Cup3Channel4Gain2Offset, Cup1Channel1LowerLimit ...Cup3Channel4LowerLimit
     Output data:
+        lower layer - logic signals controlling multiplexers,
         Cup1Channel1Sample ...Cup3Channel4Sample
     The frequency with which the task is processed:
         10 Hz
@@ -205,7 +209,8 @@ Add. 5  Mnemonic: AnalogInputs
 Add. 6  Mnemonic: DebugTerminal
     Brief description.
         This module provides a debugging tool using the USB connection. It allows you displaying and 
-        evaluating certain Modbus registers.
+        evaluating certain Modbus registers. The main purpose of this tool is to run and test functions 
+        related to hardware operation and to test individual modules.
     Detailed description.
         This module acts as a kind of terminal; this tool is designed to work within the cutecom application.
     The frequency with which the task is processed:
