@@ -4,13 +4,16 @@ project(beamMeasurementInInjectionLine C CXX ASM)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 
-include(pico_sdk_import.cmake)
+# Check if building for Pico (cross-compile) or host (native Linux)
+if(CMAKE_CROSSCOMPILING)
+    include(pico_sdk_import.cmake)
+    pico_sdk_init()
+    
+    add_subdirectory(freemodbus)
+endif()
 
-pico_sdk_init()
-
-add_subdirectory(freemodbus)
-
-# Target of the application
+# Only build Pico application if cross-compiling
+if(CMAKE_CROSSCOMPILING)
 add_executable(beamMeasurementInInjectionLine
     ${CMAKE_CURRENT_LIST_DIR}/source/beamMeasurement.c
     ${CMAKE_CURRENT_LIST_DIR}/source/mainTimer.c
@@ -18,6 +21,7 @@ add_executable(beamMeasurementInInjectionLine
     ${CMAKE_CURRENT_LIST_DIR}/source/debuggingTools.c
     ${CMAKE_CURRENT_LIST_DIR}/source/compilationTime.c
     ${CMAKE_CURRENT_LIST_DIR}/source/sharedData.c
+    ${CMAKE_CURRENT_LIST_DIR}/source/highLevelCtrl.c
     ${CMAKE_CURRENT_LIST_DIR}/portfreemodbus/portevent.c
     ${CMAKE_CURRENT_LIST_DIR}/portfreemodbus/portserial.c
     ${CMAKE_CURRENT_LIST_DIR}/portfreemodbus/porttimer.c
@@ -106,4 +110,31 @@ add_custom_command(TARGET beamMeasurementInInjectionLine POST_BUILD
         -P "${CMAKE_CURRENT_LIST_DIR}/cmake/archive_uf2.cmake"
     COMMENT "Archive UF2 with build kind, timestamp and git hash"
 )
+
+endif()  # PICO_SDK_PATH check
+
+#==============================================================================
+# Unit Tests for Host (Linux)
+#==============================================================================
+# Build unit tests when NOT cross-compiling (i.e., building on native host)
+if(NOT CMAKE_CROSSCOMPILING)
+    enable_testing()
+    
+    # Build unit test executable for HighLevelCtrl
+    add_executable(test_highLevelCtrl
+        ${CMAKE_CURRENT_LIST_DIR}/source/highLevelCtrl.c
+        ${CMAKE_CURRENT_LIST_DIR}/tests/test_highLevelCtrl.c
+    )
+    
+    target_include_directories(test_highLevelCtrl PRIVATE
+        ${CMAKE_CURRENT_LIST_DIR}/include
+    )
+    
+    # Link with standard C library only (no Pico dependencies)
+    target_link_libraries(test_highLevelCtrl PRIVATE m)
+    
+    # Register test
+    add_test(NAME HighLevelCtrl COMMAND test_highLevelCtrl)
+endif()
+
 

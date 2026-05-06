@@ -34,6 +34,16 @@
             "name": "default",
             "displayName": "Default (Debug)",
             "inherits": "pico-debug"
+        },
+        {
+            "name": "host-test",
+            "displayName": "Host Tests (Linux, Debug)",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/host-test",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            }
         }
     ],
     "buildPresets": [
@@ -50,6 +60,11 @@
         {
             "name": "default",
             "configurePreset": "default",
+            "jobs": 0
+        },
+        {
+            "name": "host-test",
+            "configurePreset": "host-test",
             "jobs": 0
         }
     ]
