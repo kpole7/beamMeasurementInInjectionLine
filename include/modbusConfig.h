@@ -45,12 +45,12 @@
 #define MODBUS_INPUT_REGISTERS_ADDRESS 0x3001
 
 /// This is the number of read-only input registers
-#define MODBUS_INPUT_REGISTERS_NUMBER (0x3025 - MODBUS_INPUT_REGISTERS_ADDRESS + 1)
+#define MODBUS_INPUT_REGISTERS_NUMBER (0x300F - MODBUS_INPUT_REGISTERS_ADDRESS + 1)
 
 #define MODBUS_COILS_ADDRESS 0x0001
 
 /// This is the number of coils (as defined by Modbus); some of them are read-only, while others are read-write
-#define MODBUS_COILS_NUMBER (0x0115 - MODBUS_COILS_ADDRESS + 1)
+#define MODBUS_COILS_NUMBER (0x0018 - MODBUS_COILS_ADDRESS + 1)
 
 #define MODBUS_CUPS_NUMBER 3 // auxiliary constant, rather for debugging purposes
 
@@ -70,7 +70,7 @@ static_assert(NUMBER_OF_BYTES_SUFFICIENT_TO_STORE_COILS * 8 >= MODBUS_COILS_NUMB
 #define MODBUS_HOLDING_REGISTERS_ADDRESS 0x1000
 
 // The initial registers are of type r/w; this directive specifies number of the r/w registers
-#define MODBUS_HOLDING_REGISTERS_NUMBER (0x12BB - MODBUS_HOLDING_REGISTERS_ADDRESS + 1)
+#define MODBUS_HOLDING_REGISTERS_NUMBER (0x1062 - MODBUS_HOLDING_REGISTERS_ADDRESS + 1)
 
 // static_assert(MODBUS_REGISTERS_TOTAL_NUMBER == MODBUS_AREA_RW_REGISTERS + MODBUS_AREA_RO_REGISTERS, "Error (static_assert)");
 

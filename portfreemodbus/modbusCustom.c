@@ -14,7 +14,7 @@
 
 static bool isDefinedCoilAddress(USHORT address) {
 	return ((address >= 0x0001u) && (address <= 0x000Cu)) ||
-	       ((address >= 0x0100u) && (address <= 0x0115u));
+	       ((address >= 0x0010u) && (address <= 0x0018u));
 }
 
 static bool isWritableCoilAddress(USHORT address) {
@@ -24,45 +24,27 @@ static bool isWritableCoilAddress(USHORT address) {
 }
 
 static bool isDefinedHoldingAddress(USHORT address) {
-	return ((address >= 0x1000u) && (address <= 0x1002u)) ||
-	       ((address >= 0x1010u) && (address <= 0x1015u)) ||
-	       (address == 0x1020u) ||
-	       ((address >= 0x1030u) && (address <= 0x1038u)) ||
-	       ((address >= 0x1100u) && (address <= 0x1106u)) ||
-	       ((address >= 0x1200u) && (address <= 0x1217u)) ||
-	       ((address >= 0x1240u) && (address <= 0x1257u)) ||
-	       (address == 0x1280u) ||
-	       ((address >= 0x12A0u) && (address <= 0x12ABu)) ||
-	       ((address >= 0x12B0u) && (address <= 0x12BBu));
+	return (address >= 0x1000u) && (address <= 0x1062u);
 }
 
 static bool isWritableHoldingAddress(USHORT address) {
-	return (address == 0x1002u) ||
-	       ((address >= 0x1010u) && (address <= 0x1015u)) ||
-	       (address == 0x1020u) ||
-	       ((address >= 0x1036u) && (address <= 0x1038u)) ||
-	       ((address >= 0x1100u) && (address <= 0x1106u)) ||
-	       ((address >= 0x1200u) && (address <= 0x1217u)) ||
-	       ((address >= 0x1240u) && (address <= 0x1257u)) ||
-	       (address == 0x1280u) ||
-	       ((address >= 0x12A0u) && (address <= 0x12ABu)) ||
-	       ((address >= 0x12B0u) && (address <= 0x12BBu));
+	return (address >= 0x1002u) && (address <= 0x1062u);
 }
 
 static bool isValidHoldingValue(USHORT address, uint16_t value) {
-	if ((address >= 0x1010u) && (address <= 0x1015u)) {
+	if ((address >= 0x1003u) && (address <= 0x1008u)) {
 		return value >= 1u;
 	}
-	if (address == 0x1020u) {
+	if (address == 0x1009u) {
 		return (value >= 1u) && (value <= 3u);
 	}
-	if (address == 0x1100u) {
+	if (address == 0x1013u) {
 		return (value >= 1u) && (value <= 3u);
 	}
-	if ((address >= 0x1101u) && (address <= 0x1103u)) {
+	if ((address >= 0x1014u) && (address <= 0x1016u)) {
 		return (value >= 1u) && (value <= 4u);
 	}
-	if ((address >= 0x1104u) && (address <= 0x1106u)) {
+	if ((address >= 0x1017u) && (address <= 0x1019u)) {
 		return value <= 1u;
 	}
 
@@ -70,9 +52,7 @@ static bool isValidHoldingValue(USHORT address, uint16_t value) {
 }
 
 static bool isDefinedInputRegisterAddress(USHORT address) {
-	return ((address >= 0x3001u) && (address <= 0x3005u)) ||
-	       ((address >= 0x3011u) && (address <= 0x3015u)) ||
-	       ((address >= 0x3021u) && (address <= 0x3025u));
+	return (address >= 0x3001u) && (address <= 0x300Fu);
 }
 
 static uint16_t holdingIndexFromAddress(USHORT address) {
