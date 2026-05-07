@@ -10,6 +10,7 @@
 #include "adcInputs.h"
 #include "compilationTime.h"
 #include "debuggingTools.h"
+#include "highLevelCtrl.h"
 #include "mainTimer.h"
 #include "masterConfig.h"
 #include "mb.h"
@@ -61,6 +62,21 @@ static void mainInitialization(void);
 
 static void slowProcessesService(void);
 
+static void highLevelCtrlService(void);
+
+static uint16_t holdingIndexFromAddress(uint16_t address);
+
+static uint16_t inputIndexFromAddress(uint16_t address);
+
+static uint16_t coilIndexFromAddress(uint16_t address);
+
+static uint16_t clampInstalledCups(uint16_t value);
+
+static uint16_t clampActiveCup(uint16_t value);
+
+static HighLevelCtrlState HighLevelState;
+static bool IsHighLevelStateInitialized;
+
 //..............................................................................
 // The main routine of the project
 //..............................................................................
@@ -85,6 +101,7 @@ int main() {
 			atomic_store_explicit(&TwoMillisecondsTimeTick, false, memory_order_release);
 
 			modbusActivityLedService();
+			highLevelCtrlService();
 
 #if MODBUS_DEBUG_MODE
 			// Reading the states of jumpers.
@@ -183,6 +200,15 @@ static void printRegisters(void){
 }
 
 static void mainInitialization(void){
+	uint16_t InstalledCupsAddress = holdingIndexFromAddress(0x1013u);
+	uint16_t ElectrodesInsideCup1Address = holdingIndexFromAddress(0x1014u);
+	uint16_t ElectrodesInsideCup2Address = holdingIndexFromAddress(0x1015u);
+	uint16_t ElectrodesInsideCup3Address = holdingIndexFromAddress(0x1016u);
+	uint16_t Cup1TypeAddress = holdingIndexFromAddress(0x1017u);
+	uint16_t Cup2TypeAddress = holdingIndexFromAddress(0x1018u);
+	uint16_t Cup3TypeAddress = holdingIndexFromAddress(0x1019u);
+	uint16_t ActiveCupAddress = holdingIndexFromAddress(0x1009u);
+
 	atomic_store_explicit(&ModbusAssertionFailed, false, memory_order_release);
 
 	stdio_init_all();
@@ -197,6 +223,23 @@ static void mainInitialization(void){
 		ModbusCoils[J] = false;
 		CoilsChanged[J] = false;
 	}
+
+	// Defaults from ModbusRegisters.csv
+	ModbusCoils[coilIndexFromAddress(MODBUS_RW_COIL_FOR_CUP_1)] = true;
+	ModbusCoils[coilIndexFromAddress(MODBUS_RW_COIL_FOR_CUP_2)] = true;
+	ModbusCoils[coilIndexFromAddress(MODBUS_RW_COIL_FOR_CUP_3)] = true;
+	ModbusHoldingRegisters[InstalledCupsAddress] = 3u;
+	ModbusHoldingRegisters[ElectrodesInsideCup1Address] = 4u;
+	ModbusHoldingRegisters[ElectrodesInsideCup2Address] = 4u;
+	ModbusHoldingRegisters[ElectrodesInsideCup3Address] = 4u;
+	ModbusHoldingRegisters[Cup1TypeAddress] = 0u;
+	ModbusHoldingRegisters[Cup2TypeAddress] = 0u;
+	ModbusHoldingRegisters[Cup3TypeAddress] = 1u;
+	ModbusHoldingRegisters[ActiveCupAddress] = 1u;
+
+	memset(&HighLevelState, 0, sizeof(HighLevelState));
+	HighLevelState.retained_active_cup = 1u;
+	IsHighLevelStateInitialized = false;
 
 #if MODBUS_DEBUG_MODE
 	initInputPortJP1();
@@ -216,51 +259,86 @@ static void mainInitialization(void){
 /// This function is used for debugging purposes
 static void slowProcessesService(void){
 	debugTerminalCommandInterpreter(&ModbusHoldingRegisters[0], MODBUS_HOLDING_REGISTERS_NUMBER, 'a');
-	for (int J = 0; J < MODBUS_INPUT_REGISTERS_NUMBER; J++) {
-		ModbusInputRegisters[J] = ModbusHoldingRegisters[J];
+}
+
+static void highLevelCtrlService(void) {
+	HighLevelCtrlInputs Inputs;
+	HighLevelCtrlOutputs Outputs;
+	uint16_t ErrorStorageIndex = holdingIndexFromAddress(0x1002u);
+	uint16_t ActiveCupIndex = holdingIndexFromAddress(0x1009u);
+	uint16_t ErrorCodeIndex = holdingIndexFromAddress(0x1000u);
+	uint16_t LastErrorIndex = holdingIndexFromAddress(0x1001u);
+
+	memset(&Inputs, 0, sizeof(Inputs));
+
+	Inputs.installed_cups = clampInstalledCups(ModbusHoldingRegisters[holdingIndexFromAddress(0x1013u)]);
+	Inputs.external_inhibition = ModbusCoils[coilIndexFromAddress(0x0006u)];
+	Inputs.cup_control[0] = ModbusCoils[coilIndexFromAddress(0x0001u)];
+	Inputs.cup_control[1] = ModbusCoils[coilIndexFromAddress(0x0005u)];
+	Inputs.cup_control[2] = ModbusCoils[coilIndexFromAddress(0x0009u)];
+	Inputs.cup_error[0] = ModbusHoldingRegisters[holdingIndexFromAddress(0x100Au)];
+	Inputs.cup_error[1] = ModbusHoldingRegisters[holdingIndexFromAddress(0x100Bu)];
+	Inputs.cup_error[2] = ModbusHoldingRegisters[holdingIndexFromAddress(0x100Cu)];
+	Inputs.cup_steady[0] = ModbusCoils[coilIndexFromAddress(0x0013u)];
+	Inputs.cup_steady[1] = ModbusCoils[coilIndexFromAddress(0x0014u)];
+	Inputs.cup_steady[2] = ModbusCoils[coilIndexFromAddress(0x0015u)];
+	Inputs.cup_inserted[0] = ModbusCoils[coilIndexFromAddress(0x0016u)];
+	Inputs.cup_inserted[1] = ModbusCoils[coilIndexFromAddress(0x0017u)];
+	Inputs.cup_inserted[2] = ModbusCoils[coilIndexFromAddress(0x0018u)];
+
+	if (!IsHighLevelStateInitialized) {
+		HighLevelState.prev_error_code = ModbusHoldingRegisters[ErrorCodeIndex];
+		HighLevelState.retained_active_cup = clampActiveCup(ModbusHoldingRegisters[ActiveCupIndex]);
+		HighLevelState.error_storage = ModbusHoldingRegisters[ErrorStorageIndex];
+		IsHighLevelStateInitialized = true;
 	}
-	if (ModbusHoldingRegisters[19] != 0) { // e.g. "t=1;"
-		ModbusHoldingRegisters[19] = 0;
 
-		printRegisters();
+	// Allow reset from Modbus write in normal/debug mode.
+	HighLevelState.error_storage = ModbusHoldingRegisters[ErrorStorageIndex];
+
+	highLevelCtrlTick(&Inputs, &HighLevelState, &Outputs);
+
+	ModbusHoldingRegisters[ErrorCodeIndex] = Outputs.error_code;
+	if (Outputs.last_error != 0u) {
+		ModbusHoldingRegisters[LastErrorIndex] = Outputs.last_error;
 	}
+	ModbusHoldingRegisters[ErrorStorageIndex] = Outputs.error_storage;
+	ModbusHoldingRegisters[ActiveCupIndex] = clampActiveCup(Outputs.active_cup);
 
-	// ModbusHoldingRegisters[16] contains coils 0,1,2;  e.g. "q=2;"
-	// ModbusHoldingRegisters[17] contains coils 3,4,5;  e.g. "r=5;"
-	// ModbusHoldingRegisters[18] contains coils 6,7,8;  e.g. "s=7;"
-	assert(MODBUS_CUPS_NUMBER == 3);
+	ModbusCoils[coilIndexFromAddress(0x0010u)] = Outputs.cup_requested_state[0];
+	ModbusCoils[coilIndexFromAddress(0x0011u)] = Outputs.cup_requested_state[1];
+	ModbusCoils[coilIndexFromAddress(0x0012u)] = Outputs.cup_requested_state[2];
+}
 
-	for (int J = 0; J < MODBUS_COILS_NUMBER; J++) {
-		if (CoilsChanged[J]) { // if the coil state changed via Modbus
-			printf("coil number %d value set to %c\r\n", J, ModbusCoils[J] ? '1' : '0');
-			CoilsChanged[J] = false;
+static uint16_t holdingIndexFromAddress(uint16_t address) {
+	return (uint16_t)(address - MODBUS_HOLDING_REGISTERS_ADDRESS);
+}
 
-			if (ModbusCoils[J]) {
-				ModbusHoldingRegisters[16 + J / (MODBUS_COILS_NUMBER / MODBUS_CUPS_NUMBER)] |=
-					(1 << (J % (MODBUS_COILS_NUMBER / MODBUS_CUPS_NUMBER)));
-			}
-			else {
-				ModbusHoldingRegisters[16 + J / (MODBUS_COILS_NUMBER / MODBUS_CUPS_NUMBER)] &=
-					(0xFFFFU - (1 << (J % (MODBUS_COILS_NUMBER / MODBUS_CUPS_NUMBER))));
-			}
-		}
+static uint16_t inputIndexFromAddress(uint16_t address) {
+	return (uint16_t)(address - MODBUS_INPUT_REGISTERS_ADDRESS);
+}
+
+static uint16_t coilIndexFromAddress(uint16_t address) {
+	return (uint16_t)(address - MODBUS_COILS_ADDRESS);
+}
+
+static uint16_t clampInstalledCups(uint16_t value) {
+	if (value < 1u) {
+		return 1u;
 	}
-
-	for (int J = 0; J < MODBUS_COILS_NUMBER; J++) {
-		ModbusCoils[J] = false;
+	if (value > 3u) {
+		return 3u;
 	}
+	return value;
+}
 
-	for (int J = 0; J < MODBUS_COILS_NUMBER / MODBUS_CUPS_NUMBER; J++) {
-		uint16_t Mask = (1 << J);
-		if (0 != (ModbusHoldingRegisters[16] & Mask)) {
-			ModbusCoils[J] = true;
-		}
-		if (0 != (ModbusHoldingRegisters[17] & Mask)) {
-			ModbusCoils[3 + J] = true;
-		}
-		if (0 != (ModbusHoldingRegisters[18] & Mask)) {
-			ModbusCoils[6 + J] = true;
-		}
+static uint16_t clampActiveCup(uint16_t value) {
+	if (value < 1u) {
+		return 1u;
 	}
+	if (value > 3u) {
+		return 3u;
+	}
+	return value;
 }
 
