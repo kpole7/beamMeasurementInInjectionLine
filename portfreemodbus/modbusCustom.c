@@ -169,22 +169,6 @@ eMBErrorCode    eMBRegCoilsCB( UCHAR * pucRegBuffer, USHORT usAddress,
 		ModbusCoils[index] = value;
 		CoilsChanged[index] = true;
 
-		if (usAddress == MODBUS_RW_COIL_FOR_CUP_1) {
-			atomic_store_explicit(&DebugCountdownPropagationFromCoilToSwitch1,
-			                      ModbusHoldingRegisters[holdingIndexFromAddress(0x1010u)],
-			                      memory_order_release);
-		}
-		if (usAddress == MODBUS_RW_COIL_FOR_CUP_2) {
-			atomic_store_explicit(&DebugCountdownPropagationFromCoilToSwitch2,
-			                      ModbusHoldingRegisters[holdingIndexFromAddress(0x1011u)],
-			                      memory_order_release);
-		}
-		if (usAddress == MODBUS_RW_COIL_FOR_CUP_3) {
-			atomic_store_explicit(&DebugCountdownPropagationFromCoilToSwitch3,
-			                      ModbusHoldingRegisters[holdingIndexFromAddress(0x1012u)],
-			                      memory_order_release);
-		}
-
 		return MB_ENOERR;
 	}
 

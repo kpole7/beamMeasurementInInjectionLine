@@ -11,14 +11,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-// simulation of signal propagation from user request to insert/remove cup to feedback from limit switch
-atomic_uint_fast16_t DebugCountdownPropagationFromCoilToSwitch1;
-atomic_uint_fast16_t DebugCountdownPropagationFromCoilToSwitch2;
-atomic_uint_fast16_t DebugCountdownPropagationFromCoilToSwitch3;
-atomic_bool DebugCompletedPropagationFromCoilToSwitch1;
-atomic_bool DebugCompletedPropagationFromCoilToSwitch2;
-atomic_bool DebugCompletedPropagationFromCoilToSwitch3;
-
 
 static void commandInterpreterEssentials(uint16_t *RegistersToBeChangedPtr, uint16_t RegistersToBeChangedNumber, char FirstName, char *StaticBuffer);
 
