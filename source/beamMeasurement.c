@@ -85,6 +85,11 @@ int main() {
 	// Initializations of variables, peripherals, etc.
 	mainInitialization();
 
+#if 0  // Auxiliary printouts for debugging purpose
+	sleep_ms(1000);
+	printf("Hello!\r\n");
+#endif
+
 	//...............
 	// The main loop
 	//...............

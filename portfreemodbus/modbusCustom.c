@@ -28,7 +28,13 @@ static bool isDefinedHoldingAddress(USHORT address) {
 }
 
 static bool isWritableHoldingAddress(USHORT address) {
-	return (address >= 0x1002u) && (address <= 0x1062u);
+	if ((address >= 0x1002u) && (address <= 0x1009u)){
+		return true;
+	}
+	if ((address >= 0x1010u) && (address <= 0x1062u)){
+		return true;
+	}
+	return false;
 }
 
 static bool isValidHoldingValue(USHORT address, uint16_t value) {
