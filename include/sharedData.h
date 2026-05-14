@@ -11,6 +11,176 @@
 #include "modbusConfig.h"
 
 //..............................................................................
+// Modbus Holding Register Address Mnemonics (from ModbusRegisters.csv)
+//..............................................................................
+
+#define MODBUS_ADDR_ERROR_CODE              0x1000u
+#define MODBUS_ADDR_LAST_ERROR              0x1001u
+#define MODBUS_ADDR_ERROR_STORAGE           0x1002u
+#define MODBUS_ADDR_TIME_LIMIT_INSERTING_1  0x1003u
+#define MODBUS_ADDR_TIME_LIMIT_INSERTING_2  0x1004u
+#define MODBUS_ADDR_TIME_LIMIT_INSERTING_3  0x1005u
+#define MODBUS_ADDR_TIME_LIMIT_WITHDRAWING_1 0x1006u
+#define MODBUS_ADDR_TIME_LIMIT_WITHDRAWING_2 0x1007u
+#define MODBUS_ADDR_TIME_LIMIT_WITHDRAWING_3 0x1008u
+#define MODBUS_ADDR_ACTIVE_CUP              0x1009u
+#define MODBUS_ADDR_CUP1_ERROR              0x100Au
+#define MODBUS_ADDR_CUP2_ERROR              0x100Bu
+#define MODBUS_ADDR_CUP3_ERROR              0x100Cu
+#define MODBUS_ADDR_CUP1_LAST_ERROR         0x100Du
+#define MODBUS_ADDR_CUP2_LAST_ERROR         0x100Eu
+#define MODBUS_ADDR_CUP3_LAST_ERROR         0x100Fu
+#define MODBUS_ADDR_CUP1_ERROR_STORAGE      0x1010u
+#define MODBUS_ADDR_CUP2_ERROR_STORAGE      0x1011u
+#define MODBUS_ADDR_CUP3_ERROR_STORAGE      0x1012u
+#define MODBUS_ADDR_INSTALLED_CUPS          0x1013u
+#define MODBUS_ADDR_ELECTRODES_CUP1         0x1014u
+#define MODBUS_ADDR_ELECTRODES_CUP2         0x1015u
+#define MODBUS_ADDR_ELECTRODES_CUP3         0x1016u
+#define MODBUS_ADDR_CUP1_TYPE               0x1017u
+#define MODBUS_ADDR_CUP2_TYPE               0x1018u
+#define MODBUS_ADDR_CUP3_TYPE               0x1019u
+#define MODBUS_ADDR_CUP1_CH1_GAIN1_OFFSET   0x101Au
+#define MODBUS_ADDR_CUP1_CH2_GAIN1_OFFSET   0x101Bu
+#define MODBUS_ADDR_CUP1_CH3_GAIN1_OFFSET   0x101Cu
+#define MODBUS_ADDR_CUP1_CH4_GAIN1_OFFSET   0x101Du
+#define MODBUS_ADDR_CUP2_CH1_GAIN1_OFFSET   0x101Eu
+#define MODBUS_ADDR_CUP2_CH2_GAIN1_OFFSET   0x101Fu
+#define MODBUS_ADDR_CUP2_CH3_GAIN1_OFFSET   0x1020u
+#define MODBUS_ADDR_CUP2_CH4_GAIN1_OFFSET   0x1021u
+#define MODBUS_ADDR_CUP3_CH1_GAIN1_OFFSET   0x1022u
+#define MODBUS_ADDR_CUP3_CH2_GAIN1_OFFSET   0x1023u
+#define MODBUS_ADDR_CUP3_CH3_GAIN1_OFFSET   0x1024u
+#define MODBUS_ADDR_CUP3_CH4_GAIN1_OFFSET   0x1025u
+#define MODBUS_ADDR_CUP1_CH1_GAIN2_OFFSET   0x1026u
+#define MODBUS_ADDR_CUP1_CH2_GAIN2_OFFSET   0x1027u
+#define MODBUS_ADDR_CUP1_CH3_GAIN2_OFFSET   0x1028u
+#define MODBUS_ADDR_CUP1_CH4_GAIN2_OFFSET   0x1029u
+#define MODBUS_ADDR_CUP2_CH1_GAIN2_OFFSET   0x102Au
+#define MODBUS_ADDR_CUP2_CH2_GAIN2_OFFSET   0x102Bu
+#define MODBUS_ADDR_CUP2_CH3_GAIN2_OFFSET   0x102Cu
+#define MODBUS_ADDR_CUP2_CH4_GAIN2_OFFSET   0x102Du
+#define MODBUS_ADDR_CUP3_CH1_GAIN2_OFFSET   0x102Eu
+#define MODBUS_ADDR_CUP3_CH2_GAIN2_OFFSET   0x102Fu
+#define MODBUS_ADDR_CUP3_CH3_GAIN2_OFFSET   0x1030u
+#define MODBUS_ADDR_CUP3_CH4_GAIN2_OFFSET   0x1031u
+#define MODBUS_ADDR_CUP1_CH1_GAIN1_FACTOR   0x1032u
+#define MODBUS_ADDR_CUP1_CH2_GAIN1_FACTOR   0x1033u
+#define MODBUS_ADDR_CUP1_CH3_GAIN1_FACTOR   0x1034u
+#define MODBUS_ADDR_CUP1_CH4_GAIN1_FACTOR   0x1035u
+#define MODBUS_ADDR_CUP2_CH1_GAIN1_FACTOR   0x1036u
+#define MODBUS_ADDR_CUP2_CH2_GAIN1_FACTOR   0x1037u
+#define MODBUS_ADDR_CUP2_CH3_GAIN1_FACTOR   0x1038u
+#define MODBUS_ADDR_CUP2_CH4_GAIN1_FACTOR   0x1039u
+#define MODBUS_ADDR_CUP3_CH1_GAIN1_FACTOR   0x103Au
+#define MODBUS_ADDR_CUP3_CH2_GAIN1_FACTOR   0x103Bu
+#define MODBUS_ADDR_CUP3_CH3_GAIN1_FACTOR   0x103Cu
+#define MODBUS_ADDR_CUP3_CH4_GAIN1_FACTOR   0x103Du
+#define MODBUS_ADDR_CUP1_CH1_GAIN2_FACTOR   0x103Eu
+#define MODBUS_ADDR_CUP1_CH2_GAIN2_FACTOR   0x103Fu
+#define MODBUS_ADDR_CUP1_CH3_GAIN2_FACTOR   0x1040u
+#define MODBUS_ADDR_CUP1_CH4_GAIN2_FACTOR   0x1041u
+#define MODBUS_ADDR_CUP2_CH1_GAIN2_FACTOR   0x1042u
+#define MODBUS_ADDR_CUP2_CH2_GAIN2_FACTOR   0x1043u
+#define MODBUS_ADDR_CUP2_CH3_GAIN2_FACTOR   0x1044u
+#define MODBUS_ADDR_CUP2_CH4_GAIN2_FACTOR   0x1045u
+#define MODBUS_ADDR_CUP3_CH1_GAIN2_FACTOR   0x1046u
+#define MODBUS_ADDR_CUP3_CH2_GAIN2_FACTOR   0x1047u
+#define MODBUS_ADDR_CUP3_CH3_GAIN2_FACTOR   0x1048u
+#define MODBUS_ADDR_CUP3_CH4_GAIN2_FACTOR   0x1049u
+#define MODBUS_ADDR_RANGE_CHANGE_THRESHOLD  0x104Au
+#define MODBUS_ADDR_CUP1_CH1_LOWER_LIMIT    0x104Bu
+#define MODBUS_ADDR_CUP1_CH2_LOWER_LIMIT    0x104Cu
+#define MODBUS_ADDR_CUP1_CH3_LOWER_LIMIT    0x104Du
+#define MODBUS_ADDR_CUP1_CH4_LOWER_LIMIT    0x104Eu
+#define MODBUS_ADDR_CUP2_CH1_LOWER_LIMIT    0x104Fu
+#define MODBUS_ADDR_CUP2_CH2_LOWER_LIMIT    0x1050u
+#define MODBUS_ADDR_CUP2_CH3_LOWER_LIMIT    0x1051u
+#define MODBUS_ADDR_CUP2_CH4_LOWER_LIMIT    0x1052u
+#define MODBUS_ADDR_CUP3_CH1_LOWER_LIMIT    0x1053u
+#define MODBUS_ADDR_CUP3_CH2_LOWER_LIMIT    0x1054u
+#define MODBUS_ADDR_CUP3_CH3_LOWER_LIMIT    0x1055u
+#define MODBUS_ADDR_CUP3_CH4_LOWER_LIMIT    0x1056u
+#define MODBUS_ADDR_CUP1_CH1_UPPER_LIMIT    0x1057u
+#define MODBUS_ADDR_CUP1_CH2_UPPER_LIMIT    0x1058u
+#define MODBUS_ADDR_CUP1_CH3_UPPER_LIMIT    0x1059u
+#define MODBUS_ADDR_CUP1_CH4_UPPER_LIMIT    0x105Au
+#define MODBUS_ADDR_CUP2_CH1_UPPER_LIMIT    0x105Bu
+#define MODBUS_ADDR_CUP2_CH2_UPPER_LIMIT    0x105Cu
+#define MODBUS_ADDR_CUP2_CH3_UPPER_LIMIT    0x105Du
+#define MODBUS_ADDR_CUP2_CH4_UPPER_LIMIT    0x105Eu
+#define MODBUS_ADDR_CUP3_CH1_UPPER_LIMIT    0x105Fu
+#define MODBUS_ADDR_CUP3_CH2_UPPER_LIMIT    0x1060u
+#define MODBUS_ADDR_CUP3_CH3_UPPER_LIMIT    0x1061u
+#define MODBUS_ADDR_CUP3_CH4_UPPER_LIMIT    0x1062u
+
+//..............................................................................
+// Modbus Coil Address Mnemonics (from ModbusRegisters.csv)
+//..............................................................................
+
+#define MODBUS_ADDR_CUP1_CONTROL            0x0001u
+#define MODBUS_ADDR_CUP1_SWITCH             0x0003u
+#define MODBUS_ADDR_CUP2_CONTROL            0x0005u
+#define MODBUS_ADDR_EXTERNAL_INHIBITION     0x0006u
+#define MODBUS_ADDR_CUP2_SWITCH             0x0007u
+#define MODBUS_ADDR_CUP3_CONTROL            0x0009u
+#define MODBUS_ADDR_CUP3_SWITCH1            0x000Bu
+#define MODBUS_ADDR_CUP3_SWITCH2            0x000Cu
+#define MODBUS_ADDR_CUP1_REQUESTED_STATE    0x0010u
+#define MODBUS_ADDR_CUP2_REQUESTED_STATE    0x0011u
+#define MODBUS_ADDR_CUP3_REQUESTED_STATE    0x0012u
+#define MODBUS_ADDR_CUP1_STEADY             0x0013u
+#define MODBUS_ADDR_CUP2_STEADY             0x0014u
+#define MODBUS_ADDR_CUP3_STEADY             0x0015u
+#define MODBUS_ADDR_CUP1_INSERTED           0x0016u
+#define MODBUS_ADDR_CUP2_INSERTED           0x0017u
+#define MODBUS_ADDR_CUP3_INSERTED           0x0018u
+
+//..............................................................................
+// Modbus Input Register Address Mnemonics (from ModbusRegisters.csv)
+//..............................................................................
+
+#define MODBUS_ADDR_CUP1_CH1_SAMPLE         0x3001u
+#define MODBUS_ADDR_CUP1_CH2_SAMPLE         0x3002u
+#define MODBUS_ADDR_CUP1_CH3_SAMPLE         0x3003u
+#define MODBUS_ADDR_CUP1_CH4_SAMPLE         0x3004u
+#define MODBUS_ADDR_CUP1_CHANNEL_ERROR      0x3005u
+#define MODBUS_ADDR_CUP2_CH1_SAMPLE         0x3006u
+#define MODBUS_ADDR_CUP2_CH2_SAMPLE         0x3007u
+#define MODBUS_ADDR_CUP2_CH3_SAMPLE         0x3008u
+#define MODBUS_ADDR_CUP2_CH4_SAMPLE         0x3009u
+#define MODBUS_ADDR_CUP2_CHANNEL_ERROR      0x300Au
+#define MODBUS_ADDR_CUP3_CH1_SAMPLE         0x300Bu
+#define MODBUS_ADDR_CUP3_CH2_SAMPLE         0x300Cu
+#define MODBUS_ADDR_CUP3_CH3_SAMPLE         0x300Du
+#define MODBUS_ADDR_CUP3_CH4_SAMPLE         0x300Eu
+#define MODBUS_ADDR_CUP3_CHANNEL_ERROR      0x300Fu
+
+#define MODBUS_INPUT_REGISTERS_ADDRESS      MODBUS_ADDR_CUP1_CH1_SAMPLE
+
+/// This is the number of read-only input registers
+#define MODBUS_INPUT_REGISTERS_NUMBER       (MODBUS_ADDR_CUP3_CHANNEL_ERROR - MODBUS_INPUT_REGISTERS_ADDRESS + 1)
+
+#define MODBUS_COILS_ADDRESS                MODBUS_ADDR_CUP1_CONTROL
+
+/// This is the number of coils (as defined by Modbus); some of them are read-only, while others are read-write
+#define MODBUS_COILS_NUMBER                 (MODBUS_ADDR_CUP3_REQUESTED_STATE - MODBUS_COILS_ADDRESS + 1)
+
+#define MODBUS_CUPS_NUMBER 3 // auxiliary constant, rather for debugging purposes
+
+#define NUMBER_OF_BYTES_SUFFICIENT_TO_STORE_COILS ((MODBUS_COILS_NUMBER + 7) / 8)
+static_assert(NUMBER_OF_BYTES_SUFFICIENT_TO_STORE_COILS * 8 >= MODBUS_COILS_NUMBER, "Error");
+
+// This directive specifies the starting address of the register area
+#define MODBUS_HOLDING_REGISTERS_ADDRESS    MODBUS_ADDR_CUP1_CONTROL
+
+// The initial registers are of type r/w; this directive specifies number of the r/w registers
+#define MODBUS_HOLDING_REGISTERS_NUMBER     (MODBUS_ADDR_CUP3_CH4_UPPER_LIMIT - MODBUS_HOLDING_REGISTERS_ADDRESS + 1)
+
+// static_assert(MODBUS_REGISTERS_TOTAL_NUMBER == MODBUS_AREA_RW_REGISTERS + MODBUS_AREA_RO_REGISTERS, "Error (static_assert)");
+
+
+//..............................................................................
 // Definitions of variables concerning Modbus communication
 //..............................................................................
 
@@ -18,5 +188,6 @@ extern uint16_t ModbusInputRegisters[MODBUS_INPUT_REGISTERS_NUMBER];
 extern bool ModbusCoils[MODBUS_COILS_NUMBER];
 extern bool CoilsChanged[MODBUS_COILS_NUMBER];
 extern uint16_t ModbusHoldingRegisters[MODBUS_HOLDING_REGISTERS_NUMBER];
+
 
 #endif // SHARED_DATA_H

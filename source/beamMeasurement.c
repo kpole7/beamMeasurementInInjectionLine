@@ -205,14 +205,14 @@ static void printRegisters(void){
 }
 
 static void mainInitialization(void){
-	uint16_t InstalledCupsAddress = holdingIndexFromAddress(0x1013u);
-	uint16_t ElectrodesInsideCup1Address = holdingIndexFromAddress(0x1014u);
-	uint16_t ElectrodesInsideCup2Address = holdingIndexFromAddress(0x1015u);
-	uint16_t ElectrodesInsideCup3Address = holdingIndexFromAddress(0x1016u);
-	uint16_t Cup1TypeAddress = holdingIndexFromAddress(0x1017u);
-	uint16_t Cup2TypeAddress = holdingIndexFromAddress(0x1018u);
-	uint16_t Cup3TypeAddress = holdingIndexFromAddress(0x1019u);
-	uint16_t ActiveCupAddress = holdingIndexFromAddress(0x1009u);
+	uint16_t InstalledCupsAddress = holdingIndexFromAddress(MODBUS_ADDR_INSTALLED_CUPS);
+	uint16_t ElectrodesInsideCup1Address = holdingIndexFromAddress(MODBUS_ADDR_ELECTRODES_CUP1);
+	uint16_t ElectrodesInsideCup2Address = holdingIndexFromAddress(MODBUS_ADDR_ELECTRODES_CUP2);
+	uint16_t ElectrodesInsideCup3Address = holdingIndexFromAddress(MODBUS_ADDR_ELECTRODES_CUP3);
+	uint16_t Cup1TypeAddress = holdingIndexFromAddress(MODBUS_ADDR_CUP1_TYPE);
+	uint16_t Cup2TypeAddress = holdingIndexFromAddress(MODBUS_ADDR_CUP2_TYPE);
+	uint16_t Cup3TypeAddress = holdingIndexFromAddress(MODBUS_ADDR_CUP3_TYPE);
+	uint16_t ActiveCupAddress = holdingIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP);
 
 	atomic_store_explicit(&ModbusAssertionFailed, false, memory_order_release);
 
@@ -230,9 +230,9 @@ static void mainInitialization(void){
 	}
 
 	// Defaults from ModbusRegisters.csv
-	ModbusCoils[coilIndexFromAddress(MODBUS_RW_COIL_FOR_CUP_1)] = true;
-	ModbusCoils[coilIndexFromAddress(MODBUS_RW_COIL_FOR_CUP_2)] = true;
-	ModbusCoils[coilIndexFromAddress(MODBUS_RW_COIL_FOR_CUP_3)] = true;
+	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_CONTROL)] = true;
+	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_CONTROL)] = true;
+	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_CONTROL)] = true;
 	ModbusHoldingRegisters[InstalledCupsAddress] = 3u;
 	ModbusHoldingRegisters[ElectrodesInsideCup1Address] = 4u;
 	ModbusHoldingRegisters[ElectrodesInsideCup2Address] = 4u;
@@ -269,27 +269,27 @@ static void slowProcessesService(void){
 static void highLevelCtrlService(void) {
 	HighLevelCtrlInputs Inputs;
 	HighLevelCtrlOutputs Outputs;
-	uint16_t ErrorStorageIndex = holdingIndexFromAddress(0x1002u);
-	uint16_t ActiveCupIndex = holdingIndexFromAddress(0x1009u);
-	uint16_t ErrorCodeIndex = holdingIndexFromAddress(0x1000u);
-	uint16_t LastErrorIndex = holdingIndexFromAddress(0x1001u);
+	uint16_t ErrorStorageIndex = holdingIndexFromAddress(MODBUS_ADDR_ERROR_STORAGE);
+	uint16_t ActiveCupIndex = holdingIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP);
+	uint16_t ErrorCodeIndex = holdingIndexFromAddress(MODBUS_ADDR_ERROR_CODE);
+	uint16_t LastErrorIndex = holdingIndexFromAddress(MODBUS_ADDR_LAST_ERROR);
 
 	memset(&Inputs, 0, sizeof(Inputs));
 
-	Inputs.installed_cups = clampInstalledCups(ModbusHoldingRegisters[holdingIndexFromAddress(0x1013u)]);
-	Inputs.external_inhibition = ModbusCoils[coilIndexFromAddress(0x0006u)];
-	Inputs.cup_control[0] = ModbusCoils[coilIndexFromAddress(0x0001u)];
-	Inputs.cup_control[1] = ModbusCoils[coilIndexFromAddress(0x0005u)];
-	Inputs.cup_control[2] = ModbusCoils[coilIndexFromAddress(0x0009u)];
-	Inputs.cup_error[0] = ModbusHoldingRegisters[holdingIndexFromAddress(0x100Au)];
-	Inputs.cup_error[1] = ModbusHoldingRegisters[holdingIndexFromAddress(0x100Bu)];
-	Inputs.cup_error[2] = ModbusHoldingRegisters[holdingIndexFromAddress(0x100Cu)];
-	Inputs.cup_steady[0] = ModbusCoils[coilIndexFromAddress(0x0013u)];
-	Inputs.cup_steady[1] = ModbusCoils[coilIndexFromAddress(0x0014u)];
-	Inputs.cup_steady[2] = ModbusCoils[coilIndexFromAddress(0x0015u)];
-	Inputs.cup_inserted[0] = ModbusCoils[coilIndexFromAddress(0x0016u)];
-	Inputs.cup_inserted[1] = ModbusCoils[coilIndexFromAddress(0x0017u)];
-	Inputs.cup_inserted[2] = ModbusCoils[coilIndexFromAddress(0x0018u)];
+	Inputs.installed_cups = clampInstalledCups(ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_INSTALLED_CUPS)]);
+	Inputs.external_inhibition = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION)];
+	Inputs.cup_control[0] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_CONTROL)];
+	Inputs.cup_control[1] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_CONTROL)];
+	Inputs.cup_control[2] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_CONTROL)];
+	Inputs.cup_error[0] = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_ERROR)];
+	Inputs.cup_error[1] = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP2_ERROR)];
+	Inputs.cup_error[2] = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP3_ERROR)];
+	Inputs.cup_steady[0] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_STEADY)];
+	Inputs.cup_steady[1] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_STEADY)];
+	Inputs.cup_steady[2] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_STEADY)];
+	Inputs.cup_inserted[0] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_INSERTED)];
+	Inputs.cup_inserted[1] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_INSERTED)];
+	Inputs.cup_inserted[2] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_INSERTED)];
 
 	if (!IsHighLevelStateInitialized) {
 		HighLevelState.prev_error_code = ModbusHoldingRegisters[ErrorCodeIndex];
@@ -310,9 +310,9 @@ static void highLevelCtrlService(void) {
 	ModbusHoldingRegisters[ErrorStorageIndex] = Outputs.error_storage;
 	ModbusHoldingRegisters[ActiveCupIndex] = clampActiveCup(Outputs.active_cup);
 
-	ModbusCoils[coilIndexFromAddress(0x0010u)] = Outputs.cup_requested_state[0];
-	ModbusCoils[coilIndexFromAddress(0x0011u)] = Outputs.cup_requested_state[1];
-	ModbusCoils[coilIndexFromAddress(0x0012u)] = Outputs.cup_requested_state[2];
+	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_REQUESTED_STATE)] = Outputs.cup_requested_state[0];
+	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_REQUESTED_STATE)] = Outputs.cup_requested_state[1];
+	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_REQUESTED_STATE)] = Outputs.cup_requested_state[2];
 }
 
 static uint16_t holdingIndexFromAddress(uint16_t address) {

@@ -18,9 +18,9 @@ static bool isDefinedCoilAddress(USHORT address) {
 }
 
 static bool isWritableCoilAddress(USHORT address) {
-	return (address == MODBUS_RW_COIL_FOR_CUP_1) ||
-	       (address == MODBUS_RW_COIL_FOR_CUP_2) ||
-	       (address == MODBUS_RW_COIL_FOR_CUP_3);
+	return (address == MODBUS_ADDR_CUP1_CONTROL) ||
+	       (address == MODBUS_ADDR_CUP2_CONTROL) ||
+	       (address == MODBUS_ADDR_CUP3_CONTROL);
 }
 
 static bool isDefinedHoldingAddress(USHORT address) {
@@ -28,29 +28,29 @@ static bool isDefinedHoldingAddress(USHORT address) {
 }
 
 static bool isWritableHoldingAddress(USHORT address) {
-	if ((address >= 0x1002u) && (address <= 0x1009u)){
+	if ((address >= MODBUS_ADDR_ERROR_STORAGE) && (address <= MODBUS_ADDR_ACTIVE_CUP)){
 		return true;
 	}
-	if ((address >= 0x1010u) && (address <= 0x1062u)){
+	if ((address >= MODBUS_ADDR_CUP1_ERROR_STORAGE) && (address <= MODBUS_ADDR_CUP3_CH4_UPPER_LIMIT)){
 		return true;
 	}
 	return false;
 }
 
 static bool isValidHoldingValue(USHORT address, uint16_t value) {
-	if ((address >= 0x1003u) && (address <= 0x1008u)) {
+	if ((address >= MODBUS_ADDR_TIME_LIMIT_INSERTING_1) && (address <= MODBUS_ADDR_TIME_LIMIT_WITHDRAWING_3)) {
 		return value >= 1u;
 	}
-	if (address == 0x1009u) {
+	if (address == MODBUS_ADDR_ACTIVE_CUP) {
 		return (value >= 1u) && (value <= 3u);
 	}
-	if (address == 0x1013u) {
+	if (address == MODBUS_ADDR_INSTALLED_CUPS) {
 		return (value >= 1u) && (value <= 3u);
 	}
-	if ((address >= 0x1014u) && (address <= 0x1016u)) {
+	if ((address >= MODBUS_ADDR_ELECTRODES_CUP1) && (address <= MODBUS_ADDR_ELECTRODES_CUP3)) {
 		return (value >= 1u) && (value <= 4u);
 	}
-	if ((address >= 0x1017u) && (address <= 0x1019u)) {
+	if ((address >= MODBUS_ADDR_CUP1_TYPE) && (address <= MODBUS_ADDR_CUP3_TYPE)) {
 		return value <= 1u;
 	}
 

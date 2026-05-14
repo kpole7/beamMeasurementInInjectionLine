@@ -42,38 +42,6 @@
 // 1 = debug mode (all defined coils and holding registers are writable, no value checks)
 #define MODBUS_CUSTOM_DEBUG_NO_LIMITS 0
 
-#define MODBUS_INPUT_REGISTERS_ADDRESS 0x3001
-
-/// This is the number of read-only input registers
-#define MODBUS_INPUT_REGISTERS_NUMBER (0x300F - MODBUS_INPUT_REGISTERS_ADDRESS + 1)
-
-#define MODBUS_COILS_ADDRESS 0x0001
-
-/// This is the number of coils (as defined by Modbus); some of them are read-only, while others are read-write
-#define MODBUS_COILS_NUMBER (0x0018 - MODBUS_COILS_ADDRESS + 1)
-
-#define MODBUS_CUPS_NUMBER 3 // auxiliary constant, rather for debugging purposes
-
-#define NUMBER_OF_BYTES_SUFFICIENT_TO_STORE_COILS ((MODBUS_COILS_NUMBER + 7) / 8)
-static_assert(NUMBER_OF_BYTES_SUFFICIENT_TO_STORE_COILS * 8 >= MODBUS_COILS_NUMBER, "Error");
-
-/// Read/write coil (in the sense of Modbus) used for the cup no. 1
-#define MODBUS_RW_COIL_FOR_CUP_1 0x0001
-
-/// Read/write coil (in the sense of Modbus) used for the cup no. 2
-#define MODBUS_RW_COIL_FOR_CUP_2 0x0005
-
-/// Read/write coil (in the sense of Modbus) used for the cup no. 3
-#define MODBUS_RW_COIL_FOR_CUP_3 0x0009
-
-// This directive specifies the starting address of the register area
-#define MODBUS_HOLDING_REGISTERS_ADDRESS 0x1000
-
-// The initial registers are of type r/w; this directive specifies number of the r/w registers
-#define MODBUS_HOLDING_REGISTERS_NUMBER (0x1062 - MODBUS_HOLDING_REGISTERS_ADDRESS + 1)
-
-// static_assert(MODBUS_REGISTERS_TOTAL_NUMBER == MODBUS_AREA_RW_REGISTERS + MODBUS_AREA_RO_REGISTERS, "Error (static_assert)");
-
 // This variable enables stopping the modbus state machine instead of executing the function
 // 'assert' that was in the original freemodbus source code.
 // That enables failover and debugging.
