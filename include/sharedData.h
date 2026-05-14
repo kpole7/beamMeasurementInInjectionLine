@@ -164,15 +164,13 @@
 #define MODBUS_COILS_ADDRESS                MODBUS_ADDR_CUP1_CONTROL
 
 /// This is the number of coils (as defined by Modbus); some of them are read-only, while others are read-write
-#define MODBUS_COILS_NUMBER                 (MODBUS_ADDR_CUP3_REQUESTED_STATE - MODBUS_COILS_ADDRESS + 1)
-
-#define MODBUS_CUPS_NUMBER 3 // auxiliary constant, rather for debugging purposes
+#define MODBUS_COILS_NUMBER                 (MODBUS_ADDR_CUP3_INSERTED - MODBUS_COILS_ADDRESS + 1)
 
 #define NUMBER_OF_BYTES_SUFFICIENT_TO_STORE_COILS ((MODBUS_COILS_NUMBER + 7) / 8)
 static_assert(NUMBER_OF_BYTES_SUFFICIENT_TO_STORE_COILS * 8 >= MODBUS_COILS_NUMBER, "Error");
 
 // This directive specifies the starting address of the register area
-#define MODBUS_HOLDING_REGISTERS_ADDRESS    MODBUS_ADDR_CUP1_CONTROL
+#define MODBUS_HOLDING_REGISTERS_ADDRESS    MODBUS_ADDR_ERROR_CODE
 
 // The initial registers are of type r/w; this directive specifies number of the r/w registers
 #define MODBUS_HOLDING_REGISTERS_NUMBER     (MODBUS_ADDR_CUP3_CH4_UPPER_LIMIT - MODBUS_HOLDING_REGISTERS_ADDRESS + 1)

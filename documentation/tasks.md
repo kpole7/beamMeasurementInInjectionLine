@@ -14,9 +14,10 @@ The software performs several tasks:
 1. The Modbus server.
 2. Reading logic inputs.
 3. High-level control.
-4. Auxiliary state machines that control individual Faraday cups and monitor their operation.
-5. Analog measurements handler.
-6. Debugging terminal handler.
+4. Actuator control (low-level).
+5. Auxiliary state machines that control individual Faraday cups and monitor their operation.
+6. Analog measurements handler.
+7. Debugging terminal handler.
 
 Description
 Add. 1  Mnemonic: ModbusServer
@@ -89,7 +90,20 @@ Add. 3  Mnemonic: HighLevelCtrl
     Implementation and testing progress.
         Not implemented.
 
-Add. 4  Mnemonic: AuxiliaryFSMs
+Add. 4  Mnemonic: ActuatorCtrl
+    Description.
+        Outputting the logical states from the Actuator1Control ... Actuator3Control registers to the actuator 
+        control outputs.
+    Input data:
+        Actuator1Control, Actuator2Control, Actuator3Control
+    Output data:
+        signals on physical output ports
+    The frequency with which the task is processed:
+        400 Hz
+    Implementation and testing progress.
+        Not implemented.
+
+Add. 5  Mnemonic: AuxiliaryFSMs
     Brief description.
         This module contains 3 auxiliary state machines (auxiliary FSM) that handle the installed Faraday 
         cups (in the range from 1 to 3). Each of the auxiliary FSMs controls the Faraday cup (inserts 
@@ -138,14 +152,15 @@ Add. 4  Mnemonic: AuxiliaryFSMs
         Cup1Switch, ExternalInhibition, Cup2Switch, Cup3Switch1, Cup3Switch2,
         Cup1RequestedState, Cup2RequestedState, Cup3RequestedState.
     Output data:
-        signals on physical output ports, Cup1Error, Cup2Error, Cup3Error, 
-        Cup1LastError, Cup2LastError, Cup3LastError, Cup1ErrorStorage, Cup2ErrorStorage, Cup3ErrorStorage.
+        Actuator1Control, Actuator2Control, Actuator3Control,
+        Cup1Error, Cup2Error, Cup3Error, Cup1LastError, Cup2LastError, Cup3LastError, 
+        Cup1ErrorStorage, Cup2ErrorStorage, Cup3ErrorStorage.
     The frequency with which the task is processed:
         400 Hz
     Implementation and testing progress.
         Not implemented.
 
-Add. 5  Mnemonic: AnalogInputs
+Add. 6  Mnemonic: AnalogInputs
     Brief description.
         This module measures analog signals from a multichannel input amplifier. 
     Detailed description.
@@ -158,7 +173,7 @@ Add. 5  Mnemonic: AnalogInputs
                             the electrode inside the Faraday cup whose current we want to measure); 
                             ActiveChannel is a module state variable; 
                             for example, when ActiveCup equals 1, the ActiveChannel variable takes on values 
-                            ranging from 0 to ElectrodesInsideCup1 - 1;;
+                            ranging from 0 to ElectrodesInsideCup1 - 1;
         During a cyclic call, the module performs the following steps:
         A.  The module reads the values of ADC0 and ADC1 (these are digital values corresponding to the same 
             analog signal, with the difference that the analog signal in the ADC1 channel is amplified 10 
@@ -206,7 +221,7 @@ Add. 5  Mnemonic: AnalogInputs
     Implementation and testing progress.
         Implemented to about 10%.
 
-Add. 6  Mnemonic: DebugTerminal
+Add. 7  Mnemonic: DebugTerminal
     Brief description.
         This module provides a debugging tool using the USB connection. It allows you displaying and 
         evaluating certain Modbus registers. The main purpose of this tool is to run and test functions 
