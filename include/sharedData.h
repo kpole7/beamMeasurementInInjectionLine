@@ -135,6 +135,9 @@
 #define MODBUS_ADDR_CUP1_INSERTED           0x0016u
 #define MODBUS_ADDR_CUP2_INSERTED           0x0017u
 #define MODBUS_ADDR_CUP3_INSERTED           0x0018u
+#define MODBUS_ADDR_ACTUATOR1_CONTROL       0x0019u
+#define MODBUS_ADDR_ACTUATOR2_CONTROL       0x001Au
+#define MODBUS_ADDR_ACTUATOR3_CONTROL       0x001Bu
 
 //..............................................................................
 // Modbus Input Register Address Mnemonics (from ModbusRegisters.csv)
@@ -164,7 +167,7 @@
 #define MODBUS_COILS_ADDRESS                MODBUS_ADDR_CUP1_CONTROL
 
 /// This is the number of coils (as defined by Modbus); some of them are read-only, while others are read-write
-#define MODBUS_COILS_NUMBER                 (MODBUS_ADDR_CUP3_INSERTED - MODBUS_COILS_ADDRESS + 1)
+#define MODBUS_COILS_NUMBER                 (MODBUS_ADDR_ACTUATOR3_CONTROL - MODBUS_COILS_ADDRESS + 1)
 
 #define NUMBER_OF_BYTES_SUFFICIENT_TO_STORE_COILS ((MODBUS_COILS_NUMBER + 7) / 8)
 static_assert(NUMBER_OF_BYTES_SUFFICIENT_TO_STORE_COILS * 8 >= MODBUS_COILS_NUMBER, "Error");

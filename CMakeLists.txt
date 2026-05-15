@@ -22,6 +22,7 @@ add_executable(beamMeasurementInInjectionLine
     ${CMAKE_CURRENT_LIST_DIR}/source/compilationTime.c
     ${CMAKE_CURRENT_LIST_DIR}/source/sharedData.c
     ${CMAKE_CURRENT_LIST_DIR}/source/highLevelCtrl.c
+    ${CMAKE_CURRENT_LIST_DIR}/source/auxiliaryFSMs.c
     ${CMAKE_CURRENT_LIST_DIR}/portfreemodbus/portevent.c
     ${CMAKE_CURRENT_LIST_DIR}/portfreemodbus/portserial.c
     ${CMAKE_CURRENT_LIST_DIR}/portfreemodbus/porttimer.c
@@ -135,6 +136,20 @@ if(NOT CMAKE_CROSSCOMPILING)
     
     # Register test
     add_test(NAME HighLevelCtrl COMMAND test_highLevelCtrl)
+
+    # Build unit test executable for AuxiliaryFSMs
+    add_executable(test_auxiliaryFSMs
+        ${CMAKE_CURRENT_LIST_DIR}/source/auxiliaryFSMs.c
+        ${CMAKE_CURRENT_LIST_DIR}/tests/test_auxiliaryFSMs.c
+    )
+
+    target_include_directories(test_auxiliaryFSMs PRIVATE
+        ${CMAKE_CURRENT_LIST_DIR}/include
+    )
+
+    target_link_libraries(test_auxiliaryFSMs PRIVATE m)
+
+    add_test(NAME AuxiliaryFSMs COMMAND test_auxiliaryFSMs)
 endif()
 
 

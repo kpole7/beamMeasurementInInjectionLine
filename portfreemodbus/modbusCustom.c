@@ -13,8 +13,8 @@
 #include "sharedData.h"
 
 static bool isDefinedCoilAddress(USHORT address) {
-	return ((address >= 0x0001u) && (address <= 0x000Cu)) ||
-	       ((address >= 0x0010u) && (address <= 0x0018u));
+	return ((address >= MODBUS_ADDR_CUP1_CONTROL) && (address <= MODBUS_ADDR_CUP3_SWITCH2)) ||
+	       ((address >= MODBUS_ADDR_CUP1_REQUESTED_STATE) && (address <= MODBUS_ADDR_ACTUATOR3_CONTROL));
 }
 
 static bool isWritableCoilAddress(USHORT address) {
@@ -24,7 +24,7 @@ static bool isWritableCoilAddress(USHORT address) {
 }
 
 static bool isDefinedHoldingAddress(USHORT address) {
-	return (address >= 0x1000u) && (address <= 0x1062u);
+	return (address >= MODBUS_ADDR_ERROR_CODE) && (address <= MODBUS_ADDR_CUP3_CH4_UPPER_LIMIT);
 }
 
 static bool isWritableHoldingAddress(USHORT address) {
@@ -58,7 +58,7 @@ static bool isValidHoldingValue(USHORT address, uint16_t value) {
 }
 
 static bool isDefinedInputRegisterAddress(USHORT address) {
-	return (address >= 0x3001u) && (address <= 0x300Fu);
+	return (address >= MODBUS_ADDR_CUP1_CH1_SAMPLE) && (address <= MODBUS_ADDR_CUP3_CHANNEL_ERROR);
 }
 
 static uint16_t holdingIndexFromAddress(USHORT address) {
