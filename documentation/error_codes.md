@@ -1,4 +1,4 @@
-## Project AppForFaradayCups
+# BeamMeasurementInInjectionLine
 ### Error codes in Modbus registers: ErrorCode, Cup1Error, Cup2Error, and Cup3Error
 
 

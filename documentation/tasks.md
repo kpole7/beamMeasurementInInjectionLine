@@ -1,4 +1,4 @@
-# Project AppForFaradayCups
+# BeamMeasurementInInjectionLine
 ## Main tasks
 
   The purpose of this project is to support several (up to 3) Faraday cups. These are measuring devices used to measure the ion beam in the ion beamline between the ion source and the cyclotron. During normal cyclotron operation, the Faraday cups are retracted from the ion beamline. The ion beam travels from the ion source, passes the first cup, the second, and possibly the third if installed, and continues toward the cyclotron. A Faraday cup is inserted into the ion beamline to perform measurements in such a way that the inserted cup covers the entire ion beamline. Therefore, measurements in the second cup are meaningful only when the first cup is withdrawn from the ion beamline and the second is inserted. Similarly, measurements in the third cup should be taken when the first and second cups are withdrawn and the third is inserted into the ion beamline. The first Faraday cup inserted into the ion channel (as viewed from the ion source) will be referred to as the active cup. The purpose of this project is to control the insertion and removal of Faraday cups, measure the currents in the electrodes of the active cup, and act as a Modbus server to enable remote operation.
@@ -18,6 +18,7 @@ The software performs several tasks:
 5. Auxiliary state machines that control individual Faraday cups and monitor their operation.
 6. Analog measurements handler.
 7. Debugging terminal handler.
+8. Debugging simulator.
 
 Description
 Add. 1  Mnemonic: ModbusServer
@@ -232,6 +233,22 @@ Add. 7  Mnemonic: DebugTerminal
         10 Hz
     Implementation and testing progress.
         The task has been implemented and tested only with regard to a few Modbus registers.
+
+Add. 8. Mnemonic: DebugSimulator
+    Brief description.
+        Works only in simulation mode; simulates hardware operation.
+    Detailed description.
+        Simulated scenarios: 
+            A.  normal operation of a pneumatic mechanism; mnemonic: SimPneumatic;
+            B.  normal operation of a motor mechanism; mnemonic: SimMotor;
+            C.  normal operation of a multichannel amplifier; mnemonic: SimAmplifier;
+            D.  events: enabling and disabling a lock (mnemonic: SimExtLock), failures and disturbances 
+                (mnemonic: SimFailure).
+    The frequency with which the task is processed:
+        400 Hz
+    Implementation and testing progress.
+        Not implemented.
+
 
 ```
 
