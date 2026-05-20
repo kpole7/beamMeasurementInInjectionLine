@@ -25,7 +25,7 @@
 #include <string.h>
 
 /// This directive tells that the LED on pico PCB is connected to GPIO25 port
-#define PICO_ON_BOARD_LED_PIN 25
+#define GPIO_FOR_PICO_ON_BOARD_LED 25
 
 //..............................................................................
 // Local variables concerning checking jumper states and LED light time
@@ -60,8 +60,6 @@ static void modbusActivityLedService(void);
 static void printRegisters(void);
 
 static void mainInitialization(void);
-
-static void slowProcessesService(void);
 
 static void highLevelCtrlService(void);
 
@@ -104,10 +102,15 @@ int main() {
 
 	while (1) {
 
-		if (atomic_load_explicit(&SixtyFourMillisecondsTimeTick, memory_order_acquire)) {
-			atomic_store_explicit(&SixtyFourMillisecondsTimeTick, false, memory_order_release);
+		if (atomic_load_explicit(&SlowProcessesTimeTick1, memory_order_acquire)) {
+			atomic_store_explicit(&SlowProcessesTimeTick1, false, memory_order_release);
 
-			slowProcessesService();
+			getVoltageSamples();
+		}
+		if (atomic_load_explicit(&SlowProcessesTimeTick2, memory_order_acquire)) {
+			atomic_store_explicit(&SlowProcessesTimeTick2, false, memory_order_release);
+
+			debugTerminalCommandInterpreter(&ModbusHoldingRegisters[0], MODBUS_HOLDING_REGISTERS_NUMBER, 'a');
 		}
 
 		if (atomic_load_explicit(&TwoMillisecondsTimeTick, memory_order_acquire)) {
@@ -153,9 +156,9 @@ int main() {
 
 /// This function initializes and turns on the LED on pico board.
 static void turnOnLedOnBoard(void) {
-	gpio_init(PICO_ON_BOARD_LED_PIN);
-	gpio_set_dir(PICO_ON_BOARD_LED_PIN, GPIO_OUT);
-	gpio_put(PICO_ON_BOARD_LED_PIN, true);
+	gpio_init(GPIO_FOR_PICO_ON_BOARD_LED);
+	gpio_set_dir(GPIO_FOR_PICO_ON_BOARD_LED, GPIO_OUT);
+	gpio_put(GPIO_FOR_PICO_ON_BOARD_LED, true);
 }
 
 /// This function initializes the operation of the LED that indicates Modbus transmission.
@@ -271,11 +274,6 @@ static void mainInitialization(void){
 	eMBEnable();
 
 	startPeriodicInterrupt();
-}
-
-/// This function is used for debugging purposes
-static void slowProcessesService(void){
-	debugTerminalCommandInterpreter(&ModbusHoldingRegisters[0], MODBUS_HOLDING_REGISTERS_NUMBER, 'a');
 }
 
 static void highLevelCtrlService(void) {

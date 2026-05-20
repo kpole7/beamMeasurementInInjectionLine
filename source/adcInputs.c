@@ -71,3 +71,4 @@ float getVoltage(void) {
 	}
 	return (float)Accumulator * GetVoltageCoefficient - GetVoltageOffset;
 }
+

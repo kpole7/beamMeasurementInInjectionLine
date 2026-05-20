@@ -14,7 +14,7 @@
 
 extern atomic_bool TwoMillisecondsTimeTick;
 
-extern atomic_bool SixtyFourMillisecondsTimeTick;
+extern atomic_bool SlowProcessesTimeTick1, SlowProcessesTimeTick2;
 
 //---------------------------------------------------------------------------------------------------
 // Function prototypes
