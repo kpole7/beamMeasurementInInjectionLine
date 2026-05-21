@@ -148,15 +148,6 @@ bool readInputPortJP1(void) { return (gpio_get(AUXILIARY_INPUT_JP1)); }
 
 #endif // MODBUS_DEBUG_MODE
 
-void initInputPortJP2(void) {
-	gpio_init(AUXILIARY_INPUT_JP2);
-	gpio_set_dir(AUXILIARY_INPUT_JP2, GPIO_IN);
-	gpio_pull_up(AUXILIARY_INPUT_JP2);
-}
-
-// This function checks if the jumper JP1 is present.
-bool readInputPortJP2(void) { return (gpio_get(AUXILIARY_INPUT_JP2)); }
-
 /// @brief This function initializes the auxiliary output pins for testing purposes.
 void auxiliaryOutputsInitialize(void) {
 	gpio_init(AUXILIARY_PIN_1);

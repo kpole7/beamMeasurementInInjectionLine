@@ -265,7 +265,6 @@ static void mainInitialization(void){
 	initInputPortJP1();
 	initAuxiliaryPrintouts();
 #endif
-	initInputPortJP2();
 	printf("\r\nHello!\r\nCompilation time is %s\r\n", CompilationTime);
 
 	auxiliaryOutputsInitialize();

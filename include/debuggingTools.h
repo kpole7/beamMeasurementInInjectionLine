@@ -7,12 +7,10 @@
 #include "masterConfig.h"
 #include <stdatomic.h>
 
-#define AUXILIARY_INPUT_JP1 14 // The jumper JP1 tells pico whether printing should be enabled
+#define AUXILIARY_INPUT_JP1 28 // The jumper JP1 tells pico whether printing should be enabled
 
-#define AUXILIARY_INPUT_JP2 10
-
-#define AUXILIARY_PIN_1 18
-#define AUXILIARY_PIN_2 19
+#define AUXILIARY_PIN_1 22
+#define AUXILIARY_PIN_2 8
 
 #if defined(APP_DEBUG_BUILD)
 #define APP_DEBUG 1
@@ -58,9 +56,6 @@ void initInputPortJP1(void);
 bool readInputPortJP1(void);
 
 #endif // MODBUS_DEBUG_MODE
-
-void initInputPortJP2(void);
-bool readInputPortJP2(void);
 
 void auxiliaryOutputsInitialize(void);
 void auxiliaryPinOutputValue1(bool Value);

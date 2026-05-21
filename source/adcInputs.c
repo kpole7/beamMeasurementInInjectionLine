@@ -1,6 +1,7 @@
 /// @file adcInputs.c
 
 #include "adcInputs.h"
+#include "sharedData.h"
 #include "hardware/adc.h"
 #include "pico/stdlib.h"
 #include <math.h>
@@ -11,11 +12,21 @@
 // Macro directives
 //---------------------------------------------------------------------------------------------------
 
-/// This is size of the buffer for raw samples
+/// This is size of the buffer for raw samples; it must be a power of 2 for the correct operation of the circular buffer
 #define ADC_RAW_BUFFER_SIZE 4
 
-/// This directive indicates that the ADC0 on RP2040 is assigned to GPIO26 port
+/// This mask is used for calculating the index in the circular buffer for raw samples
+#define ADC_INDEX_MASK 3
+
+// This directive indicates that the ADC0 and ADC1 on RP2040 are assigned to GPIO26 and GPIO27 ports respectively
 #define GPIO_FOR_ADC0 26
+#define GPIO_FOR_ADC1 27
+
+#define GPIO_FOR_CUP_MULTIPLEXER_CONTROL_0 9
+#define GPIO_FOR_CUP_MULTIPLEXER_CONTROL_1 10
+
+#define GPIO_FOR_CHANNEL_MULTIPLEXER_CONTROL_0 11
+#define GPIO_FOR_CHANNEL_MULTIPLEXER_CONTROL_1 12
 
 //---------------------------------------------------------------------------------------------------
 // Local constants
@@ -29,37 +40,90 @@ static const float GetVoltageOffset = (float)0.0;
 //---------------------------------------------------------------------------------------------------
 
 /// @brief This is a buffer for raw samples from the ADC0 converter
-/// This variable is used in timer interrupt handler
-static atomic_uint_fast16_t RawBufferAdc0[ADC_RAW_BUFFER_SIZE];
+static uint16_t RawBufferAdc0[ADC_RAW_BUFFER_SIZE];
+
+/// @brief This is a buffer for raw samples from the ADC1 converter
+static uint16_t RawBufferAdc1[ADC_RAW_BUFFER_SIZE];
 
 /// @brief Index for writing new samples from ADC0 and ADC1
-/// This variable is used in timer interrupt handler
-static volatile uint32_t AdcBuffersHead = 0;
+static uint32_t AdcBuffersHead = 0;
+
+/// @brief This variable stores the value of the active cup (1, 2 or 3) that is read from Modbus holding register; 
+/// it is used for checking if the active cup has changed since the last measurement cycle
+static uint16_t LocalActiveCup;
+
+/// @brief This variable stores the index of the currently measured channel
+static uint16_t ActiveChannel;
+
+//---------------------------------------------------------------------------------------------------
+// Local function prototypes
+//---------------------------------------------------------------------------------------------------
+
+static void controlSelectedCup( uint16_t CupNumber );
+static void controlSelectedChannel( uint16_t ChannelNumber );
 
 //---------------------------------------------------------------------------------------------------
 // Function definitions
 //---------------------------------------------------------------------------------------------------
 
-/// This function initializes peripherals for ADC measuring and the state machine for measurements
+/// This function initializes peripherals for ADC measuring and the local variables related to ADC measurements
 void initializeAdcMeasurements(void) {
 	AdcBuffersHead = 0;
 	adc_init();
 	adc_gpio_init(GPIO_FOR_ADC0);
+	adc_gpio_init(GPIO_FOR_ADC1);
+
+	gpio_init(GPIO_FOR_CUP_MULTIPLEXER_CONTROL_0);
+	gpio_set_dir(GPIO_FOR_CUP_MULTIPLEXER_CONTROL_0, GPIO_OUT);
+	gpio_put(GPIO_FOR_CUP_MULTIPLEXER_CONTROL_0, false);
+
+	gpio_init(GPIO_FOR_CUP_MULTIPLEXER_CONTROL_1);
+	gpio_set_dir(GPIO_FOR_CUP_MULTIPLEXER_CONTROL_1, GPIO_OUT);
+	gpio_put(GPIO_FOR_CUP_MULTIPLEXER_CONTROL_1, false);
+
+	gpio_init(GPIO_FOR_CHANNEL_MULTIPLEXER_CONTROL_0);
+	gpio_set_dir(GPIO_FOR_CHANNEL_MULTIPLEXER_CONTROL_0, GPIO_OUT);
+	gpio_put(GPIO_FOR_CHANNEL_MULTIPLEXER_CONTROL_0, false);
+
+	gpio_init(GPIO_FOR_CHANNEL_MULTIPLEXER_CONTROL_1);
+	gpio_set_dir(GPIO_FOR_CHANNEL_MULTIPLEXER_CONTROL_1, GPIO_OUT);
+	gpio_put(GPIO_FOR_CHANNEL_MULTIPLEXER_CONTROL_1, false);
+
+	LocalActiveCup = 1u; // default value of the ActiveCup register
+	ActiveChannel = 0;
 }
 
 /// @brief This function collects measurements from ADC
 /// It should be called only by the timer ISR (repeatingTimerISR)
 void getVoltageSamples(void) {
-
+	// Step A . . . . . . . . . .
+	AdcBuffersHead &= ADC_INDEX_MASK;
 	// Measure ADC0
 	adc_select_input(0);
 	(void)adc_read(); // dummy read
-	atomic_store_explicit(&RawBufferAdc0[AdcBuffersHead], adc_read(), memory_order_release);
-
+	RawBufferAdc0[AdcBuffersHead] = adc_read();
+	// Measure ADC1
+	adc_select_input(1);
+	(void)adc_read(); // dummy read
+	RawBufferAdc1[AdcBuffersHead] = adc_read();
+	// Update the index for the next samples
 	AdcBuffersHead++;
-	if (AdcBuffersHead >= ADC_RAW_BUFFER_SIZE) {
-		AdcBuffersHead = 0;
-	}
+
+	// Step B . . . . . . . . . .
+
+
+
+	// Step F . . . . . . . . . .
+	LocalActiveCup = ModbusHoldingRegisters[0x1060u]; // just for testing purposes
+	LocalActiveCup--;
+	LocalActiveCup &= 3u; // just for testing purposes
+	ActiveChannel = ModbusHoldingRegisters[0x1061u]; // just for testing purposes
+	ActiveChannel &= 3u; // just for testing purposes
+
+	controlSelectedCup(LocalActiveCup);
+	controlSelectedChannel(ActiveChannel);
+
+
 }
 
 /// @brief This function measures the voltage at ADC input and make some calculations
@@ -67,8 +131,17 @@ void getVoltageSamples(void) {
 float getVoltage(void) {
 	uint32_t Accumulator = 0;
 	for (uint8_t J = 0; J < ADC_RAW_BUFFER_SIZE; J++) {
-		Accumulator += atomic_load_explicit(&RawBufferAdc0[J], memory_order_acquire);
+		Accumulator += RawBufferAdc0[J];
 	}
 	return (float)Accumulator * GetVoltageCoefficient - GetVoltageOffset;
 }
 
+static void controlSelectedCup( uint16_t CupNumber ){
+	gpio_put(GPIO_FOR_CUP_MULTIPLEXER_CONTROL_0, (CupNumber & 1u) != 0u);
+	gpio_put(GPIO_FOR_CUP_MULTIPLEXER_CONTROL_1, (CupNumber & 2u) != 0u);
+}
+
+static void controlSelectedChannel( uint16_t ChannelNumber ){
+	gpio_put(GPIO_FOR_CHANNEL_MULTIPLEXER_CONTROL_0, (ChannelNumber & 1u) != 0u);
+	gpio_put(GPIO_FOR_CHANNEL_MULTIPLEXER_CONTROL_1, (ChannelNumber & 2u) != 0u);
+}
