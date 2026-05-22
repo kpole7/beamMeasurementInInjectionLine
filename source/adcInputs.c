@@ -7,6 +7,7 @@
 #include <math.h>
 #include <stdatomic.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 //---------------------------------------------------------------------------------------------------
 // Macro directives
@@ -114,15 +115,25 @@ void getVoltageSamples(void) {
 
 
 	// Step F . . . . . . . . . .
-	LocalActiveCup = ModbusHoldingRegisters[0x1060u]; // just for testing purposes
-	LocalActiveCup--;
-	LocalActiveCup &= 3u; // just for testing purposes
-	ActiveChannel = ModbusHoldingRegisters[0x1061u]; // just for testing purposes
-	ActiveChannel &= 3u; // just for testing purposes
+	static uint16_t RegisterOldValue;
 
-	controlSelectedCup(LocalActiveCup);
-	controlSelectedChannel(ActiveChannel);
+	if (RegisterOldValue != ModbusHoldingRegisters[96]){
+		RegisterOldValue = ModbusHoldingRegisters[96];
 
+		LocalActiveCup = RegisterOldValue; // just for testing purposes
+		LocalActiveCup &= 0x70u;
+		LocalActiveCup >>= 4u;
+		LocalActiveCup--;
+		LocalActiveCup &= 3u;
+
+		ActiveChannel = RegisterOldValue; // just for testing purposes
+		ActiveChannel &= 3u;
+
+		controlSelectedCup(LocalActiveCup);
+		controlSelectedChannel(ActiveChannel);
+
+		printf("New value: %04X, Active Cup: %u, Active Channel: %u\r\n", RegisterOldValue, LocalActiveCup, ActiveChannel);
+	}
 
 }
 

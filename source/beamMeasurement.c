@@ -43,6 +43,8 @@ static bool IsJumperJP1;
 static bool OldIsJumperJP1;
 #endif
 
+static uint16_t DebugOldValue;
+
 //..............................................................................
 // Prototypes of functions
 //..............................................................................
@@ -91,16 +93,35 @@ int main() {
 	// Initializations of variables, peripherals, etc.
 	mainInitialization();
 
-#if 0  // Auxiliary printouts for debugging purpose
+#if 1  // Auxiliary printouts for debugging purpose
 	sleep_ms(1000);
 	printf("Hello!\r\n");
 #endif
+
+
+
+
+	if (DebugOldValue != ModbusHoldingRegisters[96]){
+		DebugOldValue = ModbusHoldingRegisters[96];
+		printf("New value: %04X; %s:%d, %s\r\n", DebugOldValue, __FILE__, __LINE__, __TIME__);
+	}
+
+
 
 	//...............
 	// The main loop
 	//...............
 
 	while (1) {
+
+
+
+		if (DebugOldValue != ModbusHoldingRegisters[96]){
+			DebugOldValue = ModbusHoldingRegisters[96];
+			printf("New value: %04X; %s:%d, %s\r\n", DebugOldValue, __FILE__, __LINE__, __TIME__);
+		}
+
+
 
 		if (atomic_load_explicit(&SlowProcessesTimeTick1, memory_order_acquire)) {
 			atomic_store_explicit(&SlowProcessesTimeTick1, false, memory_order_release);
@@ -116,9 +137,11 @@ int main() {
 		if (atomic_load_explicit(&TwoMillisecondsTimeTick, memory_order_acquire)) {
 			atomic_store_explicit(&TwoMillisecondsTimeTick, false, memory_order_release);
 
+#if 0
 			modbusActivityLedService();
 			highLevelCtrlService();
 			auxiliaryFSMsService();
+#endif
 
 #if MODBUS_DEBUG_MODE
 			// Reading the states of jumpers.

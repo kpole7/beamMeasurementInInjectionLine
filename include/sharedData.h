@@ -169,16 +169,11 @@
 /// This is the number of coils (as defined by Modbus); some of them are read-only, while others are read-write
 #define MODBUS_COILS_NUMBER                 (MODBUS_ADDR_ACTUATOR3_CONTROL - MODBUS_COILS_ADDRESS + 1)
 
-#define NUMBER_OF_BYTES_SUFFICIENT_TO_STORE_COILS ((MODBUS_COILS_NUMBER + 7) / 8)
-static_assert(NUMBER_OF_BYTES_SUFFICIENT_TO_STORE_COILS * 8 >= MODBUS_COILS_NUMBER, "Error");
-
 // This directive specifies the starting address of the register area
 #define MODBUS_HOLDING_REGISTERS_ADDRESS    MODBUS_ADDR_ERROR_CODE
 
 // The initial registers are of type r/w; this directive specifies number of the r/w registers
 #define MODBUS_HOLDING_REGISTERS_NUMBER     (MODBUS_ADDR_CUP3_CH4_UPPER_LIMIT - MODBUS_HOLDING_REGISTERS_ADDRESS + 1)
-
-// static_assert(MODBUS_REGISTERS_TOTAL_NUMBER == MODBUS_AREA_RW_REGISTERS + MODBUS_AREA_RO_REGISTERS, "Error (static_assert)");
 
 
 //..............................................................................
