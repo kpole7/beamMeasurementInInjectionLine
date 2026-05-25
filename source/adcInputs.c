@@ -19,15 +19,23 @@
 /// This mask is used for calculating the index in the circular buffer for raw samples
 #define ADC_INDEX_MASK 3
 
+#define ANALOG_MAX_CHANNELS 4
+
 // This directive indicates that the ADC0 and ADC1 on RP2040 are assigned to GPIO26 and GPIO27 ports respectively
 #define GPIO_FOR_ADC0 26
 #define GPIO_FOR_ADC1 27
 
-#define GPIO_FOR_CUP_MULTIPLEXER_CONTROL_0 9
-#define GPIO_FOR_CUP_MULTIPLEXER_CONTROL_1 10
+#define GPIO_FOR_CUP_MULTIPLEXER_CONTROL_0 10
+#define GPIO_FOR_CUP_MULTIPLEXER_CONTROL_1 9
 
-#define GPIO_FOR_CHANNEL_MULTIPLEXER_CONTROL_0 11
-#define GPIO_FOR_CHANNEL_MULTIPLEXER_CONTROL_1 12
+#define GPIO_FOR_CHANNEL_MULTIPLEXER_CONTROL_0 12
+#define GPIO_FOR_CHANNEL_MULTIPLEXER_CONTROL_1 11
+
+//---------------------------------------------------------------------------------------------------
+// Global variables
+//---------------------------------------------------------------------------------------------------
+
+uint16_t AnalogRangeChangeThreshold = DEFAULT_ANALOG_RANGE_CHANGE_THRESHOLD;
 
 //---------------------------------------------------------------------------------------------------
 // Local constants
@@ -41,10 +49,10 @@ static const float GetVoltageOffset = (float)0.0;
 //---------------------------------------------------------------------------------------------------
 
 /// @brief This is a buffer for raw samples from the ADC0 converter
-static uint16_t RawBufferAdc0[ADC_RAW_BUFFER_SIZE];
+static uint16_t RawBufferAdc0[ANALOG_MAX_CHANNELS][ADC_RAW_BUFFER_SIZE];
 
 /// @brief This is a buffer for raw samples from the ADC1 converter
-static uint16_t RawBufferAdc1[ADC_RAW_BUFFER_SIZE];
+static uint16_t RawBufferAdc1[ANALOG_MAX_CHANNELS][ADC_RAW_BUFFER_SIZE];
 
 /// @brief Index for writing new samples from ADC0 and ADC1
 static uint32_t AdcBuffersHead = 0;
@@ -102,11 +110,11 @@ void getVoltageSamples(void) {
 	// Measure ADC0
 	adc_select_input(0);
 	(void)adc_read(); // dummy read
-	RawBufferAdc0[AdcBuffersHead] = adc_read();
+	RawBufferAdc0[ActiveChannel][AdcBuffersHead] = adc_read();
 	// Measure ADC1
 	adc_select_input(1);
 	(void)adc_read(); // dummy read
-	RawBufferAdc1[AdcBuffersHead] = adc_read();
+	RawBufferAdc1[ActiveChannel][AdcBuffersHead] = adc_read();
 	// Update the index for the next samples
 	AdcBuffersHead++;
 
@@ -115,44 +123,75 @@ void getVoltageSamples(void) {
 
 
 	// Step F . . . . . . . . . .
-	static uint16_t RegisterOldValue;
 
-	if (RegisterOldValue != ModbusHoldingRegisters[96]){
-		RegisterOldValue = ModbusHoldingRegisters[96];
+	if (ActiveChannel < (ANALOG_MAX_CHANNELS - 1)) {
+		ActiveChannel++;
+	} else {
+		ActiveChannel = 0;
 
-		LocalActiveCup = RegisterOldValue; // just for testing purposes
-		LocalActiveCup &= 0x70u;
-		LocalActiveCup >>= 4u;
-		LocalActiveCup--;
-		LocalActiveCup &= 3u;
+		static uint16_t RegisterOldValue; // just for testing purposes
 
-		ActiveChannel = RegisterOldValue; // just for testing purposes
-		ActiveChannel &= 3u;
+		if (RegisterOldValue != ModbusHoldingRegisters[0x50]){	// debugging: 0x1050
+			RegisterOldValue = ModbusHoldingRegisters[0x50];
 
-		controlSelectedCup(LocalActiveCup);
-		controlSelectedChannel(ActiveChannel);
+			LocalActiveCup = RegisterOldValue; // just for testing purposes
+			LocalActiveCup &= 0x7u;
+			LocalActiveCup--;
+			LocalActiveCup &= 3u;
 
-		printf("New value: %04X, Active Cup: %u, Active Channel: %u\r\n", RegisterOldValue, LocalActiveCup, ActiveChannel);
+			for (uint16_t J = 0; J < ANALOG_MAX_CHANNELS; J++) {
+				for (uint16_t K = 0; K < ADC_RAW_BUFFER_SIZE; K++) {
+					RawBufferAdc0[J][K] = 0;
+					RawBufferAdc1[J][K] = 0;
+				}
+			}
+
+			controlSelectedCup(LocalActiveCup);
+		}
+
+		// just for testing purposes
+		static uint16_t PrintoutsDivider = 0;
+		PrintoutsDivider++;
+		PrintoutsDivider &= 3u;
+
+		if (PrintoutsDivider == 0) {
+			printf("Cup: %u  ", LocalActiveCup+1);
+			for (uint16_t J = 0; J < ANALOG_MAX_CHANNELS; J++) {
+				uint32_t Accumulator0 = 0;
+				uint32_t Accumulator1 = 0;
+				for (uint16_t K = 0; K < ADC_RAW_BUFFER_SIZE; K++) {
+					Accumulator0 += RawBufferAdc0[J][K];
+					Accumulator1 += RawBufferAdc1[J][K];
+				}
+				printf("Ch%u: %4lu  %4lu  ", J, Accumulator0, Accumulator1);
+			}
+			printf("\r\n");
+		}
 	}
 
+
+	controlSelectedChannel(ActiveChannel);
 }
 
 /// @brief This function measures the voltage at ADC input and make some calculations
 /// The function should be called only in the main loop
-float getVoltage(void) {
-	uint32_t Accumulator = 0;
+float getVoltage( uint16_t ChannelNumber ) {
+	uint32_t Accumulator0 = 0;
+	uint32_t Accumulator1 = 0;
+	bool IsSignalLarge = false;
 	for (uint8_t J = 0; J < ADC_RAW_BUFFER_SIZE; J++) {
-		Accumulator += RawBufferAdc0[J];
+		Accumulator0 += RawBufferAdc0[ChannelNumber][J];
+		Accumulator1 += RawBufferAdc1[ChannelNumber][J];
 	}
-	return (float)Accumulator * GetVoltageCoefficient - GetVoltageOffset;
+	return (float)Accumulator0 * GetVoltageCoefficient - GetVoltageOffset;
 }
 
 static void controlSelectedCup( uint16_t CupNumber ){
-	gpio_put(GPIO_FOR_CUP_MULTIPLEXER_CONTROL_0, (CupNumber & 1u) != 0u);
-	gpio_put(GPIO_FOR_CUP_MULTIPLEXER_CONTROL_1, (CupNumber & 2u) != 0u);
+	gpio_put(GPIO_FOR_CUP_MULTIPLEXER_CONTROL_0, (CupNumber & 1u) == 0u);
+	gpio_put(GPIO_FOR_CUP_MULTIPLEXER_CONTROL_1, (CupNumber & 2u) == 0u);
 }
 
 static void controlSelectedChannel( uint16_t ChannelNumber ){
-	gpio_put(GPIO_FOR_CHANNEL_MULTIPLEXER_CONTROL_0, (ChannelNumber & 1u) != 0u);
-	gpio_put(GPIO_FOR_CHANNEL_MULTIPLEXER_CONTROL_1, (ChannelNumber & 2u) != 0u);
+	gpio_put(GPIO_FOR_CHANNEL_MULTIPLEXER_CONTROL_0, (ChannelNumber & 1u) == 0u);
+	gpio_put(GPIO_FOR_CHANNEL_MULTIPLEXER_CONTROL_1, (ChannelNumber & 2u) == 0u);
 }

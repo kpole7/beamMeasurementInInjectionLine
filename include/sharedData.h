@@ -175,6 +175,7 @@
 // The initial registers are of type r/w; this directive specifies number of the r/w registers
 #define MODBUS_HOLDING_REGISTERS_NUMBER     (MODBUS_ADDR_CUP3_CH4_UPPER_LIMIT - MODBUS_HOLDING_REGISTERS_ADDRESS + 1)
 
+#define DEFAULT_ANALOG_RANGE_CHANGE_THRESHOLD 0x300u
 
 //..............................................................................
 // Definitions of variables concerning Modbus communication

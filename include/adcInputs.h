@@ -14,6 +14,6 @@ void initializeAdcMeasurements(void);
 
 void getVoltageSamples(void);
 
-float getVoltage(void);
+float getVoltage( uint16_t ChannelNumber );
 
 #endif // SOURCE_ADC_INPUTS_H_
