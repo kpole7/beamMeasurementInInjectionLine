@@ -7,7 +7,7 @@
 /// FSM = finite state machine
 /// ISR = interrupt service routine
 
-#include "adcInputs.h"
+#include "analogInputs.h"
 #include "auxiliaryFSMs.h"
 #include "compilationTime.h"
 #include "debuggingTools.h"

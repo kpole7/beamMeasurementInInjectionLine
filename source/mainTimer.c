@@ -2,7 +2,7 @@
 
 #include "pico/stdlib.h"
 
-#include "adcInputs.h"
+#include "analogInputs.h"
 #include "debuggingTools.h"
 #include "mainTimer.h"
 

@@ -1,8 +1,8 @@
-/// @file adcInputs.h
+/// @file analogInputs.h
 /// @brief This module measures input voltages on ADC0 and ADC1
 
-#ifndef SOURCE_ADC_INPUTS_H_
-#define SOURCE_ADC_INPUTS_H_
+#ifndef SOURCE_ANALOG_INPUTS_H_
+#define SOURCE_ANALOG_INPUTS_H_
 
 #include "pico/stdlib.h"
 
@@ -16,4 +16,4 @@ void getVoltageSamples(void);
 
 float getVoltage( uint16_t ChannelNumber );
 
-#endif // SOURCE_ADC_INPUTS_H_
+#endif // SOURCE_ANALOG_INPUTS_H_

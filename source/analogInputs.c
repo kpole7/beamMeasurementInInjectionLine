@@ -1,6 +1,5 @@
-/// @file adcInputs.c
+/// @file analogInputs.c
 
-#include "adcInputs.h"
 #include "sharedData.h"
 #include "hardware/adc.h"
 #include "pico/stdlib.h"

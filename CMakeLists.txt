@@ -17,7 +17,7 @@ if(CMAKE_CROSSCOMPILING)
 add_executable(beamMeasurementInInjectionLine
     ${CMAKE_CURRENT_LIST_DIR}/source/beamMeasurement.c
     ${CMAKE_CURRENT_LIST_DIR}/source/mainTimer.c
-    ${CMAKE_CURRENT_LIST_DIR}/source/adcInputs.c
+    ${CMAKE_CURRENT_LIST_DIR}/source/analogInputs.c
     ${CMAKE_CURRENT_LIST_DIR}/source/debuggingTools.c
     ${CMAKE_CURRENT_LIST_DIR}/source/compilationTime.c
     ${CMAKE_CURRENT_LIST_DIR}/source/sharedData.c
