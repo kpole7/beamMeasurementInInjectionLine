@@ -166,8 +166,8 @@ int main() {
 			// Stopping the modbus state machine instead of executing the function 'assert'
 			// that was in the original freemodbus source code.
 			// That enables failover and debugger actions.
-			if (irq_is_enabled(MODBUS_UART0_IRQ)) {
-				irq_set_enabled(MODBUS_UART0_IRQ, false);
+			if (irq_is_enabled(MODBUS_UART_IRQ)) {
+				irq_set_enabled(MODBUS_UART_IRQ, false);
 			}
 		}
 	} // The main loop

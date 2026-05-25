@@ -69,8 +69,8 @@ target_link_libraries(beamMeasurementInInjectionLine
 )
 
 # enable usb output, disable uart output
-pico_enable_stdio_usb(beamMeasurementInInjectionLine 1)
-pico_enable_stdio_uart(beamMeasurementInInjectionLine 0)
+pico_enable_stdio_usb(beamMeasurementInInjectionLine 0)
+pico_enable_stdio_uart(beamMeasurementInInjectionLine 1)
 
 # create map/bin/hex/uf2 file etc.
 pico_add_extra_outputs(beamMeasurementInInjectionLine)

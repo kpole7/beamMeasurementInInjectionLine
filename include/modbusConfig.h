@@ -8,20 +8,20 @@
 #include <stdatomic.h>
 
 // Which uart is used by Pico
-#define MODBUS_UART_ID uart0
+#define MODBUS_UART_ID uart1
 
 // Which GPIO port is used as UART TX
-#define MODBUS_UART_TX_PIN 0
+#define MODBUS_UART_TX_PIN 4
 
 // Which GPIO port is used as UART RX
-#define MODBUS_UART_RX_PIN 1
+#define MODBUS_UART_RX_PIN 5
 
 // Parameters of Modbus transmission
 #define MODBUS_BAUD_RATE 19200
 #define MODBUS_DATA_BITS 8
 #define MODBUS_PARITY UART_PARITY_EVEN
 
-#define MODBUS_UART0_IRQ UART0_IRQ
+#define MODBUS_UART_IRQ UART1_IRQ
 
 // The LED connected to GP5 flashes when the slave receives the Modbus frame
 #define GPIO_MODBUS_ACTIVITY_LED 15

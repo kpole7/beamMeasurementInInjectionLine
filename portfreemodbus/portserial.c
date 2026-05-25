@@ -97,8 +97,8 @@ xMBPortSerialInit( UCHAR ucPORT, ULONG ulBaudRate, UCHAR ucDataBits, eMBParity e
     uart_set_format( MODBUS_UART_ID, MODBUS_DATA_BITS, 1, MODBUS_PARITY );
     uart_set_fifo_enabled(MODBUS_UART_ID, false);
 
-	irq_set_exclusive_handler(MODBUS_UART0_IRQ, prvvUARTxISR);
-    irq_set_enabled(MODBUS_UART0_IRQ, true);
+	irq_set_exclusive_handler(MODBUS_UART_IRQ, prvvUARTxISR);
+    irq_set_enabled(MODBUS_UART_IRQ, true);
     uart_set_irq_enables( MODBUS_UART_ID, true, false );
     return true;
 }
