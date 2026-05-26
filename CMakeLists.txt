@@ -23,6 +23,7 @@ add_executable(beamMeasurementInInjectionLine
     ${CMAKE_CURRENT_LIST_DIR}/source/sharedData.c
     ${CMAKE_CURRENT_LIST_DIR}/source/highLevelCtrl.c
     ${CMAKE_CURRENT_LIST_DIR}/source/auxiliaryFSMs.c
+    ${CMAKE_CURRENT_LIST_DIR}/source/actuatorCtrl.c
     ${CMAKE_CURRENT_LIST_DIR}/portfreemodbus/portevent.c
     ${CMAKE_CURRENT_LIST_DIR}/portfreemodbus/portserial.c
     ${CMAKE_CURRENT_LIST_DIR}/portfreemodbus/porttimer.c

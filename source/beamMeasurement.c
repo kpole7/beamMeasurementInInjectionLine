@@ -436,7 +436,14 @@ static void auxiliaryFSMsService(void) {
 	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_INSERTED)] = Outputs.cup_inserted[2];
 	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)] = Outputs.actuator_control[0];
 	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)] = Outputs.actuator_control[1];
-	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL)] = Outputs.actuator_control[2];
+
+
+
+//	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL)] = Outputs.actuator_control[2];
+
+
+
+
 }
 
 static uint16_t holdingIndexFromAddress(uint16_t address) {

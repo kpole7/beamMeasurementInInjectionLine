@@ -13,8 +13,7 @@
 #include "sharedData.h"
 
 static bool isDefinedCoilAddress(USHORT address) {
-	return ((address >= MODBUS_ADDR_CUP1_CONTROL) && (address <= MODBUS_ADDR_CUP3_SWITCH2)) ||
-	       ((address >= MODBUS_ADDR_CUP1_REQUESTED_STATE) && (address <= MODBUS_ADDR_ACTUATOR3_CONTROL));
+	return ((address >= MODBUS_COILS_ADDRESS) && (address <= MODBUS_COILS_ADDRESS + MODBUS_COILS_NUMBER - 1));
 }
 
 static bool isWritableCoilAddress(USHORT address) {
@@ -24,14 +23,15 @@ static bool isWritableCoilAddress(USHORT address) {
 }
 
 static bool isDefinedHoldingAddress(USHORT address) {
-	return (address >= MODBUS_ADDR_ERROR_CODE) && (address <= MODBUS_ADDR_CUP3_CH4_UPPER_LIMIT);
+	return ((address >= MODBUS_HOLDING_REGISTERS_ADDRESS) && 
+	(address <= MODBUS_HOLDING_REGISTERS_ADDRESS + MODBUS_HOLDING_REGISTERS_NUMBER - 1));
 }
 
 static bool isWritableHoldingAddress(USHORT address) {
 	if ((address >= MODBUS_ADDR_ERROR_STORAGE) && (address <= MODBUS_ADDR_ACTIVE_CUP)){
 		return true;
 	}
-	if ((address >= MODBUS_ADDR_CUP1_ERROR_STORAGE) && (address <= MODBUS_ADDR_CUP3_CH4_UPPER_LIMIT)){
+	if ((address >= MODBUS_ADDR_CUP1_ERROR_STORAGE) && (address <= MODBUS_ADDR_SIM_EVENT_DELAY)) {
 		return true;
 	}
 	return false;
@@ -58,7 +58,8 @@ static bool isValidHoldingValue(USHORT address, uint16_t value) {
 }
 
 static bool isDefinedInputRegisterAddress(USHORT address) {
-	return (address >= MODBUS_ADDR_CUP1_CH1_SAMPLE) && (address <= MODBUS_ADDR_CUP3_CHANNEL_ERROR);
+	return (address >= MODBUS_INPUT_REGISTERS_ADDRESS) && 
+	(address <= MODBUS_INPUT_REGISTERS_ADDRESS + MODBUS_INPUT_REGISTERS_NUMBER - 1);
 }
 
 static uint16_t holdingIndexFromAddress(USHORT address) {

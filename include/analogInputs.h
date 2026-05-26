@@ -4,7 +4,7 @@
 #ifndef SOURCE_ANALOG_INPUTS_H_
 #define SOURCE_ANALOG_INPUTS_H_
 
-#include "pico/stdlib.h"
+#include <stdint.h>
 
 //---------------------------------------------------------------------------------------------------
 // Function prototypes
