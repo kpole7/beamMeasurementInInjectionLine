@@ -17,6 +17,7 @@
 #include "mb.h"
 #include "modbusConfig.h"
 #include "sharedData.h"
+#include "actuatorCtrl.h"
 #include "pico/stdlib.h"
 #include <stdatomic.h>
 #include <stdbool.h>
@@ -126,8 +127,9 @@ int main() {
 		if (atomic_load_explicit(&TwoMillisecondsTimeTick, memory_order_acquire)) {
 			atomic_store_explicit(&TwoMillisecondsTimeTick, false, memory_order_release);
 
-#if 0
+			actuatorCtrlTick();
 			modbusActivityLedService();
+#if 0
 			highLevelCtrlService();
 			auxiliaryFSMsService();
 #endif
@@ -248,7 +250,7 @@ static void mainInitialization(void){
 	}
 	for (int J = 0; J < MODBUS_COILS_NUMBER; J++) {
 		ModbusCoils[J] = false;
-		CoilsChanged[J] = false;
+		ModbusCoilTrigger[J] = false;
 	}
 
 	// Defaults from ModbusRegisters.csv
@@ -288,6 +290,7 @@ static void mainInitialization(void){
 
 	initializeAdcMeasurements();
 	auxiliaryOutputsInitialize();
+	initializeActuatorControl();
 
 	eMBInit(MB_RTU, MODBUS_SLAVE_ID, 0, MODBUS_BAUD_RATE, MODBUS_PARITY); // The parameter ucPort is a dummy and will be ignored
 	eMBEnable();

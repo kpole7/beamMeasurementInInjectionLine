@@ -4,6 +4,8 @@
 #ifndef SOURCE_ACTUATOR_CTRL_H_
 #define SOURCE_ACTUATOR_CTRL_H_
 
+void initializeActuatorControl(void);
 
+void actuatorCtrlTick(void);
 
 #endif // SOURCE_ACTUATOR_CTRL_H_

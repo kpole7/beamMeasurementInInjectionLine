@@ -156,7 +156,7 @@ eMBErrorCode    eMBRegCoilsCB( UCHAR * pucRegBuffer, USHORT usAddress,
 
 		bool value = (0u != pucRegBuffer[0]);
 		ModbusCoils[index] = value;
-		CoilsChanged[index] = true;
+		ModbusCoilTrigger[index] = true;
 
 		return MB_ENOERR;
 	}

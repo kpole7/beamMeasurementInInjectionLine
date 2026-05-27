@@ -14,7 +14,7 @@ uint16_t ModbusInputRegisters[MODBUS_INPUT_REGISTERS_NUMBER];
 bool ModbusCoils[MODBUS_COILS_NUMBER];
 
 /// This is a table indicating which coils have changed via Modbus communication.
-bool CoilsChanged[MODBUS_COILS_NUMBER];
+bool ModbusCoilTrigger[MODBUS_COILS_NUMBER];
 
 // This is a table of Modbus registers for debugging purposes.
 uint16_t ModbusHoldingRegisters[MODBUS_HOLDING_REGISTERS_NUMBER];

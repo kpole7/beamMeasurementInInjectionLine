@@ -148,13 +148,24 @@ void getVoltageSamples(void) {
 			}
 		}
 
+		// just for testing purposes
+		bool PrintoutsForTestingPurposes = true;
+		if ((ModbusHoldingRegisters[79] & 0x8000u) != 0u){	// just for testing purposes
+			PrintoutsForTestingPurposes = true;
+		}
+		else{
+			PrintoutsForTestingPurposes = false;
+		}
+
 		// Calculations are carried out on the basis of the samples stored in the buffers, 
 		// and the results are stored in Modbus input registers
 		static uint16_t CalculationDivider = 0;
 		CalculationDivider++;
 		CalculationDivider &= 3u;
 		if (CalculationDivider == 0) {
-			printf("Cup: %u  ", LocalActiveCup+1); // just for testing purposes
+			if (PrintoutsForTestingPurposes) {
+				printf("Cup: %u  ", LocalActiveCup+1); // just for testing purposes
+			}
 			for (uint16_t J = 0; J < ANALOG_MAX_CHANNELS; J++) {
 				uint16_t Offset;
 				uint16_t Factor;
@@ -194,15 +205,19 @@ void getVoltageSamples(void) {
 				}
 
 				// just for testing purposes
-				printf("Ch%u: %4lu %3lu %u.%u uA  ", J, Accumulator0, Accumulator1, 
-					(unsigned int)(ModbusInputRegisters[LocalActiveCup*5 + J]/10), 
-					(unsigned int)(ModbusInputRegisters[LocalActiveCup*5 + J]%10));
-				if (J == 3u){
-					printf("  %c  %d.%d uA  Offs= %ld  params: %u %u", HighLowIndicator, (int)(Result/10), (int)(Result%10), SignedOffset, Offset, Factor);
+				if (PrintoutsForTestingPurposes) {
+					printf("Ch%u: %4lu %3lu %u.%u uA  ", J, Accumulator0, Accumulator1, 
+						(unsigned int)(ModbusInputRegisters[LocalActiveCup*5 + J]/10), 
+						(unsigned int)(ModbusInputRegisters[LocalActiveCup*5 + J]%10));
+					if (J == 3u){
+						printf("  %c  %d.%d uA  Offs= %ld  params: %u %u", HighLowIndicator, (int)(Result/10), (int)(Result%10), SignedOffset, Offset, Factor);
+					}
 				}
 
 			}
-			printf("\r\n"); // just for testing purposes
+			if (PrintoutsForTestingPurposes) {
+				printf("\r\n"); // just for testing purposes
+			}
 		}
 	}
 	controlSelectedCup(LocalActiveCup);

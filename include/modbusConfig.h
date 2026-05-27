@@ -40,7 +40,7 @@
 // Mode selection for modbusCustom.c:
 // 0 = normal mode (read/write restrictions and value checks enabled)
 // 1 = debug mode (all defined coils and holding registers are writable, no value checks)
-#define MODBUS_CUSTOM_DEBUG_NO_LIMITS 0
+#define MODBUS_CUSTOM_DEBUG_NO_LIMITS 1
 
 // This variable enables stopping the modbus state machine instead of executing the function
 // 'assert' that was in the original freemodbus source code.
