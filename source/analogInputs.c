@@ -130,8 +130,8 @@ void getVoltageSamples(void) {
 
 		static uint16_t RegisterOldValue; // just for testing purposes
 
-		if (RegisterOldValue != ModbusHoldingRegisters[0x50]){	// debugging: 0x1050
-			RegisterOldValue = ModbusHoldingRegisters[0x50];
+		if (RegisterOldValue != ModbusHoldingRegisters[80]){	// debugging: 0x1050
+			RegisterOldValue = ModbusHoldingRegisters[80];
 
 			LocalActiveCup = RegisterOldValue; // just for testing purposes
 			LocalActiveCup &= 0x7u;
@@ -156,13 +156,42 @@ void getVoltageSamples(void) {
 		if (PrintoutsDivider == 0) {
 			printf("Cup: %u  ", LocalActiveCup+1);
 			for (uint16_t J = 0; J < ANALOG_MAX_CHANNELS; J++) {
+				uint16_t Offset;
+				uint16_t Factor;
 				uint32_t Accumulator0 = 0;
 				uint32_t Accumulator1 = 0;
+				int32_t Result;
+				int32_t SignedOffset = 0;
+				char HighLowIndicator = ' ';
 				for (uint16_t K = 0; K < ADC_RAW_BUFFER_SIZE; K++) {
 					Accumulator0 += RawBufferAdc0[J][K];
 					Accumulator1 += RawBufferAdc1[J][K];
 				}
+				if (Accumulator1 < ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_RANGE_CHANGE_THRESHOLD)]) {
+					Offset = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CH1_GAIN1_OFFSET) + LocalActiveCup*4 + J];
+					Factor = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CH1_GAIN1_FACTOR) + LocalActiveCup*4 + J];
+					Result = (int32_t)Accumulator0;
+					HighLowIndicator = 'H';
+				} else {
+					Offset = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CH1_GAIN2_OFFSET) + LocalActiveCup*4 + J];
+					Factor = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CH1_GAIN2_FACTOR) + LocalActiveCup*4 + J];
+					Result = (int32_t)(Accumulator1*10u); // unify units
+					HighLowIndicator = 'L';
+				}
+				if (Offset >= 0x8000u) {
+					SignedOffset = (int32_t)(Offset - 0x10000u);
+				} else {
+					SignedOffset = (int32_t)Offset;
+				}
+				Result += SignedOffset;
+				Result = (Result * (int32_t)Factor) / 100000; // unit = 100nA
+
 				printf("Ch%u: %4lu  %4lu  ", J, Accumulator0, Accumulator1);
+
+				if (J == 3u){
+					printf("  %c  %d.%d uA  Offs= %ld  params: %u %u", HighLowIndicator, (int)(Result/10), (int)(Result%10), SignedOffset, Offset, Factor);
+				}
+
 			}
 			printf("\r\n");
 		}

@@ -29,3 +29,15 @@ atomic_bool ModbusActiveLedShort;
 /// This is a flag indicating that the LED should shine longer, due to sending a response back to the master.
 volatile bool ModbusActiveLedLong;
 
+uint16_t holdingIndexFromAddress(uint16_t address) {
+	return (uint16_t)(address - MODBUS_HOLDING_REGISTERS_ADDRESS);
+}
+
+uint16_t inputIndexFromAddress(uint16_t address) {
+	return (uint16_t)(address - MODBUS_INPUT_REGISTERS_ADDRESS);
+}
+
+uint16_t coilIndexFromAddress(uint16_t address) {
+	return (uint16_t)(address - MODBUS_COILS_ADDRESS);
+}
+

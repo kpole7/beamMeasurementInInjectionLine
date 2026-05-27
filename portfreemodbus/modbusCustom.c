@@ -62,6 +62,7 @@ static bool isDefinedInputRegisterAddress(USHORT address) {
 	(address <= MODBUS_INPUT_REGISTERS_ADDRESS + MODBUS_INPUT_REGISTERS_NUMBER - 1);
 }
 
+#if 0
 static uint16_t holdingIndexFromAddress(USHORT address) {
 	return (uint16_t)(address - MODBUS_HOLDING_REGISTERS_ADDRESS);
 }
@@ -73,6 +74,7 @@ static uint16_t inputIndexFromAddress(USHORT address) {
 static uint16_t coilIndexFromAddress(USHORT address) {
 	return (uint16_t)(address - MODBUS_COILS_ADDRESS);
 }
+#endif
 
 /// This is callback function for reading and writing holding registers
 /// @callgraph

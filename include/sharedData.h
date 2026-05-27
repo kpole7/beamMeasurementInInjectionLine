@@ -210,7 +210,7 @@
 /// This is the number of read-only input registers
 #define MODBUS_INPUT_REGISTERS_NUMBER       (MODBUS_ADDR_CUP3_CHANNEL_ERROR - MODBUS_ADDR_CUP1_CH1_SAMPLE + 1)
 
-#define DEFAULT_ANALOG_RANGE_CHANGE_THRESHOLD 0x300u
+#define DEFAULT_ANALOG_RANGE_CHANGE_THRESHOLD 175u  // experimentally determined value
 
 //..............................................................................
 // Definitions of variables concerning Modbus communication
@@ -220,6 +220,15 @@ extern uint16_t ModbusInputRegisters[MODBUS_INPUT_REGISTERS_NUMBER];
 extern bool ModbusCoils[MODBUS_COILS_NUMBER];
 extern bool CoilsChanged[MODBUS_COILS_NUMBER];
 extern uint16_t ModbusHoldingRegisters[MODBUS_HOLDING_REGISTERS_NUMBER];
+
+
+uint16_t holdingIndexFromAddress(uint16_t address);
+
+uint16_t inputIndexFromAddress(uint16_t address);
+
+uint16_t coilIndexFromAddress(uint16_t address);
+
+
 
 
 #endif // SHARED_DATA_H

@@ -43,7 +43,7 @@ static bool IsJumperJP1;
 static bool OldIsJumperJP1;
 #endif
 
-static uint16_t DebugOldValue;
+static uint16_t DebugOldValue = 0xFFFFu;
 
 //..............................................................................
 // Prototypes of functions
@@ -67,12 +67,6 @@ static void highLevelCtrlService(void);
 
 static void auxiliaryFSMsService(void);
 
-static uint16_t holdingIndexFromAddress(uint16_t address);
-
-static uint16_t inputIndexFromAddress(uint16_t address);
-
-static uint16_t coilIndexFromAddress(uint16_t address);
-
 static uint16_t clampInstalledCups(uint16_t value);
 
 static uint16_t clampActiveCup(uint16_t value);
@@ -93,16 +87,11 @@ int main() {
 	// Initializations of variables, peripherals, etc.
 	mainInitialization();
 
-#if 1  // Auxiliary printouts for debugging purpose
-	sleep_ms(1000);
-	printf("Hello!\r\n");
-#endif
 
 
 
-
-	if (DebugOldValue != ModbusHoldingRegisters[96]){
-		DebugOldValue = ModbusHoldingRegisters[96];
+	if (DebugOldValue != ModbusHoldingRegisters[74]){
+		DebugOldValue = ModbusHoldingRegisters[74];
 		printf("New value: %04X; %s:%d, %s\r\n", DebugOldValue, __FILE__, __LINE__, __TIME__);
 	}
 
@@ -116,8 +105,8 @@ int main() {
 
 
 
-		if (DebugOldValue != ModbusHoldingRegisters[96]){
-			DebugOldValue = ModbusHoldingRegisters[96];
+		if (DebugOldValue != ModbusHoldingRegisters[74]){
+			DebugOldValue = ModbusHoldingRegisters[74];
 			printf("New value: %04X; %s:%d, %s\r\n", DebugOldValue, __FILE__, __LINE__, __TIME__);
 		}
 
@@ -240,6 +229,11 @@ static void printRegisters(void){
 }
 
 static void mainInitialization(void){
+	stdio_init_all();
+	atomic_store_explicit(&ModbusAssertionFailed, false, memory_order_release);
+	turnOnLedOnBoard();
+	initModbusActivityLed();
+
 	uint16_t InstalledCupsAddress = holdingIndexFromAddress(MODBUS_ADDR_INSTALLED_CUPS);
 	uint16_t ElectrodesInsideCup1Address = holdingIndexFromAddress(MODBUS_ADDR_ELECTRODES_CUP1);
 	uint16_t ElectrodesInsideCup2Address = holdingIndexFromAddress(MODBUS_ADDR_ELECTRODES_CUP2);
@@ -248,13 +242,6 @@ static void mainInitialization(void){
 	uint16_t Cup2TypeAddress = holdingIndexFromAddress(MODBUS_ADDR_CUP2_TYPE);
 	uint16_t Cup3TypeAddress = holdingIndexFromAddress(MODBUS_ADDR_CUP3_TYPE);
 	uint16_t ActiveCupAddress = holdingIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP);
-
-	atomic_store_explicit(&ModbusAssertionFailed, false, memory_order_release);
-
-	stdio_init_all();
-	turnOnLedOnBoard();
-	initModbusActivityLed();
-	initializeAdcMeasurements();
 
 	for (int J = 0; J < MODBUS_HOLDING_REGISTERS_NUMBER; J++) {
 		ModbusHoldingRegisters[J] = 0;
@@ -276,6 +263,13 @@ static void mainInitialization(void){
 	ModbusHoldingRegisters[Cup2TypeAddress] = 0u;
 	ModbusHoldingRegisters[Cup3TypeAddress] = 1u;
 	ModbusHoldingRegisters[ActiveCupAddress] = 1u;
+	for (int J = holdingIndexFromAddress(MODBUS_ADDR_CUP1_CH1_GAIN1_FACTOR); 
+	J <= holdingIndexFromAddress(MODBUS_ADDR_CUP3_CH4_GAIN2_FACTOR); 
+	J++) 
+	{
+		ModbusHoldingRegisters[J] = 14000u;
+	}
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_RANGE_CHANGE_THRESHOLD)] = DEFAULT_ANALOG_RANGE_CHANGE_THRESHOLD;
 
 	memset(&HighLevelState, 0, sizeof(HighLevelState));
 	HighLevelState.retained_active_cup = 1u;
@@ -288,8 +282,11 @@ static void mainInitialization(void){
 	initInputPortJP1();
 	initAuxiliaryPrintouts();
 #endif
+
+	sleep_ms(100);
 	printf("\r\nHello!\r\nCompilation time is %s\r\n", CompilationTime);
 
+	initializeAdcMeasurements();
 	auxiliaryOutputsInitialize();
 
 	eMBInit(MB_RTU, MODBUS_SLAVE_ID, 0, MODBUS_BAUD_RATE, MODBUS_PARITY); // The parameter ucPort is a dummy and will be ignored
@@ -444,18 +441,6 @@ static void auxiliaryFSMsService(void) {
 
 
 
-}
-
-static uint16_t holdingIndexFromAddress(uint16_t address) {
-	return (uint16_t)(address - MODBUS_HOLDING_REGISTERS_ADDRESS);
-}
-
-static uint16_t inputIndexFromAddress(uint16_t address) {
-	return (uint16_t)(address - MODBUS_INPUT_REGISTERS_ADDRESS);
-}
-
-static uint16_t coilIndexFromAddress(uint16_t address) {
-	return (uint16_t)(address - MODBUS_COILS_ADDRESS);
 }
 
 static uint16_t clampInstalledCups(uint16_t value) {
