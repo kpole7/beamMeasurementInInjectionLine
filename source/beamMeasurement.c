@@ -8,6 +8,7 @@
 /// ISR = interrupt service routine
 
 #include "analogInputs.h"
+#include "logicInputs.h"
 #include "auxiliaryFSMs.h"
 #include "compilationTime.h"
 #include "debuggingTools.h"
@@ -105,6 +106,7 @@ int main() {
 		if (atomic_load_explicit(&TwoMillisecondsTimeTick, memory_order_acquire)) {
 			atomic_store_explicit(&TwoMillisecondsTimeTick, false, memory_order_release);
 
+			logicInputsTick();
 			actuatorCtrlTick();
 			modbusActivityLedService();
 #if 0
@@ -266,6 +268,7 @@ static void mainInitialization(void){
 	sleep_ms(100);
 	printf("\r\nHello!\r\nCompilation time is %s\r\n", CompilationTime);
 
+	initializeLogicInputs();
 	initializeAdcMeasurements();
 	auxiliaryOutputsInitialize();
 	initializeActuatorControl();
