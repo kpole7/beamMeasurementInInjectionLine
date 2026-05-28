@@ -1,9 +1,9 @@
 # BeamMeasurementInInjectionLine
 ## Main tasks
 
-  The purpose of this project is to support several (up to 3) Faraday cups. These are measuring devices used to measure the ion beam in the ion beamline between the ion source and the cyclotron. During normal cyclotron operation, the Faraday cups are retracted from the ion beamline. The ion beam travels from the ion source, passes the first cup, the second, and possibly the third if installed, and continues toward the cyclotron. A Faraday cup is inserted into the ion beamline to perform measurements in such a way that the inserted cup covers the entire ion beamline. Therefore, measurements in the second cup are meaningful only when the first cup is withdrawn from the ion beamline and the second is inserted. Similarly, measurements in the third cup should be taken when the first and second cups are withdrawn and the third is inserted into the ion beamline. The first Faraday cup inserted into the ion channel (as viewed from the ion source) will be referred to as the active cup. The purpose of this project is to control the insertion and removal of Faraday cups, measure the currents in the electrodes of the active cup, and act as a Modbus server to enable remote operation.
+  The purpose of this project is to support several (up to 3) Faraday cups. These are measuring devices used to measure the ion beam in the ion beamline between the ion source and the cyclotron. During normal cyclotron operation, the Faraday cups are retracted from the ion beamline. The ion beam travels from the ion source, passes the first cup, the second, and the third, and continues toward the cyclotron. A Faraday cup is inserted into the ion beamline to perform measurements in such a way that the inserted cup covers the entire ion beamline. Therefore, measurements in the second cup are meaningful only when the first cup is withdrawn from the ion beamline and the second is inserted. Similarly, measurements in the third cup should be taken when the first and second cups are withdrawn and the third is inserted into the ion beamline. The first Faraday cup inserted into the ion channel (as viewed from the ion source) will be referred to as the active cup. The purpose of this project is to control the insertion and removal of Faraday cups, measure the currents in the electrodes of the active cup, and act as a Modbus server to enable remote operation.
 
-  The Faraday cup control device serves another important purpose. Specifically, it is one of the key components of the safety system. The safety system can send a signal to the Faraday cup control device to immediately block the ion beam entering the cyclotron. This signal involves a change in the logic level on the signal line and causes the last Faraday cup (i.e., the one closest to the cyclotron) to slide into the ion beamline.
+  The Faraday cup control device serves another important purpose. Specifically, it is one of the key components of the safety system. The safety system can send a signal to the Faraday cup control device to immediately block the ion beam entering the cyclotron. This signal involves a change in the logic level on the signal line and causes the second Faraday cup (i.e., the one in the middle) to slide into the ion beamline.
 
 This project description uses the ModbusRegisters.csv file, which contains a list of Modbus registers. The ModbusRegisters.csv file is generated from the ModbusRegisters.ods file.
 
@@ -29,8 +29,6 @@ Add. 1  Mnemonic: ModbusServer
         address.
     Detailed description.
         The register address space is presented in the Modbus registers table.
-    Implementation and testing progress.
-        The task has been implemented and tested only with regard to a few Modbus registers.
 
 Add. 2  Mnemonic: LogicInputs
     Brief description.
@@ -46,9 +44,7 @@ Add. 2  Mnemonic: LogicInputs
     Output data: 
         Cup1Switch, ExternalInhibition, Cup2Switch, Cup3Switch1, Cup3Switch2.
     The frequency with which the task is processed:
-        400 Hz
-    Implementation and testing progress.
-        Not implemented.
+        500 Hz
 
 Add. 3  Mnemonic: HighLevelCtrl
     Brief description.
@@ -73,8 +69,7 @@ Add. 3  Mnemonic: HighLevelCtrl
             Cup #1 is closest to the ion source;
             Cup #2 is between Cup #1 and Cup #3;
             Cup #3 is farthest from the ion source and closest to the cyclotron;
-        "Lock the beam" action = Hold the cup closest to the cyclotron (cup #InstalledCups) in an inserted 
-            position to block the ion beam.
+        "Lock the beam" action = Hold the second cup in an inserted position to block the ion beam.
         “Respond to failure” action = { backup ErrorCode in LastError register; update ErrorCode register;
             update ErrorStorage register }
         "Return to normal" action = { if ErrorCode!=0, then { backup ErrorCode in LastError register}; 
@@ -87,9 +82,7 @@ Add. 3  Mnemonic: HighLevelCtrl
         ErrorCode, LastError, ErrorStorage, ActiveCup, 
         Cup1RequestedState, Cup2RequestedState, Cup3RequestedState
     The frequency with which the task is processed:
-        400 Hz
-    Implementation and testing progress.
-        Not implemented.
+        500 Hz
 
 Add. 4  Mnemonic: ActuatorCtrl
     Description.
@@ -100,9 +93,7 @@ Add. 4  Mnemonic: ActuatorCtrl
     Output data:
         signals on physical output ports
     The frequency with which the task is processed:
-        400 Hz
-    Implementation and testing progress.
-        Not implemented.
+        500 Hz
 
 Add. 5  Mnemonic: AuxiliaryFSMs
     Brief description.
@@ -157,9 +148,7 @@ Add. 5  Mnemonic: AuxiliaryFSMs
         Cup1Error, Cup2Error, Cup3Error, Cup1LastError, Cup2LastError, Cup3LastError, 
         Cup1ErrorStorage, Cup2ErrorStorage, Cup3ErrorStorage.
     The frequency with which the task is processed:
-        400 Hz
-    Implementation and testing progress.
-        Not implemented.
+        500 Hz
 
 Add. 6  Mnemonic: AnalogInputs
     Brief description.
@@ -218,9 +207,7 @@ Add. 6  Mnemonic: AnalogInputs
         lower layer - logic signals controlling multiplexers,
         Cup1Channel1Sample ...Cup3Channel4Sample
     The frequency with which the task is processed:
-        10 Hz
-    Implementation and testing progress.
-        Implemented to about 10%.
+        c.a. 10 Hz
 
 Add. 7  Mnemonic: DebugTerminal
     Brief description.
@@ -230,9 +217,7 @@ Add. 7  Mnemonic: DebugTerminal
     Detailed description.
         This module acts as a kind of terminal; this tool is designed to work within the cutecom application.
     The frequency with which the task is processed:
-        10 Hz
-    Implementation and testing progress.
-        The task has been implemented and tested only with regard to a few Modbus registers.
+        c.a. 10 Hz
 
 Add. 8. Mnemonic: DebugSimulator
     Brief description.
@@ -245,9 +230,7 @@ Add. 8. Mnemonic: DebugSimulator
             D.  events: enabling and disabling a lock (mnemonic: SimExtLock), failures and disturbances 
                 (mnemonic: SimFailure).
     The frequency with which the task is processed:
-        400 Hz
-    Implementation and testing progress.
-        Not implemented.
+        500 Hz
 
 
 ```
