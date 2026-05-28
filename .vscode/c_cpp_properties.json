@@ -3,9 +3,10 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "${env:PICO_SDK_PATH}/**"
             ],
-            "compileCommands": "${workspaceFolder}/build/pico-release/compile_commands.json",
+            "compileCommands": "${workspaceFolder}/build/pico-debug/compile_commands.json",
             "defines": [],
             "compilerPath": "/usr/bin/arm-none-eabi-gcc",
             "cStandard": "gnu11",

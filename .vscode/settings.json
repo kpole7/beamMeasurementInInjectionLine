@@ -2,7 +2,14 @@
     "files.associations": {
         "*.c": "c"
     },
-    "C_Cpp.default.compileCommands": "${workspaceFolder}/build/pico-release/compile_commands.json",
+    "cmake.useCMakePresets": "always",
+    "cmake.defaultConfigurePreset": "pico-debug",
+    "cmake.defaultBuildPreset": "pico-debug",
+    "cmake.configurePreset": "pico-debug",
+    "cmake.buildPreset": "pico-debug",
+    "cmake.configureOnOpen": true,
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "C_Cpp.default.compileCommands": "${workspaceFolder}/build/pico-debug/compile_commands.json",
     "C_Cpp.default.compilerPath": "/usr/bin/arm-none-eabi-gcc",
     "C_Cpp.default.intelliSenseMode": "linux-gcc-arm"
 }
