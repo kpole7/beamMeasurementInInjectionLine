@@ -44,8 +44,6 @@ static bool IsJumperJP1;
 static bool OldIsJumperJP1;
 #endif
 
-static uint16_t DebugOldValue = 0xFFFFu;
-
 //..............................................................................
 // Prototypes of functions
 //..............................................................................
@@ -88,31 +86,11 @@ int main() {
 	// Initializations of variables, peripherals, etc.
 	mainInitialization();
 
-
-
-
-	if (DebugOldValue != ModbusHoldingRegisters[74]){
-		DebugOldValue = ModbusHoldingRegisters[74];
-		printf("New value: %04X; %s:%d, %s\r\n", DebugOldValue, __FILE__, __LINE__, __TIME__);
-	}
-
-
-
 	//...............
 	// The main loop
 	//...............
 
 	while (1) {
-
-
-
-		if (DebugOldValue != ModbusHoldingRegisters[74]){
-			DebugOldValue = ModbusHoldingRegisters[74];
-			printf("New value: %04X; %s:%d, %s\r\n", DebugOldValue, __FILE__, __LINE__, __TIME__);
-		}
-
-
-
 		if (atomic_load_explicit(&SlowProcessesTimeTick1, memory_order_acquire)) {
 			atomic_store_explicit(&SlowProcessesTimeTick1, false, memory_order_release);
 
