@@ -31,7 +31,7 @@ static bool isWritableHoldingAddress(USHORT address) {
 	if ((address >= MODBUS_ADDR_ERROR_STORAGE) && (address <= MODBUS_ADDR_ACTIVE_CUP)){
 		return true;
 	}
-	if ((address >= MODBUS_ADDR_CUP1_ERROR_STORAGE) && (address <= MODBUS_ADDR_SIM_EVENT_DELAY)) {
+	if ((address >= MODBUS_ADDR_CUP1_ERROR_STORAGE) && (address <= MODBUS_ADDR_THE_LAST_HOLDING_REGISTER)) {
 		return true;
 	}
 	return false;

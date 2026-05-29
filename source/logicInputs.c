@@ -98,7 +98,7 @@ void logicInputsTick(void) {
     // just for testing purposes
     static bool OldStableState[5] = {0};
     char DebugNames[5][5] = {"sw1", "sw2", "sw3A", "sw3B", "INH"};
-    if ((ModbusHoldingRegisters[79] & 0x2000u) != 0u){
+    if ((ModbusHoldingRegisters[MODBUS_ADDR_DEBUG_PRINTOUTS] & 4u) != 0u){
         for (int J = 0; J < 5; J++) {
             if (StableState[J] != OldStableState[J]) {
                 printf("Input %s changed to %d\r\n", DebugNames[J], (int)StableState[J]);

@@ -37,6 +37,8 @@
 #define MODBUS_ADDR_ACTUATOR3_CONTROL_OUT 25
 #define MODBUS_ADDR_ACTUATOR3_CONTROL_BRAKE 26
 
+#define MODBUS_ADDR_THE_LAST_COIL 26
+
 //..............................................................................
 // Modbus Holding Register Address Mnemonics (from ModbusRegisters.csv)
 //..............................................................................
@@ -173,6 +175,10 @@
 #define MODBUS_ADDR_SIM_EVENT_PERIOD 1129
 #define MODBUS_ADDR_SIM_EVENT_DURATION 1130
 #define MODBUS_ADDR_SIM_EVENT_DELAY 1131
+#define MODBUS_ADDR_DEBUG_PRINTOUTS 1132
+#define MODBUS_ADDR_DEBUG_ARGUMENT1 1133
+
+#define MODBUS_ADDR_THE_LAST_HOLDING_REGISTER 1133
 
 //..............................................................................
 // Modbus Input Register Address Mnemonics (from ModbusRegisters.csv)
@@ -194,21 +200,27 @@
 #define MODBUS_ADDR_CUP3_CH4_SAMPLE 3014
 #define MODBUS_ADDR_CUP3_CHANNEL_ERROR 3015
 
+#define MODBUS_ADDR_THE_LAST_INPUT_REGISTER 3015
+
+//..............................................................................
+// Constants related to Modbus registers
+//..............................................................................
+
 #define MODBUS_COILS_ADDRESS                MODBUS_ADDR_CUP1_CONTROL
 
 /// This is the number of coils (as defined by Modbus); some of them are read-only, while others are read-write
-#define MODBUS_COILS_NUMBER                 (MODBUS_ADDR_ACTUATOR3_CONTROL_BRAKE - MODBUS_ADDR_CUP1_CONTROL + 1)
+#define MODBUS_COILS_NUMBER                 (MODBUS_ADDR_THE_LAST_COIL - MODBUS_ADDR_CUP1_CONTROL + 1)
 
 // This directive specifies the starting address of the register area
 #define MODBUS_HOLDING_REGISTERS_ADDRESS    MODBUS_ADDR_ERROR_CODE
 
 // The initial registers are of type r/w; this directive specifies number of the r/w registers
-#define MODBUS_HOLDING_REGISTERS_NUMBER     (MODBUS_ADDR_SIM_EVENT_DELAY - MODBUS_ADDR_ERROR_CODE + 1)
+#define MODBUS_HOLDING_REGISTERS_NUMBER     (MODBUS_ADDR_THE_LAST_HOLDING_REGISTER - MODBUS_ADDR_ERROR_CODE + 1)
 
 #define MODBUS_INPUT_REGISTERS_ADDRESS      MODBUS_ADDR_CUP1_CH1_SAMPLE
 
 /// This is the number of read-only input registers
-#define MODBUS_INPUT_REGISTERS_NUMBER       (MODBUS_ADDR_CUP3_CHANNEL_ERROR - MODBUS_ADDR_CUP1_CH1_SAMPLE + 1)
+#define MODBUS_INPUT_REGISTERS_NUMBER       (MODBUS_ADDR_THE_LAST_INPUT_REGISTER - MODBUS_ADDR_CUP1_CH1_SAMPLE + 1)
 
 #define DEFAULT_ANALOG_RANGE_CHANGE_THRESHOLD 175u  // experimentally determined value
 

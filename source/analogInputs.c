@@ -126,11 +126,11 @@ void getVoltageSamples(void) {
 		ActiveChannel++;
 	} else {
 		ActiveChannel = 0;
-		if (LocalActiveCup+1 != ModbusHoldingRegisters[80]){	// debugging: register # 1080
-			if (0 == ModbusHoldingRegisters[80]){
-				ModbusHoldingRegisters[80] = 1u; // just for testing purposes (initialization of the register)
+		if (LocalActiveCup+1 != ModbusHoldingRegisters[MODBUS_ADDR_DEBUG_ARGUMENT1]){	// debugging: register # 1080
+			if (0 == ModbusHoldingRegisters[MODBUS_ADDR_DEBUG_ARGUMENT1]){
+				ModbusHoldingRegisters[MODBUS_ADDR_DEBUG_ARGUMENT1] = 1u; // just for testing purposes (initialization of the register)
 			}
-			LocalActiveCup = ModbusHoldingRegisters[80]; // just for testing purposes
+			LocalActiveCup = ModbusHoldingRegisters[MODBUS_ADDR_DEBUG_ARGUMENT1]; // just for testing purposes
 			LocalActiveCup--;
 			if (LocalActiveCup > 2u){
 				LocalActiveCup = 0u;
@@ -150,7 +150,7 @@ void getVoltageSamples(void) {
 
 		// just for testing purposes
 		bool PrintoutsForTestingPurposes = true;
-		if ((ModbusHoldingRegisters[79] & 0x8000u) != 0u){	// just for testing purposes
+		if ((ModbusHoldingRegisters[MODBUS_ADDR_DEBUG_PRINTOUTS] & 1u) != 0u){	// just for testing purposes
 			PrintoutsForTestingPurposes = true;
 		}
 		else{

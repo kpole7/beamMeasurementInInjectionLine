@@ -73,7 +73,7 @@ void actuatorCtrlTick(void) {
 
 	// just for testing purposes
 	bool anyTrigger = trigValveActuator1 || trigValveActuator2 || trigMotorActuatorIn || trigMotorActuatorOut || trigMotorActuatorBrake;
-	if (((ModbusHoldingRegisters[79] & 0x4000u) != 0u) && anyTrigger) {
+	if (((ModbusHoldingRegisters[MODBUS_ADDR_DEBUG_PRINTOUTS] & 2u) != 0u) && anyTrigger) {
 		printf("Actuator:   1    2   3in  out brake\r\n");
 		printf("Old state:  %u    %u    %u    %u    %u\r\n", StateValveActuator1, StateValveActuator2, StateMotorActuatorIn, StateMotorActuatorOut, StateMotorActuatorBrake);
 		printf("Trigger:    %u    %u    %u    %u    %u\r\n", trigValveActuator1, trigValveActuator2, trigMotorActuatorIn, trigMotorActuatorOut, trigMotorActuatorBrake);
@@ -187,7 +187,7 @@ void actuatorCtrlTick(void) {
 	}
 
 	// just for testing purposes
-	if (((ModbusHoldingRegisters[79] & 0x4000u) != 0u) && anyTrigger) {
+	if (((ModbusHoldingRegisters[MODBUS_ADDR_DEBUG_PRINTOUTS] & 2u) != 0u) && anyTrigger) {
 		printf("New state:  %u    %u    %u    %u    %u\r\n", StateValveActuator1, StateValveActuator2, StateMotorActuatorIn, StateMotorActuatorOut, StateMotorActuatorBrake);
 		printf("\r\n");
 	} // just for testing purposes
