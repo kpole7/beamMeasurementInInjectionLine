@@ -1,0 +1,2 @@
+1. W analogInputs sprawdzić zależność dokładności od częstotliwości.
+2. Zrobić dobieranie współczynników tak, żeby nie było nieliniowości.
