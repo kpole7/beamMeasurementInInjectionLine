@@ -166,7 +166,7 @@ void getVoltageSamples(void) {
 			if (PrintoutsForTestingPurposes) {
 				printf("Cup: %u  ", LocalActiveCup+1); // just for testing purposes
 			}
-			for (uint16_t J = 0; J < ANALOG_MAX_CHANNELS; J++) {
+			for (uint16_t Channel = 0; Channel < ANALOG_MAX_CHANNELS; Channel++) {
 				uint16_t Offset;
 				uint16_t Factor;
 				uint32_t Accumulator0 = 0;
@@ -175,17 +175,17 @@ void getVoltageSamples(void) {
 				int32_t SignedOffset = 0;
 				char HighLowIndicator = ' '; // just for testing purposes
 				for (uint16_t K = 0; K < ADC_RAW_BUFFER_SIZE; K++) {
-					Accumulator0 += RawBufferAdc0[J][K];
-					Accumulator1 += RawBufferAdc1[J][K];
+					Accumulator0 += RawBufferAdc0[Channel][K];
+					Accumulator1 += RawBufferAdc1[Channel][K];
 				}
 				if (Accumulator1 < ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_RANGE_CHANGE_THRESHOLD)]) {
-					Offset = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CH1_GAIN1_OFFSET) + LocalActiveCup*4 + J];
-					Factor = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CH1_GAIN1_FACTOR) + LocalActiveCup*4 + J];
+					Offset = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CH1_GAIN1_OFFSET) + LocalActiveCup*4 + Channel];
+					Factor = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CH1_GAIN1_FACTOR) + LocalActiveCup*4 + Channel];
 					Result = (int32_t)Accumulator0;
 					HighLowIndicator = 'H'; // just for testing purposes
 				} else {
-					Offset = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CH1_GAIN2_OFFSET) + LocalActiveCup*4 + J];
-					Factor = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CH1_GAIN2_FACTOR) + LocalActiveCup*4 + J];
+					Offset = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CH1_GAIN2_OFFSET) + LocalActiveCup*4 + Channel];
+					Factor = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CH1_GAIN2_FACTOR) + LocalActiveCup*4 + Channel];
 					Result = (int32_t)(Accumulator1*10u); // unify units
 					HighLowIndicator = 'L'; // just for testing purposes
 				}
@@ -198,18 +198,18 @@ void getVoltageSamples(void) {
 				Result = (Result * (int32_t)Factor) / 100000; // unit = 100nA
 
 				if (Result < 0) {
-					ModbusInputRegisters[LocalActiveCup*5 + J] = 0u;
+					ModbusInputRegisters[LocalActiveCup*5 + Channel] = 0u;
 				}
 				else{
-					ModbusInputRegisters[LocalActiveCup*5 + J] = (uint16_t)Result;
+					ModbusInputRegisters[LocalActiveCup*5 + Channel] = (uint16_t)Result;
 				}
 
 				// just for testing purposes
 				if (PrintoutsForTestingPurposes) {
-					printf("Ch%u: %4lu %3lu %u.%u uA  ", J, Accumulator0, Accumulator1, 
-						(unsigned int)(ModbusInputRegisters[LocalActiveCup*5 + J]/10), 
-						(unsigned int)(ModbusInputRegisters[LocalActiveCup*5 + J]%10));
-					if (J == 3u){
+					printf("Ch%u: %4lu %3lu %u.%u uA  ", Channel, Accumulator0, Accumulator1, 
+						(unsigned int)(ModbusInputRegisters[LocalActiveCup*5 + Channel]/10), 
+						(unsigned int)(ModbusInputRegisters[LocalActiveCup*5 + Channel]%10));
+					if (Channel == 3u){
 						printf("  %c  %d.%d uA  Offs= %ld  params: %u %u", HighLowIndicator, (int)(Result/10), (int)(Result%10), SignedOffset, Offset, Factor);
 					}
 				}

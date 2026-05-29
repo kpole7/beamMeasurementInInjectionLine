@@ -1,2 +1,4 @@
-1. W analogInputs sprawdzić zależność dokładności od częstotliwości.
-2. Zrobić dobieranie współczynników tak, żeby nie było nieliniowości.
+1. Measure accuracy vs frequency in analogInputs.
+2. How to calculate coefficients to avoid nonlinearity.
+3. Make MODBUS_ADDR_RANGE_CHANGE_THRESHOLD for each individual channel.
+4. Apply hysteresis to MODBUS_ADDR_RANGE_CHANGE_THRESHOLD.
