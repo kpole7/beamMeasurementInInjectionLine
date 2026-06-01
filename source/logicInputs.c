@@ -3,6 +3,8 @@
 
 #include "logicInputs.h"
 #include "sharedData.h"
+#include "masterConfig.h"
+#include "debuggingTools.h"
 #include "pico/stdlib.h"
 #include <stdio.h>
 
@@ -11,12 +13,6 @@
 #define GPIO_FOR_LIMIT_SWITCH_3A 21
 #define GPIO_FOR_LIMIT_SWITCH_3B 20
 #define GPIO_FOR_EXTERNAL_INHIBITION 13
-
-#define LIMIT_SWITCH_1_INDEX 0
-#define LIMIT_SWITCH_2_INDEX 1
-#define LIMIT_SWITCH_3A_INDEX 2
-#define LIMIT_SWITCH_3B_INDEX 3
-#define EXTERNAL_INHIBITION_INDEX 4
 
 #define DEBOUNCE_TICKS 5
 
@@ -70,6 +66,7 @@ void logicInputsTick(void) {
                     StableState[J] = CurrentState[J];
                     Counter[J] = 0;
                     // Update Modbus registers or coils based on the new stable state
+#if DEBUG_SIMULATION_MODE == 0
                     switch (J) {
                         case LIMIT_SWITCH_1_INDEX:
                             ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_SWITCH)] = StableState[J];
@@ -87,6 +84,25 @@ void logicInputsTick(void) {
                             ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION)] = StableState[J];
                             break;
                     }
+#else
+                    switch (J) {
+                        case LIMIT_SWITCH_1_INDEX:
+                            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_SWITCH)] = simulateInput(J);
+                            break;
+                        case LIMIT_SWITCH_2_INDEX:
+                            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_SWITCH)] = simulateInput(J);
+                            break;
+                        case LIMIT_SWITCH_3A_INDEX:
+                            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH1)] = simulateInput(J);
+                            break;
+                        case LIMIT_SWITCH_3B_INDEX:
+                            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH2)] = simulateInput(J);
+                            break;
+                        case EXTERNAL_INHIBITION_INDEX:
+                            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION)] = simulateInput(J);
+                            break;
+                    }
+#endif
                 }
             } else {
                 Counter[J] = 0;
@@ -96,9 +112,19 @@ void logicInputsTick(void) {
     }
 
     // just for testing purposes
+    static bool PrintoutsForTestingPurposes = false;
+    if (((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 4u) != 0u) != PrintoutsForTestingPurposes) {
+        PrintoutsForTestingPurposes = ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 4u) != 0u);
+        if (PrintoutsForTestingPurposes) {
+            printf("Printouts for logic inputs enabled\r\n");
+        }
+        else{
+            printf("Printouts for logic inputs disabled\r\n");
+        }
+    }
     static bool OldStableState[5] = {0};
     char DebugNames[5][5] = {"sw1", "sw2", "sw3A", "sw3B", "INH"};
-    if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 4u) != 0u){
+    if (PrintoutsForTestingPurposes){
         for (int J = 0; J < 5; J++) {
             if (StableState[J] != OldStableState[J]) {
                 printf("Input %s changed to %d\r\n", DebugNames[J], (int)StableState[J]);
@@ -106,5 +132,4 @@ void logicInputsTick(void) {
             }
         }
     }
-
 }

@@ -63,6 +63,12 @@ void auxiliaryPinOutputValue2(bool Value);
 
 void debugTerminalCommandInterpreter(uint16_t *RegistersToBeChangedPtr, uint16_t RegistersToBeChangedNumber, char FirstName);
 
+#if DEBUG_SIMULATION_MODE
+void initializeSimulation(void);
+void simulationMainLoopTick(void);
+bool simulateInput(int InputIndex);
+#endif // DEBUG_SIMULATION_MODE
+
 // simulation of signal propagation from user request to insert/remove cup to feedback from limit switch
 extern atomic_uint_fast16_t DebugCountdownPropagationFromCoilToSwitch1;
 extern atomic_uint_fast16_t DebugCountdownPropagationFromCoilToSwitch2;

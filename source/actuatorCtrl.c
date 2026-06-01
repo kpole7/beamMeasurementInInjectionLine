@@ -59,42 +59,56 @@ void initializeActuatorControl(void) {
 }
 
 void actuatorCtrlTick(void) {
-	bool stateValveActuator1 = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)];
-	bool stateValveActuator2 = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)];
-	bool stateMotorActuatorIn = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)];
-	bool stateMotorActuatorOut = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_OUT)];
-	bool stateMotorActuatorBrake = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_BRAKE)];
-
-	bool trigValveActuator1 = ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)];
-	bool trigValveActuator2 = ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)];
-	bool trigMotorActuatorIn = ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)];
-	bool trigMotorActuatorOut = ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_OUT)];
-	bool trigMotorActuatorBrake = ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_BRAKE)];
+	bool TrigValveActuator1 = ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)];
+	bool TrigValveActuator2 = ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)];
+	bool TrigMotorActuatorIn = ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)];
+	bool TrigMotorActuatorOut = ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_OUT)];
+	bool TrigMotorActuatorBrake = ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_BRAKE)];
 
 	// just for testing purposes
-	bool anyTrigger = trigValveActuator1 || trigValveActuator2 || trigMotorActuatorIn || trigMotorActuatorOut || trigMotorActuatorBrake;
-	if (((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 2u) != 0u) && anyTrigger) {
+	static bool DebugPrintoutsEnabled = false;
+	if (((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 2u) != 0u) != DebugPrintoutsEnabled) {
+		DebugPrintoutsEnabled = ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 2u) != 0u);
+		if (DebugPrintoutsEnabled) {
+			printf("Debug printouts for actuator control enabled\r\n");
+		}
+		else{
+			printf("Debug printouts for actuator control disabled\r\n");
+		}
+	}
+	bool AnyTrigger = TrigValveActuator1 || TrigValveActuator2 || TrigMotorActuatorIn || TrigMotorActuatorOut || TrigMotorActuatorBrake;
+	// printout the old states
+	if (DebugPrintoutsEnabled && AnyTrigger) {
 		printf("Actuator:   1    2   3in  out brake\r\n");
-		printf("Old state:  %u    %u    %u    %u    %u\r\n", StateValveActuator1, StateValveActuator2, StateMotorActuatorIn, StateMotorActuatorOut, StateMotorActuatorBrake);
-		printf("Trigger:    %u    %u    %u    %u    %u\r\n", trigValveActuator1, trigValveActuator2, trigMotorActuatorIn, trigMotorActuatorOut, trigMotorActuatorBrake);
-		printf("Command:    %u    %u    %u    %u    %u\r\n", stateValveActuator1, stateValveActuator2, stateMotorActuatorIn, stateMotorActuatorOut, stateMotorActuatorBrake);
+		printf("Old state:  %u    %u    %u    %u    %u\r\n", 
+			StateValveActuator1, StateValveActuator2, StateMotorActuatorIn, StateMotorActuatorOut, StateMotorActuatorBrake);
 	} // just for testing purposes
 
-	if (trigValveActuator1) {
+	StateValveActuator1 = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)];
+	StateValveActuator2 = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)];
+	StateMotorActuatorIn = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)];
+	StateMotorActuatorOut = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_OUT)];
+	StateMotorActuatorBrake = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_BRAKE)];
+
+	// just for testing purposes; printout the triggers and requested states
+	if (DebugPrintoutsEnabled && AnyTrigger) {
+		printf("Trigger:    %u    %u    %u    %u    %u\r\n", TrigValveActuator1, TrigValveActuator2, TrigMotorActuatorIn, TrigMotorActuatorOut, TrigMotorActuatorBrake);
+		printf("Request:    %u    %u    %u    %u    %u\r\n", StateValveActuator1, StateValveActuator2, StateMotorActuatorIn, StateMotorActuatorOut, StateMotorActuatorBrake);
+	} // just for testing purposes
+
+	if (TrigValveActuator1) {
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)] = false;
-		gpio_put(GPIO_FOR_VALVE_ACTUATOR_1, stateValveActuator1); // Pneumatic valve #1
-		StateValveActuator1 = stateValveActuator1;
+		gpio_put(GPIO_FOR_VALVE_ACTUATOR_1, StateValveActuator1); // Pneumatic valve #1
 	}
 
-	if (trigValveActuator2) {
+	if (TrigValveActuator2) {
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)] = false;
-		gpio_put(GPIO_FOR_VALVE_ACTUATOR_2, stateValveActuator2); // Pneumatic valve #2
-		StateValveActuator2 = stateValveActuator2;
+		gpio_put(GPIO_FOR_VALVE_ACTUATOR_2, StateValveActuator2); // Pneumatic valve #2
 	}
 
-	if (trigMotorActuatorIn) {
+	if (TrigMotorActuatorIn) {
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)] = false;
-		if (stateMotorActuatorIn){
+		if (StateMotorActuatorIn){
 			// 'insert' command
 
 			if (!StateMotorActuatorOut && !StateMotorActuatorBrake) { 
@@ -128,10 +142,10 @@ void actuatorCtrlTick(void) {
 			StateMotorActuatorIn = false;
 		}
 	}
-
-	if (trigMotorActuatorOut) {
+	
+	if (TrigMotorActuatorOut) {
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_OUT)] = false;
-		if (stateMotorActuatorOut){
+		if (StateMotorActuatorOut){
 			// 'extract' command
 
 			if (!StateMotorActuatorIn && !StateMotorActuatorBrake) { 
@@ -166,7 +180,7 @@ void actuatorCtrlTick(void) {
 		}
 	}
 	
-	if (trigMotorActuatorBrake) {
+	if (TrigMotorActuatorBrake) {
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_BRAKE)] = false;
 		gpio_put(GPIO_FOR_MOTOR_ACTUATOR_IN, false);
 		StateMotorActuatorIn = false;
@@ -174,10 +188,9 @@ void actuatorCtrlTick(void) {
 		gpio_put(GPIO_FOR_MOTOR_ACTUATOR_OUT, false);
 		StateMotorActuatorOut = false;
 
-		if (stateMotorActuatorBrake) {
+		if (StateMotorActuatorBrake) {
 			// command 'brake'
-			gpio_put(GPIO_FOR_MOTOR_ACTUATOR_BRAKE, !stateMotorActuatorBrake); // low-level activation
-			StateMotorActuatorBrake = stateMotorActuatorBrake;
+			gpio_put(GPIO_FOR_MOTOR_ACTUATOR_BRAKE, !StateMotorActuatorBrake); // low-level activation
 		}
 		else{
 			// release brake
@@ -187,9 +200,8 @@ void actuatorCtrlTick(void) {
 	}
 
 	// just for testing purposes
-	if (((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 2u) != 0u) && anyTrigger) {
-		printf("New state:  %u    %u    %u    %u    %u\r\n", StateValveActuator1, StateValveActuator2, StateMotorActuatorIn, StateMotorActuatorOut, StateMotorActuatorBrake);
-		printf("\r\n");
+	if (DebugPrintoutsEnabled && AnyTrigger) {
+		printf("New state:  %u    %u    %u    %u    %u\r\n\r\n", StateValveActuator1, StateValveActuator2, StateMotorActuatorIn, StateMotorActuatorOut, StateMotorActuatorBrake);
 	} // just for testing purposes
 }
 

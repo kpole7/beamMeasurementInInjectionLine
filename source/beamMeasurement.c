@@ -107,11 +107,16 @@ int main() {
 			atomic_store_explicit(&TwoMillisecondsTimeTick, false, memory_order_release);
 
 			logicInputsTick();
-			actuatorCtrlTick();
 			modbusActivityLedService();
 #if 0
 			highLevelCtrlService();
 			auxiliaryFSMsService();
+#endif
+
+#if DEBUG_SIMULATION_MODE == 0
+			actuatorCtrlTick();
+#else
+			simulationMainLoopTick();
 #endif
 
 #if MODBUS_DEBUG_MODE
@@ -272,6 +277,9 @@ static void mainInitialization(void){
 	initializeAdcMeasurements();
 	auxiliaryOutputsInitialize();
 	initializeActuatorControl();
+#if DEBUG_SIMULATION_MODE > 0
+	initializeSimulation();
+#endif
 
 	eMBInit(MB_RTU, MODBUS_SLAVE_ID, 0, MODBUS_BAUD_RATE, MODBUS_PARITY); // The parameter ucPort is a dummy and will be ignored
 	eMBEnable();

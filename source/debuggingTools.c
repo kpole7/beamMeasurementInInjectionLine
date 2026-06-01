@@ -5,31 +5,88 @@
 #include "compilationTime.h"
 #include "masterConfig.h"
 #include "modbusConfig.h"
+#include "logicInputs.h"
+#include "sharedData.h"
 #include "pico/stdlib.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#define MAIN_LOOP_TICK_PERIOD_MS 2u
+#define SIMULATION_1_PROPAGATION_FROM_EXTRACTED_TO_SWITCH_ON		(1000ul / MAIN_LOOP_TICK_PERIOD_MS) // 1 s
+#define SIMULATION_1_PROPAGATION_FROM_INSERTED_TO_SWITCH_OFF		(200ul / MAIN_LOOP_TICK_PERIOD_MS)  // 200 ms
+#define SIMULATION_2_PROPAGATION_FROM_EXTRACTED_TO_SWITCH_ON		(1000ul / MAIN_LOOP_TICK_PERIOD_MS) // 1 s
+#define SIMULATION_2_PROPAGATION_FROM_INSERTED_TO_SWITCH_OFF		(200ul / MAIN_LOOP_TICK_PERIOD_MS)  // 200 ms
 
-static void commandInterpreterEssentials(uint16_t *RegistersToBeChangedPtr, uint16_t RegistersToBeChangedNumber, char FirstName, char *StaticBuffer);
+#define SIMULATION_3_PROPAGATION_FROM_EXTRACTED_TO_SWITCH_B_OFF		(100ul / MAIN_LOOP_TICK_PERIOD_MS)  // 100 ms
+#define SIMULATION_3_PROPAGATION_FROM_SWITCH_B_OFF_TO_SWITCH_A_ON	(7000ul / MAIN_LOOP_TICK_PERIOD_MS) // 7 s
+#define SIMULATION_3_PROPAGATION_FROM_INSERTED_TO_SWITCH_A_OFF		(200ul / MAIN_LOOP_TICK_PERIOD_MS)  // 200 ms
+#define SIMULATION_3_PROPAGATION_FROM_SWITCH_A_OFF_TO_SWITCH_B_ON	(9000ul / MAIN_LOOP_TICK_PERIOD_MS) // 9 s
 
-#if MODBUS_DEBUG_MODE
+#define SIMULATION_STATE_1_REST_OUTSIDE 0
+#define SIMULATION_STATE_1_GOING_INSIDE 1
+#define SIMULATION_STATE_1_REST_INSIDE 2
+#define SIMULATION_STATE_1_GOING_OUTSIDE 3
+
+#define SIMULATION_STATE_2_REST_OUTSIDE 0
+#define SIMULATION_STATE_2_GOING_INSIDE 1
+#define SIMULATION_STATE_2_REST_INSIDE 2
+#define SIMULATION_STATE_2_GOING_OUTSIDE 3
+
+#define SIMULATION_STATE_3_REST_OUTSIDE 0
+#define SIMULATION_STATE_3_GOING_INSIDE_TO_SWITCH_B 1
+#define SIMULATION_STATE_3_GOING_INSIDE_TO_SWITCH_A 2
+#define SIMULATION_STATE_3_REST_INSIDE 3
+#define SIMULATION_STATE_3_GOING_OUTSIDE_TO_SWITCH_A 4
+#define SIMULATION_STATE_3_GOING_OUTSIDE_TO_SWITCH_B 5
+#define SIMULATION_STATE_3_REST_IN_THE_MIDDLE 6
 
 //..............................................................................
 // Local variables
 //..............................................................................
 
+#if MODBUS_DEBUG_MODE
 static uint64_t AuxiliaryPrintTime;
 static char AuxiliaryPrintOldCharacter;
 
 static LogEventType LogTable[LOG_SIZE];
 static volatile uint16_t LogPrintLast;
 static atomic_uint_fast16_t LogIndex;
+#endif // MODBUS_DEBUG_MODE
+
+#if DEBUG_SIMULATION_MODE
+
+// This table is used in the debug simulation mode to simulate the state of logic inputs.
+// Indexes are defined in logicInputs.h
+bool SimulationInputs[5] = { true, true, true, true, true };
+
+uint16_t SimulationState1;
+uint16_t SimulationState2;
+uint16_t SimulationState3;
+
+uint16_t SimulationCounter1;
+uint16_t SimulationCounter2;
+uint16_t SimulationCounter3;
+
+uint16_t SimulationClockMinutes;
+uint16_t SimulationClockSeconds;
+uint16_t SimulationClockMilliseconds;
+
+#endif // DEBUG_SIMULATION_MODE
+
+
+//..............................................................................
+// Local function prototypes
+//..............................................................................
+
+static void commandInterpreterEssentials(uint16_t *RegistersToBeChangedPtr, uint16_t RegistersToBeChangedNumber, char FirstName, char *StaticBuffer);
 
 //..............................................................................
 // Definitions of interface functions
 //..............................................................................
+
+#if MODBUS_DEBUG_MODE
 
 void initAuxiliaryPrintouts(void) {
 	AuxiliaryPrintOldCharacter = 0;
@@ -243,3 +300,213 @@ static void commandInterpreterEssentials(uint16_t *RegistersToBeChangedPtr, uint
 		RegistersToBeChangedPtr[J] = Argument;
 	}
 }
+
+#if DEBUG_SIMULATION_MODE
+
+void initializeSimulation(void){
+	SimulationClockMinutes = 0;
+	SimulationClockSeconds = 0;
+	SimulationClockMilliseconds = 0;
+}
+
+void simulationMainLoopTick(void){
+	// 	Actuator 1 event simulation
+	if (ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)]){
+		if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)]) {
+			if (SimulationState1 != SIMULATION_STATE_1_REST_OUTSIDE) {
+				printf("%3u:%2u:%2u  ERROR, Line %u, unexpected state %u\r\n", 
+					SimulationClockMinutes, SimulationClockSeconds, SimulationClockMilliseconds, 
+					__LINE__, SimulationState1);
+			}
+			else{
+				printf("%3u:%2u:%2u  Actuator 1 going inside\r\n", 
+					SimulationClockMinutes, SimulationClockSeconds, SimulationClockMilliseconds);
+				SimulationState1 = SIMULATION_STATE_1_GOING_INSIDE;
+				SimulationCounter1 = 0;
+			}
+		}
+		else {
+			if (SimulationState1 != SIMULATION_STATE_1_REST_INSIDE) {
+				printf("%3u:%2u:%2u  ERROR, Line %u, unexpected state %u\r\n", 
+					SimulationClockMinutes, SimulationClockSeconds, SimulationClockMilliseconds, 
+					__LINE__, SimulationState1);
+			}
+			else{
+				printf("%3u:%2u:%2u  Actuator 1 going outside\r\n", 
+					SimulationClockMinutes, SimulationClockSeconds, SimulationClockMilliseconds);
+				SimulationState1 = SIMULATION_STATE_1_GOING_OUTSIDE;
+				SimulationCounter1 = 0;
+			}
+		}
+		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)] = false;
+	}
+
+	// 	Actuator 2 event simulation
+	if (ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)]){
+		if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)]) {
+			if (SimulationState2 != SIMULATION_STATE_2_REST_OUTSIDE) {
+				printf("%3u:%2u:%2u  ERROR, Line %u, unexpected state %u\r\n", 
+					SimulationClockMinutes, SimulationClockSeconds, SimulationClockMilliseconds, 
+					__LINE__, SimulationState2);
+			}
+			else{
+				printf("%3u:%2u:%2u  Actuator 2 going inside\r\n", 
+					SimulationClockMinutes, SimulationClockSeconds, SimulationClockMilliseconds);
+				SimulationState2 = SIMULATION_STATE_2_GOING_INSIDE;
+				SimulationCounter2 = 0;
+			}
+		}
+		else {
+			if (SimulationState2 != SIMULATION_STATE_2_REST_INSIDE) {
+				printf("%3u:%2u:%2u  ERROR, Line %u, unexpected state %u\r\n", 
+					SimulationClockMinutes, SimulationClockSeconds, SimulationClockMilliseconds, 
+					__LINE__, SimulationState2);
+			}
+			else{
+				printf("%3u:%2u:%2u  Actuator 2 going outside\r\n", 
+					SimulationClockMinutes, SimulationClockSeconds, SimulationClockMilliseconds);
+				SimulationState2 = SIMULATION_STATE_2_GOING_OUTSIDE;
+				SimulationCounter2 = 0;
+			}
+		}
+		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)] = false;
+	}
+
+	// 	Actuator 3 event simulation
+	if (ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)]){
+		if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)]) {
+			if (SimulationState3 != SIMULATION_STATE_3_REST_OUTSIDE) {
+				printf("%3u:%2u:%2u  ERROR, Line %u, unexpected state %u\r\n", 
+					SimulationClockMinutes, SimulationClockSeconds, SimulationClockMilliseconds, 
+					__LINE__, SimulationState3);
+			}
+			else{
+				printf("%3u:%2u:%2u  Actuator 3 going inside\r\n", 
+					SimulationClockMinutes, SimulationClockSeconds, SimulationClockMilliseconds);
+				SimulationState3 = SIMULATION_STATE_3_GOING_INSIDE_TO_SWITCH_B;
+				SimulationCounter3 = 0;
+			}
+		}
+		else {
+			if (SimulationState3 != SIMULATION_STATE_3_REST_INSIDE) {
+				printf("%3u:%2u:%2u  ERROR, Line %u, unexpected state %u\r\n", 
+					SimulationClockMinutes, SimulationClockSeconds, SimulationClockMilliseconds, 
+					__LINE__, SimulationState3);
+			}
+			else{
+				printf("%3u:%2u:%2u  Actuator 3 going outside\r\n", 
+					SimulationClockMinutes, SimulationClockSeconds, SimulationClockMilliseconds);
+				SimulationState3 = SIMULATION_STATE_3_GOING_OUTSIDE_TO_SWITCH_A;
+				SimulationCounter3 = 0;
+			}
+		}
+		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)] = false;
+	}
+
+	// . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .
+
+	//  Actuator 1 time flow simulation
+	if (SimulationState1 == SIMULATION_STATE_1_GOING_INSIDE) {
+		SimulationCounter1++;
+		if (SimulationCounter1 >= SIMULATION_1_PROPAGATION_FROM_EXTRACTED_TO_SWITCH_ON) {
+			SimulationState1 = SIMULATION_STATE_1_REST_INSIDE;
+			SimulationCounter1 = 0;
+			SimulationInputs[LIMIT_SWITCH_1_INDEX] = true;
+			printf("%3u:%2u:%2u  Actuator 1 inside, switch 1 ON\r\n", 
+				SimulationClockMinutes, SimulationClockSeconds, SimulationClockMilliseconds);
+		}
+	}
+	if (SimulationState1 == SIMULATION_STATE_1_GOING_OUTSIDE) {
+		SimulationCounter1++;
+		if (SimulationCounter1 >= SIMULATION_1_PROPAGATION_FROM_INSERTED_TO_SWITCH_OFF) {
+			SimulationState1 = SIMULATION_STATE_1_REST_OUTSIDE;
+			SimulationCounter1 = 0;
+			SimulationInputs[LIMIT_SWITCH_1_INDEX] = false;
+			printf("%3u:%2u:%2u  Actuator 1 outside, switch 1 OFF\r\n", 
+				SimulationClockMinutes, SimulationClockSeconds, SimulationClockMilliseconds);
+		}
+	}
+
+	// 	Actuator 2 time flow simulation
+	if (SimulationState2 == SIMULATION_STATE_2_GOING_INSIDE) {
+		SimulationCounter2++;
+		if (SimulationCounter2 >= SIMULATION_2_PROPAGATION_FROM_EXTRACTED_TO_SWITCH_ON) {
+			SimulationState2 = SIMULATION_STATE_2_REST_INSIDE;
+			SimulationCounter2 = 0;
+			SimulationInputs[LIMIT_SWITCH_2_INDEX] = true;
+			printf("%3u:%2u:%2u  Actuator 2 inside, switch 2 ON\r\n", 
+				SimulationClockMinutes, SimulationClockSeconds, SimulationClockMilliseconds);
+		}
+	}
+	if (SimulationState2 == SIMULATION_STATE_2_GOING_OUTSIDE) {
+		SimulationCounter2++;
+		if (SimulationCounter2 >= SIMULATION_2_PROPAGATION_FROM_INSERTED_TO_SWITCH_OFF) {
+			SimulationState2 = SIMULATION_STATE_2_REST_OUTSIDE;
+			SimulationCounter2 = 0;
+			SimulationInputs[LIMIT_SWITCH_2_INDEX] = false;
+			printf("%3u:%2u:%2u  Actuator 2 outside, switch 2 OFF\r\n", 
+				SimulationClockMinutes, SimulationClockSeconds, SimulationClockMilliseconds);
+		}
+	}
+
+	// 	Actuator 3 time flow simulation
+	if (SimulationState3 == SIMULATION_STATE_3_GOING_INSIDE_TO_SWITCH_A) {
+		SimulationCounter3++;
+		if (SimulationCounter3 >= SIMULATION_3_PROPAGATION_FROM_SWITCH_B_OFF_TO_SWITCH_A_ON) {
+			SimulationState3 = SIMULATION_STATE_3_REST_INSIDE;
+			SimulationCounter3 = 0;
+			SimulationInputs[LIMIT_SWITCH_3A_INDEX] = true;
+			printf("%3u:%2u:%2u  Actuator 3 inside, switch 3A ON\r\n", 
+				SimulationClockMinutes, SimulationClockSeconds, SimulationClockMilliseconds);
+		}
+	}
+	if (SimulationState3 == SIMULATION_STATE_3_GOING_INSIDE_TO_SWITCH_B) {
+		SimulationCounter3++;
+		if (SimulationCounter3 >= SIMULATION_3_PROPAGATION_FROM_EXTRACTED_TO_SWITCH_B_OFF) {
+			SimulationState3 = SIMULATION_STATE_3_GOING_INSIDE_TO_SWITCH_A;
+			SimulationCounter3 = 0;
+			SimulationInputs[LIMIT_SWITCH_3B_INDEX] = false;
+			printf("%3u:%2u:%2u  Actuator 3 going inside, switch 3B OFF\r\n", 
+				SimulationClockMinutes, SimulationClockSeconds, SimulationClockMilliseconds);
+		}
+	}
+	if (SimulationState3 == SIMULATION_STATE_3_GOING_OUTSIDE_TO_SWITCH_B) {
+		SimulationCounter3++;
+		if (SimulationCounter3 >= SIMULATION_3_PROPAGATION_FROM_SWITCH_A_OFF_TO_SWITCH_B_ON) {
+			SimulationState3 = SIMULATION_STATE_3_REST_OUTSIDE;
+			SimulationCounter3 = 0;
+			SimulationInputs[LIMIT_SWITCH_3B_INDEX] = true;
+			printf("%3u:%2u:%2u  Actuator 3 outside, switch 3B ON\r\n", 
+				SimulationClockMinutes, SimulationClockSeconds, SimulationClockMilliseconds);
+		}
+	}
+	if (SimulationState3 == SIMULATION_STATE_3_GOING_OUTSIDE_TO_SWITCH_A) {
+		SimulationCounter3++;
+		if (SimulationCounter3 >= SIMULATION_3_PROPAGATION_FROM_INSERTED_TO_SWITCH_A_OFF) {
+			SimulationState3 = SIMULATION_STATE_3_GOING_OUTSIDE_TO_SWITCH_B;
+			SimulationCounter3 = 0;
+			SimulationInputs[LIMIT_SWITCH_3A_INDEX] = false;
+			printf("%3u:%2u:%2u  Actuator 3 going outside, switch 3A OFF\r\n", 
+				SimulationClockMinutes, SimulationClockSeconds, SimulationClockMilliseconds);
+		}
+	}
+
+	// Simulation clock
+	SimulationClockMilliseconds += MAIN_LOOP_TICK_PERIOD_MS;
+	if (SimulationClockMilliseconds >= 1000) {
+		SimulationClockMilliseconds = 0;
+		SimulationClockSeconds++;
+		if (SimulationClockSeconds >= 60) {
+			SimulationClockSeconds = 0;
+			SimulationClockMinutes++;
+		}
+	}
+}
+
+bool simulateInput(int InputIndex){
+	return SimulationInputs[InputIndex];
+}
+
+#endif // DEBUG_SIMULATION_MODE
+
+
