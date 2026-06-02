@@ -63,8 +63,12 @@ void auxiliaryPinOutputValue2(bool Value);
 
 void debugTerminalCommandInterpreter(uint16_t *RegistersToBeChangedPtr, uint16_t RegistersToBeChangedNumber, char FirstName);
 
+void initializeTimeStamp(void);
+void updateTimeStamp( uint16_t MillisecondsToAdd );
+char *getTimeStampString(void);
+char *getTimeStampStringWithoutUpdate(void);
+
 #if DEBUG_SIMULATION_MODE
-void initializeSimulation(void);
 void simulationMainLoopTick(void);
 bool simulateInput(int InputIndex);
 #endif // DEBUG_SIMULATION_MODE

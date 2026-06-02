@@ -29,6 +29,8 @@
 /// This directive tells that the LED on pico PCB is connected to GPIO25 port
 #define GPIO_FOR_PICO_ON_BOARD_LED 25
 
+#define FAST_PERIPHERALS_TICK_PERIOD_MS 2u
+
 //..............................................................................
 // Local variables concerning checking jumper states and LED light time
 //..............................................................................
@@ -77,8 +79,6 @@ static bool IsHighLevelStateInitialized;
 static AuxiliaryFSMsState AuxiliaryFSMsStateData;
 static bool IsAuxiliaryFSMsStateInitialized;
 
-#define AUXILIARY_FSM_TICK_PERIOD_MS 2u
-
 //..............................................................................
 // The main routine of the project
 //..............................................................................
@@ -118,6 +118,8 @@ int main() {
 #else
 			simulationMainLoopTick();
 #endif
+
+	updateTimeStamp(FAST_PERIPHERALS_TICK_PERIOD_MS);
 
 #if MODBUS_DEBUG_MODE
 			// Reading the states of jumpers.
@@ -278,9 +280,7 @@ static void mainInitialization(void){
 	initializeAdcMeasurements();
 	auxiliaryOutputsInitialize();
 	initializeActuatorControl();
-#if DEBUG_SIMULATION_MODE > 0
-	initializeSimulation();
-#endif
+	initializeTimeStamp();
 
 	eMBInit(MB_RTU, MODBUS_SLAVE_ID, 0, MODBUS_BAUD_RATE, MODBUS_PARITY); // The parameter ucPort is a dummy and will be ignored
 	eMBEnable();
@@ -400,7 +400,7 @@ static void auxiliaryFSMsService(void) {
 	AuxiliaryFSMsStateData.error_storage[1] = ModbusHoldingRegisters[Cup2ErrorStorageIndex];
 	AuxiliaryFSMsStateData.error_storage[2] = ModbusHoldingRegisters[Cup3ErrorStorageIndex];
 
-	auxiliaryFSMsTick(&Inputs, &AuxiliaryFSMsStateData, &Outputs, AUXILIARY_FSM_TICK_PERIOD_MS);
+	auxiliaryFSMsTick(&Inputs, &AuxiliaryFSMsStateData, &Outputs, FAST_PERIPHERALS_TICK_PERIOD_MS);
 
 	ModbusHoldingRegisters[Cup1ErrorIndex] = Outputs.cup_error[0];
 	ModbusHoldingRegisters[Cup2ErrorIndex] = Outputs.cup_error[1];
