@@ -250,13 +250,14 @@ static void mainInitialization(void){
 	ModbusHoldingRegisters[Cup2TypeAddress] = 0u;
 	ModbusHoldingRegisters[Cup3TypeAddress] = 1u;
 	ModbusHoldingRegisters[ActiveCupAddress] = 1u;
-	for (int J = holdingIndexFromAddress(MODBUS_ADDR_CUP1_CH1_GAIN1_FACTOR); 
-	J <= holdingIndexFromAddress(MODBUS_ADDR_CUP3_CH4_GAIN2_FACTOR); 
-	J++) 
-	{
+	for (int J = holdingIndexFromAddress(MODBUS_ADDR_CUP1_CH1_GAIN1_FACTOR); J <= holdingIndexFromAddress(MODBUS_ADDR_CUP3_CH4_GAIN2_FACTOR); J++) {
 		ModbusHoldingRegisters[J] = 14000u;
 	}
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_RANGE_CHANGE_THRESHOLD)] = DEFAULT_ANALOG_RANGE_CHANGE_THRESHOLD;
+
+#if DEBUG_SIMULATION_MODE
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] = 4u; // Logic Inputs printouts enabled
+#endif
 
 	memset(&HighLevelState, 0, sizeof(HighLevelState));
 	HighLevelState.retained_active_cup = 1u;

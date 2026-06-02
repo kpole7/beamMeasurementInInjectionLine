@@ -52,11 +52,17 @@ void initializeLogicInputs(void) {
 /// update Modbus registers or coils accordingly.
 void logicInputsTick(void) {
     bool CurrentState[5];
+#if DEBUG_SIMULATION_MODE == 0
     CurrentState[LIMIT_SWITCH_1_INDEX] = gpio_get(GPIO_FOR_LIMIT_SWITCH_1);
     CurrentState[LIMIT_SWITCH_2_INDEX] = gpio_get(GPIO_FOR_LIMIT_SWITCH_2);
     CurrentState[LIMIT_SWITCH_3A_INDEX] = gpio_get(GPIO_FOR_LIMIT_SWITCH_3A);
     CurrentState[LIMIT_SWITCH_3B_INDEX] = gpio_get(GPIO_FOR_LIMIT_SWITCH_3B);
     CurrentState[EXTERNAL_INHIBITION_INDEX] = gpio_get(GPIO_FOR_EXTERNAL_INHIBITION);
+#else
+    for (int K = 0; K < 5; K++) {
+        CurrentState[K] = simulateInput(K);
+    }
+#endif
 
     for (int J = 0; J < 5; J++) {
         if (CurrentState[J] != StableState[J]) {
@@ -66,7 +72,6 @@ void logicInputsTick(void) {
                     StableState[J] = CurrentState[J];
                     Counter[J] = 0;
                     // Update Modbus registers or coils based on the new stable state
-#if DEBUG_SIMULATION_MODE == 0
                     switch (J) {
                         case LIMIT_SWITCH_1_INDEX:
                             ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_SWITCH)] = StableState[J];
@@ -84,25 +89,6 @@ void logicInputsTick(void) {
                             ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION)] = StableState[J];
                             break;
                     }
-#else
-                    switch (J) {
-                        case LIMIT_SWITCH_1_INDEX:
-                            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_SWITCH)] = simulateInput(J);
-                            break;
-                        case LIMIT_SWITCH_2_INDEX:
-                            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_SWITCH)] = simulateInput(J);
-                            break;
-                        case LIMIT_SWITCH_3A_INDEX:
-                            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH1)] = simulateInput(J);
-                            break;
-                        case LIMIT_SWITCH_3B_INDEX:
-                            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH2)] = simulateInput(J);
-                            break;
-                        case EXTERNAL_INHIBITION_INDEX:
-                            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION)] = simulateInput(J);
-                            break;
-                    }
-#endif
                 }
             } else {
                 Counter[J] = 0;
@@ -116,18 +102,19 @@ void logicInputsTick(void) {
     if (((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 4u) != 0u) != PrintoutsForTestingPurposes) {
         PrintoutsForTestingPurposes = ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 4u) != 0u);
         if (PrintoutsForTestingPurposes) {
-            printf("Printouts for logic inputs enabled\r\n");
+            printf("Logic Inputs: printouts enabled\r\n");
         }
         else{
-            printf("Printouts for logic inputs disabled\r\n");
+            printf("Logic Inputs: printouts disabled\r\n");
         }
     }
     static bool OldStableState[5] = {0};
     char DebugNames[5][5] = {"sw1", "sw2", "sw3A", "sw3B", "INH"};
+    char *StateNames[2] = {"pressed", "released"};
     if (PrintoutsForTestingPurposes){
         for (int J = 0; J < 5; J++) {
             if (StableState[J] != OldStableState[J]) {
-                printf("Input %s changed to %d\r\n", DebugNames[J], (int)StableState[J]);
+                printf("Logic Inputs: %s %s (signal changed to %d)\r\n", DebugNames[J], StateNames[StableState[J]], StableState[J]);
                 OldStableState[J] = StableState[J];
             }
         }
