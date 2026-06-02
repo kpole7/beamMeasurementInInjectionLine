@@ -20,9 +20,9 @@
 #define SIMULATION_2_PROPAGATION_FROM_INSERTED_TO_SWITCH_OFF		(200ul / MAIN_LOOP_TICK_PERIOD_MS)  // 200 ms
 
 #define SIMULATION_3_PROPAGATION_FROM_EXTRACTED_TO_SWITCH_B_OFF		(100ul / MAIN_LOOP_TICK_PERIOD_MS)  // 100 ms
-#define SIMULATION_3_PROPAGATION_FROM_SWITCH_B_OFF_TO_SWITCH_A_ON	(7000ul / MAIN_LOOP_TICK_PERIOD_MS) // 7 s
+#define SIMULATION_3_PROPAGATION_FROM_SWITCH_B_OFF_TO_SWITCH_A_ON	(3000ul / MAIN_LOOP_TICK_PERIOD_MS) // 3 s
 #define SIMULATION_3_PROPAGATION_FROM_INSERTED_TO_SWITCH_A_OFF		(200ul / MAIN_LOOP_TICK_PERIOD_MS)  // 200 ms
-#define SIMULATION_3_PROPAGATION_FROM_SWITCH_A_OFF_TO_SWITCH_B_ON	(9000ul / MAIN_LOOP_TICK_PERIOD_MS) // 9 s
+#define SIMULATION_3_PROPAGATION_FROM_SWITCH_A_OFF_TO_SWITCH_B_ON	(4000ul / MAIN_LOOP_TICK_PERIOD_MS) // 4 s
 
 #define SIMULATION_STATE_1_REST_OUTSIDE 0
 #define SIMULATION_STATE_1_GOING_INSIDE 1
@@ -67,7 +67,7 @@ static char TimeStampString[16];
 
 // This table is used in the debug simulation mode to simulate the state of logic inputs.
 // Indexes are defined in logicInputs.h
-bool SimulationInputs[5] = { true, true, true, true, true };
+bool SimulationInputs[5] = { true, true, true, false, false }; // sw1=released, sw2=released, sw3A=released, sw3B=pressed, INH=not active
 
 uint16_t SimulationState1;
 uint16_t SimulationState2;
@@ -344,23 +344,22 @@ void simulationMainLoopTick(void){
 	if (ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)]){
 		if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)]) {
 			if (SimulationState1 != SIMULATION_STATE_1_REST_OUTSIDE) {
-				printf("%s  Warning, Line %u, unexpected state %u\r\n", getTimeStampStringWithoutUpdate(), __LINE__, SimulationState1);
+				printf("%s  Sim  Warning, Line %u, unexpected state %u\r\n", getTimeStampStringWithoutUpdate(), __LINE__, SimulationState1);
 			}
 			else{
-				printf("%s  Actuator 1   ....|.........<<\r\n", getTimeStampStringWithoutUpdate());
 				SimulationState1 = SIMULATION_STATE_1_GOING_INSIDE;
 				SimulationCounter1 = 0;
+				printf("%s  Sim  Actuator 1   ....|.........<<\r\n", getTimeStampStringWithoutUpdate());
 			}
 		}
 		else {
 			if (SimulationState1 != SIMULATION_STATE_1_REST_INSIDE) {
-				printf("%s  Warning, Line %u, unexpected state %u\r\n", getTimeStampStringWithoutUpdate(), 
-					__LINE__, SimulationState1);
+				printf("%s  Sim  Warning, Line %u, unexpected state %u\r\n", getTimeStampStringWithoutUpdate(), __LINE__, SimulationState1);
 			}
 			else{
-				printf("%s  Actuator 1   >>..|.........\r\n", getTimeStampStringWithoutUpdate());
 				SimulationState1 = SIMULATION_STATE_1_GOING_OUTSIDE;
 				SimulationCounter1 = 0;
+				printf("%s  Sim  Actuator 1   >>..|.........\r\n", getTimeStampStringWithoutUpdate());
 			}
 		}
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)] = false;
@@ -370,24 +369,22 @@ void simulationMainLoopTick(void){
 	if (ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)]){
 		if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)]) {
 			if (SimulationState2 != SIMULATION_STATE_2_REST_OUTSIDE) {
-				printf("%s  Warning, Line %u, unexpected state %u\r\n", getTimeStampStringWithoutUpdate(),
-					__LINE__, SimulationState2);
+				printf("%s  Sim  Warning, Line %u, unexpected state %u\r\n", getTimeStampStringWithoutUpdate(), __LINE__, SimulationState2);
 			}
 			else{
-				printf("%s  Actuator 2   ....|.........<<\r\n", getTimeStampStringWithoutUpdate());
 				SimulationState2 = SIMULATION_STATE_2_GOING_INSIDE;
 				SimulationCounter2 = 0;
+				printf("%s  Sim  Actuator 2   ....|.........<<\r\n", getTimeStampStringWithoutUpdate());
 			}
 		}
 		else {
 			if (SimulationState2 != SIMULATION_STATE_2_REST_INSIDE) {
-				printf("%s  Warning, Line %u, unexpected state %u\r\n", getTimeStampStringWithoutUpdate(), 
-					__LINE__, SimulationState2);
+				printf("%s  Sim  Warning, Line %u, unexpected state %u\r\n", getTimeStampStringWithoutUpdate(), __LINE__, SimulationState2);
 			}
 			else{
-				printf("%s  Actuator 2   >>..|.........\r\n", getTimeStampStringWithoutUpdate());
 				SimulationState2 = SIMULATION_STATE_2_GOING_OUTSIDE;
 				SimulationCounter2 = 0;
+				printf("%s  Sim  Actuator 2   >>..|.........\r\n", getTimeStampStringWithoutUpdate());
 			}
 		}
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)] = false;
@@ -397,29 +394,27 @@ void simulationMainLoopTick(void){
 	if (ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)]){
 		// Request to insert or to stop inserting the cup 3
 		if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_OUT)]) {
-			printf("%s  ERROR in line %u, conflict: Actuator3ControlOut is set", getTimeStampStringWithoutUpdate(), __LINE__);
+			printf("%s  Sim  ERROR in line %u, conflict: Actuator3ControlOut is set\r\n", getTimeStampStringWithoutUpdate(), __LINE__);
 		}
 		else{
 			if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)]) {
 				// Request to insert
 				if (SimulationState3 != SIMULATION_STATE_3_REST_OUTSIDE) {
-					printf("%s  Warning, Line %u, unexpected state %u\r\n", getTimeStampStringWithoutUpdate(), 
-						__LINE__, SimulationState3);
+					printf("%s  Sim  Warning, Line %u, unexpected state %u\r\n", getTimeStampStringWithoutUpdate(), __LINE__, SimulationState3);
 				}
 				else{
-					printf("%s  Actuator 3   ....|...........|..<<\r\n", getTimeStampStringWithoutUpdate());
 					SimulationState3 = SIMULATION_STATE_3_GOING_INSIDE_TO_SWITCH_B;
 					SimulationCounter3 = 0;
+					printf("%s  Sim  Actuator 3   ....|...........|..<< new state=%u\r\n", getTimeStampStringWithoutUpdate(), SimulationState3);
 				}
 			}
 			else {
 				// Request to stop inserting
 				if (SimulationState3 != SIMULATION_STATE_3_REST_INSIDE) {
-					printf("%s  Warning, Line %u, unexpected state %u\r\n", getTimeStampStringWithoutUpdate(), 
-						__LINE__, SimulationState3);
+					printf("%s  Sim  Warning, Line %u, unexpected state %u\r\n", getTimeStampStringWithoutUpdate(), __LINE__, SimulationState3);
 				}
 				else{
-					printf("%s  Actuator 3   []..|...........|..\r\n", getTimeStampStringWithoutUpdate());
+					printf("%s  Sim  Actuator 3   []..|...........|.... new state=%u\r\n", getTimeStampStringWithoutUpdate(), SimulationState3);
 				}
 			}
 		}
@@ -430,29 +425,27 @@ void simulationMainLoopTick(void){
 	if (ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_OUT)]){
 		// Request to extract or to stop extracting the cup 3
 		if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)]) {
-			printf("%s  ERROR in line %u, conflict: Actuator3ControlIn is set", getTimeStampStringWithoutUpdate(), __LINE__);
+			printf("%s  Sim  ERROR in line %u, conflict: Actuator3ControlIn is set\r\n", getTimeStampStringWithoutUpdate(), __LINE__);
 		}
 		else{
 			if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_OUT)]) {
 				// Request to extract
 				if (SimulationState3 != SIMULATION_STATE_3_REST_INSIDE) {
-					printf("%s  Warning, Line %u, unexpected state %u\r\n", getTimeStampStringWithoutUpdate(), 
-						__LINE__, SimulationState3);
+					printf("%s  Sim  Warning, Line %u, unexpected state %u\r\n", getTimeStampStringWithoutUpdate(), __LINE__, SimulationState3);
 				}
 				else{
-					printf("%s  Actuator 3   >>..|...........|....\r\n", getTimeStampStringWithoutUpdate());
 					SimulationState3 = SIMULATION_STATE_3_GOING_OUTSIDE_TO_SWITCH_A;
 					SimulationCounter3 = 0;
+					printf("%s  Sim  Actuator 3   >>..|...........|.... new state=%u\r\n", getTimeStampStringWithoutUpdate(), SimulationState3);
 				}
 			}
 			else {
 				// Request to stop extracting
 				if (SimulationState3 != SIMULATION_STATE_3_REST_OUTSIDE) {
-					printf("%s  Warning, Line %u, unexpected state %u\r\n", getTimeStampStringWithoutUpdate(), 
-						__LINE__, SimulationState3);
+					printf("%s  Sim  Warning, Line %u, unexpected state %u\r\n", getTimeStampStringWithoutUpdate(), __LINE__, SimulationState3);
 				}
 				else{
-					printf("%s  Actuator 3   ....|...........|..[]\r\n", getTimeStampStringWithoutUpdate());
+					printf("%s  Sim  Actuator 3   ....|...........|..[] new state=%u\r\n", getTimeStampStringWithoutUpdate(), SimulationState3);
 				}
 			}
 		}
@@ -468,7 +461,7 @@ void simulationMainLoopTick(void){
 			SimulationState1 = SIMULATION_STATE_1_REST_INSIDE;
 			SimulationCounter1 = 0;
 			SimulationInputs[LIMIT_SWITCH_1_INDEX] = SWITCH_PRESSED;
-			printf("%s  Actuator 1   ..<<|---------\r\n", getTimeStampStringWithoutUpdate());
+			printf("%s  Sim  Actuator 1   ..<<|---------\r\n", getTimeStampStringWithoutUpdate());
 		}
 	}
 	if (SimulationState1 == SIMULATION_STATE_1_GOING_OUTSIDE) {
@@ -477,7 +470,7 @@ void simulationMainLoopTick(void){
 			SimulationState1 = SIMULATION_STATE_1_REST_OUTSIDE;
 			SimulationCounter1 = 0;
 			SimulationInputs[LIMIT_SWITCH_1_INDEX] = SWITCH_RELEASED;
-			printf("%s  Actuator 1   ----|>>.......\r\n", getTimeStampStringWithoutUpdate());
+			printf("%s  Sim  Actuator 1   ----|>>.......\r\n", getTimeStampStringWithoutUpdate());
 		}
 	}
 
@@ -488,7 +481,7 @@ void simulationMainLoopTick(void){
 			SimulationState2 = SIMULATION_STATE_2_REST_INSIDE;
 			SimulationCounter2 = 0;
 			SimulationInputs[LIMIT_SWITCH_2_INDEX] = SWITCH_PRESSED;
-			printf("%s  Actuator 2   ..<<|---------\r\n", getTimeStampStringWithoutUpdate());
+			printf("%s  Sim  Actuator 2   ..<<|---------\r\n", getTimeStampStringWithoutUpdate());
 		}
 	}
 	if (SimulationState2 == SIMULATION_STATE_2_GOING_OUTSIDE) {
@@ -497,7 +490,7 @@ void simulationMainLoopTick(void){
 			SimulationState2 = SIMULATION_STATE_2_REST_OUTSIDE;
 			SimulationCounter2 = 0;
 			SimulationInputs[LIMIT_SWITCH_2_INDEX] = SWITCH_RELEASED;
-			printf("%s  Actuator 2   ----|>>.......\r\n", getTimeStampStringWithoutUpdate());
+			printf("%s  Sim  Actuator 2   ----|>>.......\r\n", getTimeStampStringWithoutUpdate());
 		}
 	}
 
@@ -508,7 +501,7 @@ void simulationMainLoopTick(void){
 			SimulationState3 = SIMULATION_STATE_3_REST_INSIDE;
 			SimulationCounter3 = 0;
 			SimulationInputs[LIMIT_SWITCH_3A_INDEX] = SWITCH_PRESSED;
-			printf("%s  Actuator 3   ..<<|-----------|----\r\n", getTimeStampStringWithoutUpdate());
+			printf("%s  Sim  Actuator 3   ..<<|-----------|---- new state=%u\r\n", getTimeStampStringWithoutUpdate(), SimulationState3);
 		}
 	}
 	if (SimulationState3 == SIMULATION_STATE_3_GOING_INSIDE_TO_SWITCH_B) {
@@ -517,7 +510,7 @@ void simulationMainLoopTick(void){
 			SimulationState3 = SIMULATION_STATE_3_GOING_INSIDE_TO_SWITCH_A;
 			SimulationCounter3 = 0;
 			SimulationInputs[LIMIT_SWITCH_3B_INDEX] = SWITCH_RELEASED;
-			printf("%s  Actuator 3   ....|.........<<|----\r\n", getTimeStampStringWithoutUpdate());
+			printf("%s  Sim  Actuator 3   ....|.........<<|---- new state=%u\r\n", getTimeStampStringWithoutUpdate(), SimulationState3);
 		}
 	}
 	if (SimulationState3 == SIMULATION_STATE_3_GOING_OUTSIDE_TO_SWITCH_B) {
@@ -526,7 +519,7 @@ void simulationMainLoopTick(void){
 			SimulationState3 = SIMULATION_STATE_3_REST_OUTSIDE;
 			SimulationCounter3 = 0;
 			SimulationInputs[LIMIT_SWITCH_3B_INDEX] = SWITCH_PRESSED;
-			printf("%s  Actuator 3   ----|---------|>>..\r\n", getTimeStampStringWithoutUpdate());
+			printf("%s  Sim  Actuator 3   ----|-----------|>>.. new state=%u\r\n", getTimeStampStringWithoutUpdate(), SimulationState3);
 		}
 	}
 	if (SimulationState3 == SIMULATION_STATE_3_GOING_OUTSIDE_TO_SWITCH_A) {
@@ -535,9 +528,10 @@ void simulationMainLoopTick(void){
 			SimulationState3 = SIMULATION_STATE_3_GOING_OUTSIDE_TO_SWITCH_B;
 			SimulationCounter3 = 0;
 			SimulationInputs[LIMIT_SWITCH_3A_INDEX] = SWITCH_RELEASED;
-			printf("%s  Actuator 3   ----|>>.......|....\r\n", getTimeStampStringWithoutUpdate());
+			printf("%s  Sim  Actuator 3   ----|>>.........|.... new state=%u\r\n", getTimeStampStringWithoutUpdate(), SimulationState3);
 		}
 	}
+	// SimulationInputs[EXTERNAL_INHIBITION_INDEX] is intentionally not used
 }
 
 bool simulateInput(int InputIndex){

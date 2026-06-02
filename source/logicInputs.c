@@ -59,9 +59,11 @@ void logicInputsTick(void) {
     CurrentState[LIMIT_SWITCH_3B_INDEX] = gpio_get(GPIO_FOR_LIMIT_SWITCH_3B);
     CurrentState[EXTERNAL_INHIBITION_INDEX] = gpio_get(GPIO_FOR_EXTERNAL_INHIBITION);
 #else
-    for (int K = 0; K < 5; K++) {
+    for (int K = 0; K < 4; K++) {
         CurrentState[K] = simulateInput(K);
     }
+    // In the simulation mode, the user can change the state of the external inhibition input directly by Modbus
+    CurrentState[EXTERNAL_INHIBITION_INDEX] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION)];
 #endif
 
     for (int J = 0; J < 5; J++) {
@@ -86,7 +88,12 @@ void logicInputsTick(void) {
                             ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH2)] = StableState[J];
                             break;
                         case EXTERNAL_INHIBITION_INDEX:
+#if DEBUG_SIMULATION_MODE == 0
+// In the simulation mode, no modification is needed
                             ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION)] = StableState[J];
+#endif
+                            break;
+                        default:
                             break;
                     }
                 }
@@ -98,25 +105,32 @@ void logicInputsTick(void) {
     }
 
     // just for testing purposes
+	(void)getTimeStampString(); // Update the time stamp string for printouts.
     static bool PrintoutsForTestingPurposes = false;
     if (((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 4u) != 0u) != PrintoutsForTestingPurposes) {
         PrintoutsForTestingPurposes = ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 4u) != 0u);
         if (PrintoutsForTestingPurposes) {
-            printf("Logic Inputs: printouts enabled\r\n");
+            printf("%s  LIn  printouts enabled\r\n", getTimeStampStringWithoutUpdate());
         }
         else{
-            printf("Logic Inputs: printouts disabled\r\n");
+            printf("%s  LIn  printouts disabled\r\n", getTimeStampStringWithoutUpdate());
         }
     }
-    static bool OldStableState[5] = {0};
-    char DebugNames[5][5] = {"sw1", "sw2", "sw3A", "sw3B", "INH"};
-    char *StateNames[2] = {"pressed", "released"};
     if (PrintoutsForTestingPurposes){
-        for (int J = 0; J < 5; J++) {
+        static bool OldStableState[5] = {0};
+        char DebugNames[5][5] = {"sw1", "sw2", "sw3A", "sw3B", "INH"};
+        char *SwitchStateNames[2] = {"pressed", "released"};
+        char *InhibitionStateNames[2] = {"not active", "active"};
+        for (int J = 0; J < 4; J++) {
             if (StableState[J] != OldStableState[J]) {
-                printf("Logic Inputs: %s %s (signal changed to %d)\r\n", DebugNames[J], StateNames[StableState[J]], StableState[J]);
+                printf("%s  LIn  %s %s (signal changed to %d)\r\n", getTimeStampStringWithoutUpdate(), DebugNames[J], SwitchStateNames[StableState[J]], StableState[J]);
                 OldStableState[J] = StableState[J];
             }
+        }
+        if (StableState[EXTERNAL_INHIBITION_INDEX] != OldStableState[EXTERNAL_INHIBITION_INDEX]) {
+            printf("%s  LIn  %s %s (signal changed to %d)\r\n", getTimeStampStringWithoutUpdate(), DebugNames[EXTERNAL_INHIBITION_INDEX], 
+                InhibitionStateNames[StableState[EXTERNAL_INHIBITION_INDEX]], StableState[EXTERNAL_INHIBITION_INDEX]);
+            OldStableState[EXTERNAL_INHIBITION_INDEX] = StableState[EXTERNAL_INHIBITION_INDEX];
         }
     }
 }
