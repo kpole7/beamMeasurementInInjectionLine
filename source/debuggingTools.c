@@ -42,8 +42,8 @@
 #define SIMULATION_STATE_3_GOING_OUTSIDE_TO_SWITCH_B 5
 #define SIMULATION_STATE_3_REST_IN_THE_MIDDLE 6
 
-#define SWITCH_PRESSED false
-#define SWITCH_RELEASED true
+#define SWITCH_PRESSED true
+#define SWITCH_RELEASED false
 
 //..............................................................................
 // Local variables
@@ -67,7 +67,8 @@ static char TimeStampString[16];
 
 // This table is used in the debug simulation mode to simulate the state of logic inputs.
 // Indexes are defined in logicInputs.h
-bool SimulationInputs[5] = { true, true, true, false, false }; // sw1=released, sw2=released, sw3A=released, sw3B=pressed, INH=not active
+// SimulationInputs[EXTERNAL_INHIBITION_INDEX] is intentionally not used
+bool SimulationInputs[5] = { SWITCH_RELEASED, SWITCH_RELEASED, SWITCH_RELEASED, SWITCH_PRESSED, false };
 
 uint16_t SimulationState1;
 uint16_t SimulationState2;

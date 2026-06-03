@@ -23,19 +23,23 @@ static uint16_t Counter[5];
 void initializeLogicInputs(void) {
     gpio_init(GPIO_FOR_LIMIT_SWITCH_1);
     gpio_set_dir(GPIO_FOR_LIMIT_SWITCH_1, GPIO_IN);
-    StableState[LIMIT_SWITCH_1_INDEX] = gpio_get(GPIO_FOR_LIMIT_SWITCH_1);
+    // the Modbus coil shows '1' when the uC pin is at a low voltage level, and '0' when the uC pin is at a high voltage level
+    StableState[LIMIT_SWITCH_1_INDEX] = !gpio_get(GPIO_FOR_LIMIT_SWITCH_1);
 
     gpio_init(GPIO_FOR_LIMIT_SWITCH_2);
     gpio_set_dir(GPIO_FOR_LIMIT_SWITCH_2, GPIO_IN);
-    StableState[LIMIT_SWITCH_2_INDEX] = gpio_get(GPIO_FOR_LIMIT_SWITCH_2);
+    // the Modbus coil shows '1' when the uC pin is at a low voltage level, and '0' when the uC pin is at a high voltage level
+    StableState[LIMIT_SWITCH_2_INDEX] = !gpio_get(GPIO_FOR_LIMIT_SWITCH_2);
 
     gpio_init(GPIO_FOR_LIMIT_SWITCH_3A);
     gpio_set_dir(GPIO_FOR_LIMIT_SWITCH_3A, GPIO_IN);
-    StableState[LIMIT_SWITCH_3A_INDEX] = gpio_get(GPIO_FOR_LIMIT_SWITCH_3A);
+    // the Modbus coil shows '1' when the uC pin is at a low voltage level, and '0' when the uC pin is at a high voltage level
+    StableState[LIMIT_SWITCH_3A_INDEX] = !gpio_get(GPIO_FOR_LIMIT_SWITCH_3A);
 
     gpio_init(GPIO_FOR_LIMIT_SWITCH_3B);
     gpio_set_dir(GPIO_FOR_LIMIT_SWITCH_3B, GPIO_IN);
-    StableState[LIMIT_SWITCH_3B_INDEX] = gpio_get(GPIO_FOR_LIMIT_SWITCH_3B);
+    // the Modbus coil shows '1' when the uC pin is at a low voltage level, and '0' when the uC pin is at a high voltage level
+    StableState[LIMIT_SWITCH_3B_INDEX] = !gpio_get(GPIO_FOR_LIMIT_SWITCH_3B);
 
     gpio_init(GPIO_FOR_EXTERNAL_INHIBITION);
     gpio_set_dir(GPIO_FOR_EXTERNAL_INHIBITION, GPIO_IN);
@@ -53,10 +57,14 @@ void initializeLogicInputs(void) {
 void logicInputsTick(void) {
     bool CurrentState[5];
 #if DEBUG_SIMULATION_MODE == 0
-    CurrentState[LIMIT_SWITCH_1_INDEX] = gpio_get(GPIO_FOR_LIMIT_SWITCH_1);
-    CurrentState[LIMIT_SWITCH_2_INDEX] = gpio_get(GPIO_FOR_LIMIT_SWITCH_2);
-    CurrentState[LIMIT_SWITCH_3A_INDEX] = gpio_get(GPIO_FOR_LIMIT_SWITCH_3A);
-    CurrentState[LIMIT_SWITCH_3B_INDEX] = gpio_get(GPIO_FOR_LIMIT_SWITCH_3B);
+    // the Modbus coils show '1' when the uC pins are at a low voltage level, 
+    // and '0' when the uC pins are at a high voltage level in the below lines related to the limit switches, 
+    // so the values read from the uC pins are inverted
+    CurrentState[LIMIT_SWITCH_1_INDEX] = !gpio_get(GPIO_FOR_LIMIT_SWITCH_1);
+    CurrentState[LIMIT_SWITCH_2_INDEX] = !gpio_get(GPIO_FOR_LIMIT_SWITCH_2);
+    CurrentState[LIMIT_SWITCH_3A_INDEX] = !gpio_get(GPIO_FOR_LIMIT_SWITCH_3A);
+    CurrentState[LIMIT_SWITCH_3B_INDEX] = !gpio_get(GPIO_FOR_LIMIT_SWITCH_3B);
+
     CurrentState[EXTERNAL_INHIBITION_INDEX] = gpio_get(GPIO_FOR_EXTERNAL_INHIBITION);
 #else
     for (int K = 0; K < 4; K++) {
@@ -66,6 +74,7 @@ void logicInputsTick(void) {
     CurrentState[EXTERNAL_INHIBITION_INDEX] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION)];
 #endif
 
+    // Debouncing logic: the stable state changes only if the current state is the same for DEBOUNCE_TICKS consecutive ticks
     for (int J = 0; J < 5; J++) {
         if (CurrentState[J] != StableState[J]) {
             if (CurrentState[J] == TemporaryState[J]) {
@@ -73,29 +82,6 @@ void logicInputsTick(void) {
                 if (Counter[J] >= DEBOUNCE_TICKS) {
                     StableState[J] = CurrentState[J];
                     Counter[J] = 0;
-                    // Update Modbus registers or coils based on the new stable state
-                    switch (J) {
-                        case LIMIT_SWITCH_1_INDEX:
-                            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_SWITCH)] = StableState[J];
-                            break;
-                        case LIMIT_SWITCH_2_INDEX:
-                            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_SWITCH)] = StableState[J];
-                            break;
-                        case LIMIT_SWITCH_3A_INDEX:
-                            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH1)] = StableState[J];
-                            break;
-                        case LIMIT_SWITCH_3B_INDEX:
-                            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH2)] = StableState[J];
-                            break;
-                        case EXTERNAL_INHIBITION_INDEX:
-#if DEBUG_SIMULATION_MODE == 0
-// In the simulation mode, no modification is needed
-                            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION)] = StableState[J];
-#endif
-                            break;
-                        default:
-                            break;
-                    }
                 }
             } else {
                 Counter[J] = 0;
@@ -103,6 +89,16 @@ void logicInputsTick(void) {
         }
         TemporaryState[J] = CurrentState[J];
     }
+
+    // Update Modbus registers or coils based on the new stable state
+    ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_SWITCH)] = StableState[LIMIT_SWITCH_1_INDEX];
+    ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_SWITCH)] = StableState[LIMIT_SWITCH_2_INDEX];
+    ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH1)] = StableState[LIMIT_SWITCH_3A_INDEX];
+    ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH2)] = StableState[LIMIT_SWITCH_3B_INDEX];
+#if DEBUG_SIMULATION_MODE == 0
+    // In the simulation mode, no modification is needed
+    ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION)] = StableState[EXTERNAL_INHIBITION_INDEX];
+#endif
 
     // just for testing purposes
 	(void)getTimeStampString(); // Update the time stamp string for printouts.
@@ -119,17 +115,17 @@ void logicInputsTick(void) {
     if (PrintoutsForTestingPurposes){
         static bool OldStableState[5] = {0};
         char DebugNames[5][5] = {"sw1", "sw2", "sw3A", "sw3B", "INH"};
-        char *SwitchStateNames[2] = {"pressed", "released"};
+        char *SwitchStateNames[2] = {"released", "pressed"};
         char *InhibitionStateNames[2] = {"not active", "active"};
         for (int J = 0; J < 4; J++) {
             if (StableState[J] != OldStableState[J]) {
-                printf("%s  LIn  %s %s (signal changed to %d)\r\n", getTimeStampStringWithoutUpdate(), DebugNames[J], SwitchStateNames[StableState[J]], StableState[J]);
+                printf("%s  LIn  %s %s\r\n", getTimeStampStringWithoutUpdate(), DebugNames[J], SwitchStateNames[StableState[J]]);
                 OldStableState[J] = StableState[J];
             }
         }
         if (StableState[EXTERNAL_INHIBITION_INDEX] != OldStableState[EXTERNAL_INHIBITION_INDEX]) {
-            printf("%s  LIn  %s %s (signal changed to %d)\r\n", getTimeStampStringWithoutUpdate(), DebugNames[EXTERNAL_INHIBITION_INDEX], 
-                InhibitionStateNames[StableState[EXTERNAL_INHIBITION_INDEX]], StableState[EXTERNAL_INHIBITION_INDEX]);
+            printf("%s  LIn  %s %s\r\n", getTimeStampStringWithoutUpdate(), DebugNames[EXTERNAL_INHIBITION_INDEX], 
+                InhibitionStateNames[StableState[EXTERNAL_INHIBITION_INDEX]]);
             OldStableState[EXTERNAL_INHIBITION_INDEX] = StableState[EXTERNAL_INHIBITION_INDEX];
         }
     }

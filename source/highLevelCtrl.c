@@ -96,12 +96,9 @@ void highLevelCtrlTick(const HighLevelCtrlInputs *inputs,
         if (inputs->cup_steady[i] && (inputs->cup_inserted[i] != inputs->cup_control[i])) {
             // Cup is steady but not in requested state: force to control
             outputs->cup_requested_state[i] = inputs->cup_control[i];
-        } else {
-            // Default: follow user's request
-            outputs->cup_requested_state[i] = inputs->cup_control[i];
         }
     }
-    
+
     //--------------------------------------------------------------------------
     // Rule 1: Handle external inhibition (highest priority)
     // Override any other rule for the last cup (closest to cyclotron)
