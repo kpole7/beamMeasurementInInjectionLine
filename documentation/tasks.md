@@ -1,11 +1,11 @@
 # BeamMeasurementInInjectionLine
 ## Main tasks
 
-  The purpose of this project is to support several (up to 3) Faraday cups. These are measuring devices used to measure the ion beam in the ion beamline between the ion source and the cyclotron. During normal cyclotron operation, the Faraday cups are retracted from the ion beamline. The ion beam travels from the ion source, passes the first cup, the second, and the third, and continues toward the cyclotron. A Faraday cup is inserted into the ion beamline to perform measurements in such a way that the inserted cup covers the entire ion beamline. Therefore, measurements in the second cup are meaningful only when the first cup is withdrawn from the ion beamline and the second is inserted. Similarly, measurements in the third cup should be taken when the first and second cups are withdrawn and the third is inserted into the ion beamline. The first Faraday cup inserted into the ion channel (as viewed from the ion source) will be referred to as the active cup. The purpose of this project is to control the insertion and removal of Faraday cups, measure the currents in the electrodes of the active cup, and act as a Modbus server to enable remote operation.
+  The purpose of this project is to support 3 Faraday cups. These are measuring devices used to measure the ion beam in the ion beamline between the ion source and the cyclotron. During normal cyclotron operation, the Faraday cups are retracted from the ion beamline. The ion beam travels from the ion source, passes the first cup, the second, and the third, and continues toward the cyclotron. A Faraday cup is inserted into the ion beamline to perform measurements in such a way that the inserted cup covers the entire ion beamline. Therefore, measurements in the second cup are meaningful only when the first cup is withdrawn from the ion beamline and the second is inserted. Similarly, measurements in the third cup should be taken when the first and second cups are withdrawn and the third is inserted into the ion beamline. The first Faraday cup inserted into the ion channel (as viewed from the ion source) will be referred to as the active cup. The purpose of this project is to control the insertion and removal of Faraday cups, measure the currents in the electrodes of the active cup, and act as a Modbus server to enable remote operation.
 
-  The Faraday cup control device serves another important purpose. Specifically, it is one of the key components of the safety system. The safety system can send a signal to the Faraday cup control device to immediately block the ion beam entering the cyclotron. This signal involves a change in the logic level on the signal line and causes the second Faraday cup (i.e., the one in the middle) to slide into the ion beamline.
-
-This project description uses the ModbusRegisters.csv file, which contains a list of Modbus registers. The ModbusRegisters.csv file is generated from the ModbusRegisters.ods file.
+  The Faraday cup control device has an additional feature: a lock mode. The lock signal is received from an external security system. The second (middle) Faraday cup serves as the lock’s operating element. The second Faraday cup is retracted or extended using a pneumatic mechanism. Powering the solenoid valve causes the Faraday cup to extend. If the solenoid valve is not energized, the Faraday cup slides into the ion beamline and blocks the flow of the ion beam to the cyclotron. An active lock signal causes the solenoid valve coil circuit to be immediately disconnected and the Faraday cup to slide into the ion beamline if it was extended. If the Faraday cup was inserted when the lockout signal appeared, it cannot be extended as long as the lockout signal is active. The lock signal is sent to the Faraday cup control device for informational purposes, to allow the lock status to be written to the appropriate Modbus register, and to enable monitoring of the status of the second Faraday cup.
+  
+  This project description uses the ModbusRegisters.csv file, which contains a list of Modbus registers. The ModbusRegisters.csv file is generated from the ModbusRegisters.ods file.
 
 
 ```
@@ -54,6 +54,9 @@ Add. 3  Mnemonic: HighLevelCtrl
     Detailed description.
         The module operates according to the following list of rules:
         Rule 1. If the external lock is active, perform the “lock the beam” action.
+
+
+
         Rule 2. If any module is in a failure state, perform the “respond to failure” action,
                 otherwise, perform the "return to normal" action.
         Rule 3. For all the auxiliary FSMs: if an auxiliary FSM is in a steady state other than 
@@ -100,18 +103,19 @@ Add. 5  Mnemonic: AuxiliaryFSMs
         This module contains 3 auxiliary state machines (auxiliary FSM) that handle the installed Faraday 
         cups (in the range from 1 to 3). Each of the auxiliary FSMs controls the Faraday cup (inserts 
         or withdraws it), checks whether the mechanism is operating correctly, and determines whether 
-        the mechanism is in a steady state or a transient state.
+        the mechanism is in a steady state or a transient state. Additionally, the module handles a lock 
+        signal.
     Detailed description.
         Each auxiliary FSM operates independently of the others. The mechanism for inserting and removing 
         individual cups can be pneumatic or motor-driven. The mechanism type is specified in the Cup1Type, 
         Cup2Type, Cup3Type registers.
         A.  The pneumatic mechanism has a solenoid valve that controls a pneumatic actuator. This mechanism 
             uses a single switch that acts as a detector for the insertion of the Faraday cup into the ion 
-            beamline. In the idle state, i.e., when the solenoid valve is not energized, the cup is extended 
-            from the ion beamline. At that time, the signal from the switch is in the low state, meaning 
+            beamline. In the idle state, i.e., when the solenoid valve is not energized, the cup is inserted 
+            to the ion beamline. At that time, the signal from the switch is in the low state, meaning 
             the CupNSwitch register takes the value "false" (where N denotes the cup index). The solenoid 
             valve coil is energized when the CupNRequestedState register has the value true. While the cup is 
-            inserted and remains in a stable position, the solenoid valve coil remains energized. 
+            withdrawn and remains in a stable position, the solenoid valve coil remains energized. 
             The operating cycle of the pneumatic mechanism is as follows:
             -   The cup is stationary and withdrawn; mechanism control signal CupNRequestedState = false; 
                 limit switch signal: CupNSwitch = false;
