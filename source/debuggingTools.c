@@ -81,12 +81,6 @@ uint16_t SimulationCounter3;
 
 
 //..............................................................................
-// Local function prototypes
-//..............................................................................
-
-static void commandInterpreterEssentials(uint16_t *RegistersToBeChangedPtr, uint16_t RegistersToBeChangedNumber, char FirstName, char *StaticBuffer);
-
-//..............................................................................
 // Definitions of interface functions
 //..............................................................................
 
@@ -223,87 +217,6 @@ void auxiliaryOutputsInitialize(void) {
 void auxiliaryPinOutputValue1(bool Value) { gpio_put(AUXILIARY_PIN_1, Value); }
 
 void auxiliaryPinOutputValue2(bool Value) { gpio_put(AUXILIARY_PIN_2, Value); }
-
-/// @brief This function reads text commands entered in the terminal and executes them.
-/// The above-mentioned terminal is the terminal of the computer connected to the microcontroller via USB.
-/// The Linux system uses usualy /dev/ttyACM0 serial port with the default settings (115200 baud, 8N1, hardware flow control). 
-/// The commands are entered in the terminal and sent to the microcontroller when the user presses the Enter key.
-/// The commands are used to modify the values of Modbus registers for testing purposes.
-/// @param RegistersToBeChangedPtr pointer to a uint16_t variable (for example, a Modbus register) that is to be modified
-/// @param RegistersToBeChangedNumber number of elements in the table pointed to by RegistersToBeChangedPtr
-/// @param FirstName single-letter name used in a command to modify the first element
-/// The commands have the form "A=num;" where num is a decimal or hexadecimal number.
-/// Exemplary commands:
-/// A=123;      means RegistersToBeChangedPtr[0] = 123
-/// B=0xA5;		means RegistersToBeChangedPtr[1] = 0xA5
-void debugTerminalCommandInterpreter(uint16_t *RegistersToBeChangedPtr, uint16_t RegistersToBeChangedNumber, char FirstName) {
-	static char Buffer[101];
-	static uint32_t Index;
-	static uint32_t Tics;
-	int InputCharacter = getchar_timeout_us(0); // non-blocking read
-	if (InputCharacter != PICO_ERROR_TIMEOUT) {
-		Tics = 0;
-		if (Index < sizeof(Buffer) - 1) {
-			Buffer[Index] = InputCharacter;
-			Index++;
-			if (';' == InputCharacter) {
-				Buffer[Index] = 0;
-
-				commandInterpreterEssentials(RegistersToBeChangedPtr, RegistersToBeChangedNumber, FirstName, Buffer);
-
-				Index = 0;
-			}
-		}
-	}
-	else {
-		if (Tics < 10) {
-			Tics++;
-		}
-		else {
-			if (0 != Index) {
-				Index = 0; // timeout => clear the buffer
-				printf("Wyczyszczono bufor\r\n");
-			}
-		}
-	}
-}
-
-static void commandInterpreterEssentials(uint16_t *RegistersToBeChangedPtr, uint16_t RegistersToBeChangedNumber, char FirstName, char *StaticBuffer) {
-	uint32_t Argument = 0;
-	char *EndPtr;
-	char *SemicolonPtr = strchr(StaticBuffer, ';');
-	if (SemicolonPtr[1] != 0) { // check if the first semicolon is the only semicolon and if it is the last character
-		SemicolonPtr = NULL;
-	}
-	if ((FirstName <= StaticBuffer[0]) && (FirstName + (char)RegistersToBeChangedNumber > StaticBuffer[0]) && ('=' == StaticBuffer[1]) &&
-		(strlen(StaticBuffer) >= 4) && (SemicolonPtr != NULL)) {
-		if ((strstr(StaticBuffer, "=0x") == StaticBuffer + 1) && (strlen(StaticBuffer) >= 6)) {
-			Argument = (uint32_t)strtoul(StaticBuffer + 4, &EndPtr, 16);
-		}
-		else {
-			Argument = (uint32_t)strtoul(StaticBuffer + 2, &EndPtr, 10);
-		}
-		if ((Argument < 0x10000) && (';' == EndPtr[0])) {
-			printf("Command %c=%d=0x%04X\r\n", StaticBuffer[0], Argument, Argument);
-		}
-		else {
-			printf("Wrong command <%s> \r\n", StaticBuffer);
-		}
-	}
-	else {
-		if (NULL != strstr(StaticBuffer, "ver;")) {
-			printf("Time stamp=%s\r\n", CompilationTime);
-		}
-		else {
-			printf("Unknown command <%s>\r\n", StaticBuffer);
-		}
-	}
-
-	uint8_t J = StaticBuffer[0] - FirstName;
-	if (J < RegistersToBeChangedNumber) {
-		RegistersToBeChangedPtr[J] = Argument;
-	}
-}
 
 void initializeTimeStamp(void){
 	TimeStampMinutes = 0;

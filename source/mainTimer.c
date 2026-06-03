@@ -22,9 +22,9 @@
 /// It is used in the timer ISR and in the main loop
 atomic_bool TwoMillisecondsTimeTick;
 
-/// @brief These flags synchronize some events in the main loop. 
-/// They are used in the timer ISR and in the main loop
-atomic_bool SlowProcessesTimeTick1, SlowProcessesTimeTick2;
+/// @brief This flag synchronizes some events in the main loop. 
+/// It is used in the timer ISR and in the main loop
+atomic_bool SlowProcessesTimeTick1;
 
 //---------------------------------------------------------------------------------------------------
 // Local variables
@@ -66,11 +66,6 @@ static bool repeatingTimerISR(repeating_timer_t *rt) {
 		auxiliaryPinOutputValue1(true); // just for debugging purposes
 
 		atomic_store_explicit(&SlowProcessesTimeTick1, true, memory_order_release);
-	}
-
-	if (32 == TimeDivider) {
-		// frequency = 1000Hz / 64 = 15.625Hz
-		atomic_store_explicit(&SlowProcessesTimeTick2, true, memory_order_release);
 	}
 
 	if (1 == (TimeDivider & 1)) {

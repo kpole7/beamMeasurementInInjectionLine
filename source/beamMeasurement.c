@@ -97,11 +97,6 @@ int main() {
 
 			getVoltageSamples();
 		}
-		if (atomic_load_explicit(&SlowProcessesTimeTick2, memory_order_acquire)) {
-			atomic_store_explicit(&SlowProcessesTimeTick2, false, memory_order_release);
-
-			debugTerminalCommandInterpreter(&ModbusHoldingRegisters[0], MODBUS_HOLDING_REGISTERS_NUMBER, 'a');
-		}
 
 		if (atomic_load_explicit(&TwoMillisecondsTimeTick, memory_order_acquire)) {
 			atomic_store_explicit(&TwoMillisecondsTimeTick, false, memory_order_release);
