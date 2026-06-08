@@ -54,7 +54,7 @@ add_custom_target(
 )
 
 set_source_files_properties(
-    ${CMAKE_CURRENT_LIST_DIR}/compilationTime.c
+    ${CMAKE_CURRENT_LIST_DIR}/source/compilationTime.c
     PROPERTIES
         OBJECT_DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/phonyTimestamp
 )
