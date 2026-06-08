@@ -1,0 +1,12 @@
+The tests can be carried out in two modes:
+- hardware mode (using complete hardware);
+- simulation mode (only uC without any advanced hardware).
+Both modes provide two USART interfaces for connecting to a computer.
+
+
+1. Multi-channel input currents measurement (only hardware mode).
+1.1. Make sure the software is running in the correct mode.
+1.2. Send Modbus command "write single register"; address 1132; data 1 (analog inputs printouts).
+1.3. Connect the reference current source to the current inputs and check the displayed values.
+1.4. Change the active cup (send Modbus command "write single register"; address 1133; data 1...4); go to 1.3.
+

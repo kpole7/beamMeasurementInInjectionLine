@@ -252,10 +252,6 @@ static void mainInitialization(void){
 	}
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_RANGE_CHANGE_THRESHOLD)] = DEFAULT_ANALOG_RANGE_CHANGE_THRESHOLD;
 
-#if DEBUG_SIMULATION_MODE
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] = 4u; // Logic Inputs printouts enabled
-#endif
-
 	memset(&HighLevelState, 0, sizeof(HighLevelState));
 	HighLevelState.retained_active_cup = 1u;
 	IsHighLevelStateInitialized = false;
@@ -270,6 +266,12 @@ static void mainInitialization(void){
 
 	sleep_ms(100);
 	printf("\r\nHello!\r\nCompilation time is %s\r\n", CompilationTime);
+#if DEBUG_SIMULATION_MODE
+	printf("Simulation mode is ON\r\n");
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] = 4u; // Logic Inputs printouts enabled
+#else
+	printf("Simulation mode is OFF\r\n");
+#endif
 
 	initializeLogicInputs();
 	initializeAdcMeasurements();
