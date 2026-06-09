@@ -52,7 +52,7 @@ typedef struct {
 } AuxiliaryFSMsState;
 
 void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *inputs,
-                       AuxiliaryFSMsState *state,
+                       AuxiliaryFSMsState *FsmState,
                        AuxiliaryFSMsOutputs *outputs,
                        uint16_t tick_period_ms);
 

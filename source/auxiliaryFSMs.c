@@ -76,11 +76,11 @@ static void evaluateMotorCup(bool requested,
 }
 
 void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *inputs,
-                       AuxiliaryFSMsState *state,
+                       AuxiliaryFSMsState *FsmState,
                        AuxiliaryFSMsOutputs *outputs,
                        uint16_t tick_period_ms)
 {
-    if (!inputs || !state || !outputs) {
+    if (!inputs || !FsmState || !outputs) {
         return;
     }
 
@@ -130,8 +130,8 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *inputs,
                                        : inputs->time_limit_withdrawing_ms[cup];
             uint16_t effective_limit = (limit == 0u) ? 1u : limit;
 
-            state->transition_elapsed_ms[cup] = saturatingAddU16(state->transition_elapsed_ms[cup], tick_period_ms);
-            if (state->transition_elapsed_ms[cup] > effective_limit) {
+            FsmState->transition_elapsed_ms[cup] = saturatingAddU16(FsmState->transition_elapsed_ms[cup], tick_period_ms);
+            if (FsmState->transition_elapsed_ms[cup] > effective_limit) {
                 if (requested) {
                     error |= AUXILIARY_FSM_ERROR_TIMEOUT_INSERT;
                 } else {
@@ -139,7 +139,7 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *inputs,
                 }
             }
         } else {
-            state->transition_elapsed_ms[cup] = 0u;
+            FsmState->transition_elapsed_ms[cup] = 0u;
         }
 
         outputs->actuator_control[cup] = actuator;
@@ -147,12 +147,12 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *inputs,
         outputs->cup_steady[cup] = steady;
         outputs->cup_error[cup] = error;
 
-        if (error != state->prev_error[cup]) {
-            outputs->cup_last_error[cup] = state->prev_error[cup];
+        if (error != FsmState->prev_error[cup]) {
+            outputs->cup_last_error[cup] = FsmState->prev_error[cup];
         }
 
-        state->error_storage[cup] |= error;
-        outputs->cup_error_storage[cup] = state->error_storage[cup];
-        state->prev_error[cup] = error;
+        FsmState->error_storage[cup] |= error;
+        outputs->cup_error_storage[cup] = FsmState->error_storage[cup];
+        FsmState->prev_error[cup] = error;
     }
 }

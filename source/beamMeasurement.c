@@ -105,8 +105,8 @@ int main() {
 			modbusActivityLedService();
 #if 0
 			highLevelCtrlService();
-			auxiliaryFSMsService();
 #endif
+			auxiliaryFSMsService();
 
 #if DEBUG_SIMULATION_MODE == 0
 			actuatorCtrlTick();
@@ -247,7 +247,7 @@ static void mainInitialization(void){
 	ModbusHoldingRegisters[Cup2TypeAddress] = 0u;
 	ModbusHoldingRegisters[Cup3TypeAddress] = 1u;
 	ModbusHoldingRegisters[ActiveCupAddress] = 1u;
-	for (int J = holdingIndexFromAddress(MODBUS_ADDR_CUP1_CH1_GAIN1_FACTOR); J <= holdingIndexFromAddress(MODBUS_ADDR_CUP3_CH4_GAIN2_FACTOR); J++) {
+	for (int J = holdingIndexFromAddress(MODBUS_ADDR_CUP1_CHANNEL1_GAIN1_FACTOR); J <= holdingIndexFromAddress(MODBUS_ADDR_CUP3_CHANNEL4_GAIN2_FACTOR); J++) {
 		ModbusHoldingRegisters[J] = 14000u;
 	}
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_RANGE_CHANGE_THRESHOLD)] = DEFAULT_ANALOG_RANGE_CHANGE_THRESHOLD;
@@ -296,7 +296,7 @@ static void highLevelCtrlService(void) {
 	memset(&Inputs, 0, sizeof(Inputs));
 
 	Inputs.installed_cups = clampInstalledCups(ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_INSTALLED_CUPS)]);
-	Inputs.external_inhibition = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION)];
+	Inputs.external_inhibition = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION2)];
 	Inputs.cup_control[0] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_CONTROL)];
 	Inputs.cup_control[1] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_CONTROL)];
 	Inputs.cup_control[2] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_CONTROL)];
@@ -341,12 +341,12 @@ static void auxiliaryFSMsService(void) {
 	uint16_t Cup1TypeIndex = holdingIndexFromAddress(MODBUS_ADDR_CUP1_TYPE);
 	uint16_t Cup2TypeIndex = holdingIndexFromAddress(MODBUS_ADDR_CUP2_TYPE);
 	uint16_t Cup3TypeIndex = holdingIndexFromAddress(MODBUS_ADDR_CUP3_TYPE);
-	uint16_t TimeLimitInserting1Index = holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_INSERTING_1);
-	uint16_t TimeLimitInserting2Index = holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_INSERTING_2);
-	uint16_t TimeLimitInserting3Index = holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_INSERTING_3);
-	uint16_t TimeLimitWithdrawing1Index = holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_WITHDRAWING_1);
-	uint16_t TimeLimitWithdrawing2Index = holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_WITHDRAWING_2);
-	uint16_t TimeLimitWithdrawing3Index = holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_WITHDRAWING_3);
+	uint16_t TimeLimitInserting1Index = holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_INSERTING1);
+	uint16_t TimeLimitInserting2Index = holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_INSERTING2);
+	uint16_t TimeLimitInserting3Index = holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_INSERTING3);
+	uint16_t TimeLimitWithdrawing1Index = holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_WITHDRAWING1);
+	uint16_t TimeLimitWithdrawing2Index = holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_WITHDRAWING2);
+	uint16_t TimeLimitWithdrawing3Index = holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_WITHDRAWING3);
 	uint16_t Cup1ErrorIndex = holdingIndexFromAddress(MODBUS_ADDR_CUP1_ERROR);
 	uint16_t Cup2ErrorIndex = holdingIndexFromAddress(MODBUS_ADDR_CUP2_ERROR);
 	uint16_t Cup3ErrorIndex = holdingIndexFromAddress(MODBUS_ADDR_CUP3_ERROR);
@@ -360,7 +360,7 @@ static void auxiliaryFSMsService(void) {
 	memset(&Inputs, 0, sizeof(Inputs));
 
 	Inputs.installed_cups = clampInstalledCups(ModbusHoldingRegisters[InstalledCupsIndex]);
-	Inputs.external_inhibition = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION)];
+	Inputs.external_inhibition = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION2)];
 	Inputs.cup_type[0] = ModbusHoldingRegisters[Cup1TypeIndex];
 	Inputs.cup_type[1] = ModbusHoldingRegisters[Cup2TypeIndex];
 	Inputs.cup_type[2] = ModbusHoldingRegisters[Cup3TypeIndex];

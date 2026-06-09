@@ -38,7 +38,7 @@ static bool isWritableHoldingAddress(USHORT address) {
 }
 
 static bool isValidHoldingValue(USHORT address, uint16_t value) {
-	if ((address >= MODBUS_ADDR_TIME_LIMIT_INSERTING_1) && (address <= MODBUS_ADDR_TIME_LIMIT_WITHDRAWING_3)) {
+	if ((address >= MODBUS_ADDR_TIME_LIMIT_INSERTING1) && (address <= MODBUS_ADDR_TIME_LIMIT_WITHDRAWING3)) {
 		return value >= 1u;
 	}
 	if (address == MODBUS_ADDR_ACTIVE_CUP) {

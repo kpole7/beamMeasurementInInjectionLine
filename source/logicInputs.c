@@ -71,7 +71,7 @@ void logicInputsTick(void) {
         CurrentState[K] = simulateInput(K);
     }
     // In the simulation mode, the user can change the state of the external inhibition input directly by Modbus
-    CurrentState[EXTERNAL_INHIBITION_INDEX] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION)];
+    CurrentState[EXTERNAL_INHIBITION_INDEX] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION2)];
 #endif
 
     // Debouncing logic: the stable state changes only if the current state is the same for DEBOUNCE_TICKS consecutive ticks
@@ -97,7 +97,7 @@ void logicInputsTick(void) {
     ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH2)] = StableState[LIMIT_SWITCH_3B_INDEX];
 #if DEBUG_SIMULATION_MODE == 0
     // In the simulation mode, no modification is needed
-    ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION)] = StableState[EXTERNAL_INHIBITION_INDEX];
+    ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION2)] = StableState[EXTERNAL_INHIBITION_INDEX];
 #endif
 
     // just for testing purposes
