@@ -66,6 +66,8 @@ void updateTimeStamp( uint16_t MillisecondsToAdd );
 char *getTimeStampString(void);
 char *getTimeStampStringWithoutUpdate(void);
 
+void printChangedRegisters( const char *ContextComment );
+
 #if DEBUG_SIMULATION_MODE
 void simulationMainLoopTick(void);
 bool simulateInput(int InputIndex);

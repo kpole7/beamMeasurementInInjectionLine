@@ -249,6 +249,47 @@ char *getTimeStampStringWithoutUpdate(void){
 	return TimeStampString;
 }
 
+void printChangedRegisters( const char *ContextComment ) {
+	static uint16_t OldModbusHoldingRegisters[MODBUS_HOLDING_REGISTERS_NUMBER];
+	static bool OldModbusCoils[MODBUS_COILS_NUMBER];
+	bool AnyChange = false;
+	int16_t Counter = 3;
+
+	for (int J = 0; J < MODBUS_COILS_NUMBER; J++) {
+		if (ModbusCoils[J] != OldModbusCoils[J]) {
+			if (!AnyChange) {
+				printf("%s %11s  ", getTimeStampString(), ContextComment);
+			}
+			AnyChange = true;
+			printf("%02d: %u->%u  ", J+MODBUS_COILS_ADDRESS, OldModbusCoils[J], ModbusCoils[J]);
+			OldModbusCoils[J] = ModbusCoils[J];
+			Counter++;
+		}
+	}
+	if (AnyChange && (Counter % 2 == 0)) {
+		Counter++;
+		printf("          ");
+	}
+	for (int J = 0; J < MODBUS_HOLDING_REGISTERS_NUMBER; J++) {
+		if (ModbusHoldingRegisters[J] != OldModbusHoldingRegisters[J]) {
+			if (!AnyChange) {
+				printf("%s %11s  ", getTimeStampString(), ContextComment);
+			}
+			AnyChange = true;
+			printf("%04d: %04X -> %04X  ", J+MODBUS_HOLDING_REGISTERS_ADDRESS, OldModbusHoldingRegisters[J], ModbusHoldingRegisters[J]);
+			OldModbusHoldingRegisters[J] = ModbusHoldingRegisters[J];
+			Counter+=2;
+			if (Counter >= 16) {
+				printf("\r\n    ");
+				Counter = 0;
+			}
+		}
+	}
+	if (AnyChange) {
+		printf("\r\n");
+	}
+}
+
 #if DEBUG_SIMULATION_MODE
 
 void simulationMainLoopTick(void){

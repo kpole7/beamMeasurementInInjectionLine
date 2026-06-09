@@ -122,6 +122,8 @@ int main() {
 #endif
 		}
 
+		printChangedRegisters("Main loop");
+
 #if MODBUS_DEBUG_MODE
 		// Auxiliary printouts for debugging purpose
 		if (IsJumperJP1 && !OldIsJumperJP1) {
@@ -143,6 +145,9 @@ int main() {
 				irq_set_enabled(MODBUS_UART_IRQ, false);
 			}
 		}
+
+		printChangedRegisters("Modbus");
+
 	} // The main loop
 }
 
@@ -283,6 +288,8 @@ static void mainInitialization(void){
 	eMBEnable();
 
 	startPeriodicInterrupt();
+
+	printChangedRegisters("Init");
 }
 
 static void highLevelCtrlService(void) {
