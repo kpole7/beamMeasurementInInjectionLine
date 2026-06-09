@@ -244,6 +244,14 @@ static void mainInitialization(void){
 	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_CONTROL)] = true;
 	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_CONTROL)] = true;
 	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_CONTROL)] = true;
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_INSERTING1)] = 700u;
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_INSERTING2)] = 700u;
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_INSERTING3)] = 4000u;
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_WITHDRAWING1)] = 3000u;
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_WITHDRAWING1)] = 3000u;
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_WITHDRAWING2)] = 3000u;
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_WITHDRAWING3)] = 4000u;
+	ModbusHoldingRegisters[ActiveCupAddress] = 1u;
 	ModbusHoldingRegisters[InstalledCupsAddress] = 3u;
 	ModbusHoldingRegisters[ElectrodesInsideCup1Address] = 4u;
 	ModbusHoldingRegisters[ElectrodesInsideCup2Address] = 4u;
@@ -251,7 +259,6 @@ static void mainInitialization(void){
 	ModbusHoldingRegisters[Cup1TypeAddress] = 0u;
 	ModbusHoldingRegisters[Cup2TypeAddress] = 0u;
 	ModbusHoldingRegisters[Cup3TypeAddress] = 1u;
-	ModbusHoldingRegisters[ActiveCupAddress] = 1u;
 	for (int J = holdingIndexFromAddress(MODBUS_ADDR_CUP1_CHANNEL1_GAIN1_FACTOR); J <= holdingIndexFromAddress(MODBUS_ADDR_CUP3_CHANNEL4_GAIN2_FACTOR); J++) {
 		ModbusHoldingRegisters[J] = 14000u;
 	}
@@ -422,16 +429,38 @@ static void auxiliaryFSMsService(void) {
 	ModbusHoldingRegisters[Cup2ErrorStorageIndex] = Outputs.cup_error_storage[1];
 	ModbusHoldingRegisters[Cup3ErrorStorageIndex] = Outputs.cup_error_storage[2];
 
-	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_STEADY)] = Outputs.cup_steady[0];
-	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_STEADY)] = Outputs.cup_steady[1];
-	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_STEADY)] = Outputs.cup_steady[2];
-	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_INSERTED)] = Outputs.cup_inserted[0];
-	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_INSERTED)] = Outputs.cup_inserted[1];
-	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_INSERTED)] = Outputs.cup_inserted[2];
-	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)] = Outputs.actuator_control[0];
-	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)] = Outputs.actuator_control[1];
-
-
+	if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_STEADY)] != Outputs.cup_steady[0]){
+		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_STEADY)] = Outputs.cup_steady[0];
+		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_CUP1_STEADY)] = true;
+	}
+	if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_STEADY)] != Outputs.cup_steady[1]){
+		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_STEADY)] = Outputs.cup_steady[1];
+		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_CUP2_STEADY)] = true;
+	}
+	if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_STEADY)] != Outputs.cup_steady[2]){
+		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_STEADY)] = Outputs.cup_steady[2];
+		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_CUP3_STEADY)] = true;
+	}
+	if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_INSERTED)] != Outputs.cup_inserted[0]){
+		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_INSERTED)] = Outputs.cup_inserted[0];
+		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_CUP1_INSERTED)] = true;
+	}
+	if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_INSERTED)] != Outputs.cup_inserted[1]){
+		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_INSERTED)] = Outputs.cup_inserted[1];
+		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_CUP2_INSERTED)] = true;
+	}
+	if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_INSERTED)] != Outputs.cup_inserted[2]){
+		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_INSERTED)] = Outputs.cup_inserted[2];
+		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_CUP3_INSERTED)] = true;
+	}
+	if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)] != Outputs.actuator_control[0]){
+		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)] = Outputs.actuator_control[0];
+		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)] = true;
+	}
+	if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)] != Outputs.actuator_control[1]){
+		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)] = Outputs.actuator_control[1];
+		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)] = true;
+	}
 
 //	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL)] = Outputs.actuator_control[2];
 
