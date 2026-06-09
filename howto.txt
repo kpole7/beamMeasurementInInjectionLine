@@ -1,5 +1,22 @@
 cmake --preset pico-release
 cmake --build --preset pico-release
+
 cmake --preset pico-debug
 cmake --build --preset pico-debug
+
+cmake --preset host-test
+cmake --build --preset host-test --target test_auxiliaryFSMs --clean-first
+ctest --test-dir build/host-test -R AuxiliaryFSMs --output-on-failure
+
+cmake --preset host-test
+cmake --build --preset host-test --target test_highLevelCtrl --clean-first
+ctest --test-dir build/host-test -R HighLevelCtrl --output-on-failure
+
+
+
+
+
+
+
+
 
