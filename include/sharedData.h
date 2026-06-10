@@ -258,7 +258,7 @@ uint16_t inputIndexFromAddress(uint16_t address);
 
 uint16_t coilIndexFromAddress(uint16_t address);
 
-
+void initializeModbusRegisters(void);
 
 
 #endif // SHARED_DATA_H

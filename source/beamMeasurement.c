@@ -222,47 +222,7 @@ static void mainInitialization(void){
 	atomic_store_explicit(&ModbusAssertionFailed, false, memory_order_release);
 	turnOnLedOnBoard();
 	initModbusActivityLed();
-
-	uint16_t InstalledCupsAddress = holdingIndexFromAddress(MODBUS_ADDR_INSTALLED_CUPS);
-	uint16_t ElectrodesInsideCup1Address = holdingIndexFromAddress(MODBUS_ADDR_ELECTRODES_CUP1);
-	uint16_t ElectrodesInsideCup2Address = holdingIndexFromAddress(MODBUS_ADDR_ELECTRODES_CUP2);
-	uint16_t ElectrodesInsideCup3Address = holdingIndexFromAddress(MODBUS_ADDR_ELECTRODES_CUP3);
-	uint16_t Cup1TypeAddress = holdingIndexFromAddress(MODBUS_ADDR_CUP1_TYPE);
-	uint16_t Cup2TypeAddress = holdingIndexFromAddress(MODBUS_ADDR_CUP2_TYPE);
-	uint16_t Cup3TypeAddress = holdingIndexFromAddress(MODBUS_ADDR_CUP3_TYPE);
-	uint16_t ActiveCupAddress = holdingIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP);
-
-	for (int J = 0; J < MODBUS_HOLDING_REGISTERS_NUMBER; J++) {
-		ModbusHoldingRegisters[J] = 0;
-	}
-	for (int J = 0; J < MODBUS_COILS_NUMBER; J++) {
-		ModbusCoils[J] = false;
-		ModbusCoilTrigger[J] = false;
-	}
-
-	// Defaults from ModbusRegisters.csv
-	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_CONTROL)] = true;
-	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_CONTROL)] = true;
-	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_CONTROL)] = true;
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_INSERTING1)] = 700u;
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_INSERTING2)] = 700u;
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_INSERTING3)] = 4000u;
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_WITHDRAWING1)] = 300u;
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_WITHDRAWING1)] = 300u;
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_WITHDRAWING2)] = 3000u;
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_WITHDRAWING3)] = 4400u;
-	ModbusHoldingRegisters[ActiveCupAddress] = 1u;
-	ModbusHoldingRegisters[InstalledCupsAddress] = 3u;
-	ModbusHoldingRegisters[ElectrodesInsideCup1Address] = 4u;
-	ModbusHoldingRegisters[ElectrodesInsideCup2Address] = 4u;
-	ModbusHoldingRegisters[ElectrodesInsideCup3Address] = 4u;
-	ModbusHoldingRegisters[Cup1TypeAddress] = 0u;
-	ModbusHoldingRegisters[Cup2TypeAddress] = 0u;
-	ModbusHoldingRegisters[Cup3TypeAddress] = 1u;
-	for (int J = holdingIndexFromAddress(MODBUS_ADDR_CUP1_CHANNEL1_GAIN1_FACTOR); J <= holdingIndexFromAddress(MODBUS_ADDR_CUP3_CHANNEL4_GAIN2_FACTOR); J++) {
-		ModbusHoldingRegisters[J] = 14000u;
-	}
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_RANGE_CHANGE_THRESHOLD)] = DEFAULT_ANALOG_RANGE_CHANGE_THRESHOLD;
+	initializeModbusRegisters();
 
 	memset(&HighLevelState, 0, sizeof(HighLevelState));
 	HighLevelState.retained_active_cup = 1u;
