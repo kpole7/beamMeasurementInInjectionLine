@@ -112,8 +112,8 @@ Add. 5  Mnemonic: AuxiliaryFSMs
         A.  The pneumatic mechanism has a solenoid valve that controls a pneumatic actuator. This mechanism 
             uses a single switch that acts as a detector for the insertion of the Faraday cup into the ion 
             beamline. In the idle state, i.e., when the solenoid valve is not energized, the cup is inserted 
-            to the ion beamline. At that time, the signal from the switch is in the low state, meaning 
-            the CupNSwitch register takes the value "false" (where N denotes the cup index). The solenoid 
+            to the ion beamline. At that time, the signal from the switch is in the low state, but 
+            the CupNSwitch register takes the value "true" (where N denotes the cup index). The solenoid 
             valve coil is energized when the CupNRequestedState register has the value true. While the cup is 
             withdrawn and remains in a stable position, the solenoid valve coil remains energized. 
             The operating cycle of the pneumatic mechanism is as follows:
@@ -124,7 +124,7 @@ Add. 5  Mnemonic: AuxiliaryFSMs
             -   The cup is stationary and inserted; mechanism control signal CupNRequestedState = true; 
                 limit switch signal: CupNSwitch = true;
             -   The cup is being withdrawn; mechanism control signal CupNRequestedState = false; 
-                limit switch signal: CupNSwitch = false;
+                limit switch signal: CupNSwitch = true;
         B.  The motor mechanism has two limit switches. The limit switches serve a dual purpose: they 
             transmit information about the cup position and shut off the motor, keeping the cup within 
             the permissible range of motion. The motor shut-off mechanism operates autonomously. The motor is 

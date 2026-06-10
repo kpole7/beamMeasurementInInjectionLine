@@ -30,8 +30,8 @@ typedef struct {
     bool cup_requested_state[AUXILIARY_FSMS_MAX_CUPS];
 
     bool cup_switch[AUXILIARY_FSMS_MAX_CUPS];
-    bool cup_switch1[AUXILIARY_FSMS_MAX_CUPS];
-    bool cup_switch2[AUXILIARY_FSMS_MAX_CUPS];
+    bool cup_switch_a[AUXILIARY_FSMS_MAX_CUPS];
+    bool cup_switch_b[AUXILIARY_FSMS_MAX_CUPS];
 } AuxiliaryFSMsInputs;
 
 typedef struct {

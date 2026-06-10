@@ -349,13 +349,13 @@ static void auxiliaryFSMsService(void) {
 	Inputs.cup_requested_state[2] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_REQUESTED_STATE)];
 	Inputs.cup_switch[0] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_SWITCH)];
 	Inputs.cup_switch[1] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_SWITCH)];
-	Inputs.cup_switch[2] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH2)];
-	Inputs.cup_switch1[0] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_SWITCH)];
-	Inputs.cup_switch1[1] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_SWITCH)];
-	Inputs.cup_switch1[2] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH1)];
-	Inputs.cup_switch2[0] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_SWITCH)];
-	Inputs.cup_switch2[1] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_SWITCH)];
-	Inputs.cup_switch2[2] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH2)];
+	Inputs.cup_switch[2] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH_A)];
+	Inputs.cup_switch_a[0] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_SWITCH)];
+	Inputs.cup_switch_a[1] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_SWITCH)];
+	Inputs.cup_switch_a[2] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH_A)];
+	Inputs.cup_switch_b[0] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_SWITCH)];
+	Inputs.cup_switch_b[1] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_SWITCH)];
+	Inputs.cup_switch_b[2] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH_B)];
 
 	if (!IsAuxiliaryFSMsStateInitialized) {
 		AuxiliaryFSMsStateData.prev_error[0] = ModbusHoldingRegisters[Cup1ErrorIndex];

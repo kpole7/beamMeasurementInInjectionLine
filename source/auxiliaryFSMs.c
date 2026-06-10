@@ -44,19 +44,19 @@ static void evaluatePneumaticCup(bool requested,
 }
 
 static void evaluateMotorCup(bool requested,
-                             bool sw1,
-                             bool sw2,
+                             bool sw_a,
+                             bool sw_b,
                              bool *inserted,
                              bool *steady,
                              bool *transient,
                              bool *invalid,
                              bool *actuator)
 {
-    bool is_withdrawn = sw1 && !sw2;
-    bool is_inserted = !sw1 && sw2;
-    bool is_moving = !sw1 && !sw2;
+    bool is_withdrawn = sw_a && !sw_b;
+    bool is_inserted = !sw_a && sw_b;
+    bool is_moving = !sw_a && !sw_b;
 
-    *invalid = sw1 && sw2;
+    *invalid = sw_a && sw_b;
     *inserted = is_inserted;
     *actuator = requested;
 
@@ -106,8 +106,8 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *inputs,
                                 &actuator);
         } else if (inputs->cup_type[cup] == AUXILIARY_FSM_CUP_TYPE_MOTOR) {
             evaluateMotorCup(requested,
-                             inputs->cup_switch1[cup],
-                             inputs->cup_switch2[cup],
+                             inputs->cup_switch_a[cup],
+                             inputs->cup_switch_b[cup],
                              &inserted,
                              &steady,
                              &transient,

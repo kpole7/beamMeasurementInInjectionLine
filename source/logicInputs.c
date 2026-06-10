@@ -93,8 +93,8 @@ void logicInputsTick(void) {
     // Update Modbus registers or coils based on the new stable state
     ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_SWITCH)] = StableState[LIMIT_SWITCH_1_INDEX];
     ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_SWITCH)] = StableState[LIMIT_SWITCH_2_INDEX];
-    ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH1)] = StableState[LIMIT_SWITCH_3A_INDEX];
-    ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH2)] = StableState[LIMIT_SWITCH_3B_INDEX];
+    ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH_A)] = StableState[LIMIT_SWITCH_3A_INDEX];
+    ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH_B)] = StableState[LIMIT_SWITCH_3B_INDEX];
 #if DEBUG_SIMULATION_MODE == 0
     // In the simulation mode, no modification is needed
     ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION2)] = StableState[EXTERNAL_INHIBITION_INDEX];
