@@ -12,8 +12,8 @@
 
 #define GPIO_FOR_VALVE_ACTUATOR_1 7
 #define GPIO_FOR_VALVE_ACTUATOR_2 6
-#define GPIO_FOR_MOTOR_ACTUATOR_IN 19
-#define GPIO_FOR_MOTOR_ACTUATOR_OUT 18
+#define GPIO_FOR_MOTOR_ACTUATOR_IN 18
+#define GPIO_FOR_MOTOR_ACTUATOR_OUT 19
 #define GPIO_FOR_MOTOR_ACTUATOR_BRAKE 16
 
 //---------------------------------------------------------------------------------------------------
@@ -119,7 +119,7 @@ void actuatorCtrlTick(void) {
 				StateMotorActuatorOut = false;
 
 				// make sure the breaking is deactivated
-				gpio_put(GPIO_FOR_MOTOR_ACTUATOR_BRAKE, true); // low-level activation
+				gpio_put(GPIO_FOR_MOTOR_ACTUATOR_BRAKE, false);
 				StateMotorActuatorBrake = false;
 
 				// activate the 'insert' command
@@ -132,7 +132,7 @@ void actuatorCtrlTick(void) {
 				StateMotorActuatorIn = false;
 				gpio_put(GPIO_FOR_MOTOR_ACTUATOR_OUT, false);
 				StateMotorActuatorOut = false;
-				gpio_put(GPIO_FOR_MOTOR_ACTUATOR_BRAKE, true); // low-level activation
+				gpio_put(GPIO_FOR_MOTOR_ACTUATOR_BRAKE, false);
 				StateMotorActuatorBrake = false;
 			}
 		}
@@ -156,7 +156,7 @@ void actuatorCtrlTick(void) {
 				StateMotorActuatorIn = false;
 
 				// make sure the breaking is deactivated
-				gpio_put(GPIO_FOR_MOTOR_ACTUATOR_BRAKE, true); // low-level activation
+				gpio_put(GPIO_FOR_MOTOR_ACTUATOR_BRAKE, false);
 				StateMotorActuatorBrake = false;
 
 				// activate the 'extract' command
@@ -169,7 +169,7 @@ void actuatorCtrlTick(void) {
 				StateMotorActuatorIn = false;
 				gpio_put(GPIO_FOR_MOTOR_ACTUATOR_OUT, false);
 				StateMotorActuatorOut = false;
-				gpio_put(GPIO_FOR_MOTOR_ACTUATOR_BRAKE, true); // low-level activation
+				gpio_put(GPIO_FOR_MOTOR_ACTUATOR_BRAKE, false);
 				StateMotorActuatorBrake = false;
 			}
 		}
@@ -190,11 +190,11 @@ void actuatorCtrlTick(void) {
 
 		if (StateMotorActuatorBrake) {
 			// command 'brake'
-			gpio_put(GPIO_FOR_MOTOR_ACTUATOR_BRAKE, !StateMotorActuatorBrake); // low-level activation
+			gpio_put(GPIO_FOR_MOTOR_ACTUATOR_BRAKE, true);
 		}
 		else{
 			// release brake
-			gpio_put(GPIO_FOR_MOTOR_ACTUATOR_BRAKE, true); // low-level activation
+			gpio_put(GPIO_FOR_MOTOR_ACTUATOR_BRAKE, false);
 			StateMotorActuatorBrake = false;
 		}
 	}

@@ -25,12 +25,6 @@ typedef struct {
     
     /// Error status for each cup (bitmap)
     uint16_t cup_error[MAX_CUPS];
-    
-    /// Steady state indicator for each cup: true = steady, false = transient
-    bool cup_steady[MAX_CUPS];
-    
-    /// Inserted status from AuxiliaryFSM for each cup: true = inserted, false = withdrawn
-    bool cup_inserted[MAX_CUPS];
 } HighLevelCtrlInputs;
 
 /// Outputs produced by a single tick of the HighLevelCtrl state machine.

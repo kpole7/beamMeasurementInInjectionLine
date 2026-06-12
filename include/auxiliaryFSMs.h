@@ -18,6 +18,28 @@
 #define AUXILIARY_FSM_ERROR_INVALID_SWITCHES   0x0004u
 #define AUXILIARY_FSM_ERROR_UNSUPPORTED_CONFIG 0x0008u
 
+typedef enum {
+    PNEUMATIC_FSM_STATE_UNSPECIFIED = 0,
+    PNEUMATIC_FSM_STATE_EXTRACTED,  // stable
+    PNEUMATIC_FSM_STATE_INSERTING,
+    PNEUMATIC_FSM_STATE_INSERTED,   // stable
+    PNEUMATIC_FSM_STATE_WITHDRAWING,
+    PNEUMATIC_FSM_STATE_ERROR
+} PneumaticFsmStateEnum;
+
+typedef enum {
+    MOTOR_FSM_STATE_UNSPECIFIED = 0,
+    MOTOR_FSM_STATE_EXTRACTED,  // stable
+    MOTOR_FSM_STATE_INSERTING,
+    MOTOR_FSM_STATE_INSERTED_PRE_BRAKING,
+    MOTOR_FSM_STATE_INSERTED_BRAKING,
+    MOTOR_FSM_STATE_INSERTED,   // stable
+    MOTOR_FSM_STATE_WITHDRAWING,
+    MOTOR_FSM_STATE_WITHDRAWING_PRE_BRAKING,
+    MOTOR_FSM_STATE_WITHDRAWING_BRAKING,
+    MOTOR_FSM_STATE_ERROR
+} MotorFsmStateEnum;
+
 typedef struct {
     uint16_t installed_cups;
     bool external_inhibition;
@@ -36,24 +58,23 @@ typedef struct {
 
 typedef struct {
     bool actuator_control[AUXILIARY_FSMS_MAX_CUPS];
-
-    bool cup_inserted[AUXILIARY_FSMS_MAX_CUPS];
-    bool cup_steady[AUXILIARY_FSMS_MAX_CUPS];
+    bool actuator_insert[AUXILIARY_FSMS_MAX_CUPS];
+    bool actuator_withdraw[AUXILIARY_FSMS_MAX_CUPS];
+    bool actuator_brake[AUXILIARY_FSMS_MAX_CUPS];
 
     uint16_t cup_error[AUXILIARY_FSMS_MAX_CUPS];
-    uint16_t cup_last_error[AUXILIARY_FSMS_MAX_CUPS];
-    uint16_t cup_error_storage[AUXILIARY_FSMS_MAX_CUPS];
 } AuxiliaryFSMsOutputs;
 
 typedef struct {
-    uint16_t transition_elapsed_ms[AUXILIARY_FSMS_MAX_CUPS];
-    uint16_t prev_error[AUXILIARY_FSMS_MAX_CUPS];
-    uint16_t error_storage[AUXILIARY_FSMS_MAX_CUPS];
+    PneumaticFsmStateEnum pneumatic_fsm_state[AUXILIARY_FSMS_MAX_CUPS];
+    MotorFsmStateEnum motor_fsm_state[AUXILIARY_FSMS_MAX_CUPS];
+    uint16_t transition_elapsed[AUXILIARY_FSMS_MAX_CUPS];
+    uint16_t pre_braking_elapsed[AUXILIARY_FSMS_MAX_CUPS];
+    uint16_t braking_elapsed[AUXILIARY_FSMS_MAX_CUPS];
 } AuxiliaryFSMsState;
 
 void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *inputs,
                        AuxiliaryFSMsState *FsmState,
-                       AuxiliaryFSMsOutputs *outputs,
-                       uint16_t tick_period_ms);
+                       AuxiliaryFSMsOutputs *outputs);
 
 #endif // AUXILIARY_FSMS_H

@@ -14,11 +14,13 @@
 /// @return Cup index (1-3) if found, or 0 if none inserted
 static uint16_t findFirstInsertedCup(const HighLevelCtrlInputs *inputs)
 {
+#if 0
     for (uint16_t i = 0; i < inputs->installed_cups; i++) {
         if (inputs->cup_inserted[i]) {
             return i + 1;  // Cups are numbered 1-3, not 0-2
         }
     }
+#endif
     return 0;  // No cup inserted
 }
 
@@ -92,12 +94,14 @@ void highLevelCtrlTick(const HighLevelCtrlInputs *inputs,
     //--------------------------------------------------------------------------
     // Rule 3: Set requested state for each cup based on steady state
     //--------------------------------------------------------------------------
+#if 0
     for (uint16_t i = 0; i < inputs->installed_cups; i++) {
         if (inputs->cup_steady[i] && (inputs->cup_inserted[i] != inputs->cup_control[i])) {
             // Cup is steady but not in requested state: force to control
             outputs->cup_requested_state[i] = inputs->cup_control[i];
         }
     }
+#endif
 
     //--------------------------------------------------------------------------
     // Rule 1: Handle external inhibition (highest priority)

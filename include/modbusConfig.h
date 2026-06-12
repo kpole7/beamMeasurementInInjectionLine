@@ -23,8 +23,8 @@
 
 #define MODBUS_UART_IRQ UART1_IRQ
 
-// The LED connected to GP5 flashes when the slave receives the Modbus frame
-#define GPIO_MODBUS_ACTIVITY_LED 15
+// The LED connected to GP17 flashes when the slave receives the Modbus frame
+#define GPIO_MODBUS_ACTIVITY_LED 17
 
 // This directive specifies how long the LED should be lit, if any transmission from the master
 // have been received; it should be coherent with timing of MainTimer
