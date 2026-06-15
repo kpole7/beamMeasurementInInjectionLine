@@ -70,7 +70,6 @@ typedef struct {
 } AuxiliaryFSMsInputs;
 
 typedef struct {
-    bool actuator_control[AUXILIARY_FSMS_MAX_CUPS];
     bool actuator_insert[AUXILIARY_FSMS_MAX_CUPS];
     bool actuator_withdraw[AUXILIARY_FSMS_MAX_CUPS];
     bool actuator_brake[AUXILIARY_FSMS_MAX_CUPS];
