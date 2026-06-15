@@ -4,11 +4,13 @@
 #include "auxiliaryFSMs.h"
 #include <limits.h>
 #include <string.h>
+#include <stdio.h>
 
 
 #define PRE_BRAKING_TIME_IN_TICKS 5u
 #define BRAKING_TIME_IN_TICKS 400u
-
+#define PAUSE_AFTER_LOCK_TIME_IN_TICKS 500u
+#define PAUSE_AFTER_UNLOCK_TIME_IN_TICKS 250u
 
 static uint16_t clampInstalledCups(uint16_t value)
 {
@@ -27,30 +29,81 @@ static inline void saturatingIncreaseU16(uint16_t *a) {
     }
 }
 
-static void pneumaticFsmUnspecified(bool requested, bool sw, PneumaticFsmStateEnum *pneumatic_fsm_state, bool *actuator, uint16_t *error) {
-
+/// @brief This function uses a state machine; it can be called only once after a reset
+/// @param requested this parameter specifies whether the higher-level layer requires the cup to be inserted or withdrawn
+/// @param sw this parameter specifies the current switch state
+/// @param pneumatic_fsm_state this is a pointer to the current state of the pneumatic FSM
+/// @param actuator this is a pointer to the actuator state (on or off)
+/// @param error this is a pointer to the error variable
+static void pneumaticFsmBooted(bool requested, bool sw, PneumaticFsmStateEnum *pneumatic_fsm_state, bool *actuator, uint16_t *error) {
+    if (!requested || !sw || !(*actuator)) {
+        *pneumatic_fsm_state = PNEUMATIC_FSM_STATE_ERROR;
+        *error |= AUXILIARY_FSM_ERROR_UNSUPPORTED_CONFIG;
+        printf("Error; requested=%d, sw=%d, actuator=%d; file %s, line %d\n", requested, sw, *actuator, __FILE__, __LINE__);
+        return;
+    }
+    *pneumatic_fsm_state = PNEUMATIC_FSM_STATE_INSERTED;
+    printf("New state=%d; requested=%d, sw=%d, actuator=%d; file %s, line %d\n", *pneumatic_fsm_state, requested, sw, *actuator, __FILE__, __LINE__);
 }
 
 static void pneumaticFsmExtracted(bool requested, bool sw, PneumaticFsmStateEnum *pneumatic_fsm_state, bool *actuator, uint16_t *error) {
-
+    if (sw || (*actuator)) {
+        *pneumatic_fsm_state = PNEUMATIC_FSM_STATE_ERROR;
+        *error |= AUXILIARY_FSM_ERROR_UNSUPPORTED_CONFIG;
+        printf("Error; requested=%d, sw=%d, actuator=%d; file %s, line %d\n", requested, sw, *actuator, __FILE__, __LINE__);
+        return;
+    }
+    if (requested) {
+        *actuator = true;
+        *pneumatic_fsm_state = PNEUMATIC_FSM_STATE_INSERTING;
+        printf("New state=%d; requested=%d, sw=%d, actuator=%d; file %s, line %d\n", *pneumatic_fsm_state, requested, sw, *actuator, __FILE__, __LINE__);
+    }
 }
 
 static void pneumaticFsmInserting(bool requested, bool sw, PneumaticFsmStateEnum *pneumatic_fsm_state, bool *actuator, uint16_t *error) {
-
+    if (!(*actuator)) {
+        *pneumatic_fsm_state = PNEUMATIC_FSM_STATE_ERROR;
+        *error |= AUXILIARY_FSM_ERROR_UNSUPPORTED_CONFIG;
+        printf("Error; requested=%d, sw=%d, actuator=%d; file %s, line %d\n", requested, sw, *actuator, __FILE__, __LINE__);
+        return;
+    }
+    if (sw) {
+        *pneumatic_fsm_state = PNEUMATIC_FSM_STATE_INSERTED;
+        printf("New state=%d; requested=%d, sw=%d, actuator=%d; file %s, line %d\n", *pneumatic_fsm_state, requested, sw, *actuator, __FILE__, __LINE__);
+    }
 }
 
 static void pneumaticFsmInserted(bool requested, bool sw, PneumaticFsmStateEnum *pneumatic_fsm_state, bool *actuator, uint16_t *error) {
-
+    if (!sw || !(*actuator)) {
+        *pneumatic_fsm_state = PNEUMATIC_FSM_STATE_ERROR;
+        *error |= AUXILIARY_FSM_ERROR_UNSUPPORTED_CONFIG;
+        printf("Error; requested=%d, sw=%d, actuator=%d; file %s, line %d\n", requested, sw, *actuator, __FILE__, __LINE__);
+        return;
+    }
+    if (!requested) {
+        *actuator = false;
+        *pneumatic_fsm_state = PNEUMATIC_FSM_STATE_WITHDRAWING;
+        printf("New state=%d; requested=%d, sw=%d, actuator=%d; file %s, line %d\n", *pneumatic_fsm_state, requested, sw, *actuator, __FILE__, __LINE__);
+    }
 }
 
 static void pneumaticFsmWithdrawing(bool requested, bool sw, PneumaticFsmStateEnum *pneumatic_fsm_state, bool *actuator, uint16_t *error) {
-
+    if (*actuator) {
+        *pneumatic_fsm_state = PNEUMATIC_FSM_STATE_ERROR;
+        *error |= AUXILIARY_FSM_ERROR_UNSUPPORTED_CONFIG;
+        printf("Error; requested=%d, sw=%d, actuator=%d; file %s, line %d\n", requested, sw, *actuator, __FILE__, __LINE__);
+        return;
+    }
+    if (!sw) {
+        *pneumatic_fsm_state = PNEUMATIC_FSM_STATE_EXTRACTED;
+        printf("New state=%d; requested=%d, sw=%d, actuator=%d; file %s, line %d\n", *pneumatic_fsm_state, requested, sw, *actuator, __FILE__, __LINE__);
+    }
 }
 
 static void evaluatePneumaticCup(bool requested, bool sw, PneumaticFsmStateEnum *pneumatic_fsm_state, bool *actuator, uint16_t *error) {
     switch (*pneumatic_fsm_state) {
-        case PNEUMATIC_FSM_STATE_UNSPECIFIED:
-            pneumaticFsmUnspecified(requested, sw, pneumatic_fsm_state, actuator, error);
+        case PNEUMATIC_FSM_STATE_BOOTED:
+            pneumaticFsmBooted(requested, sw, pneumatic_fsm_state, actuator, error);
             break;
         case PNEUMATIC_FSM_STATE_EXTRACTED:
             pneumaticFsmExtracted(requested, sw, pneumatic_fsm_state, actuator, error);
@@ -69,98 +122,112 @@ static void evaluatePneumaticCup(bool requested, bool sw, PneumaticFsmStateEnum 
             break;
     }
     return;
-
-#if 0
-    *inserted = sw;
-    *actuator = requested;
-
-    if (requested) {
-        *steady = sw;
-    } else {
-        *steady = !sw;
-    }
-
-    *transient = !(*steady);
-#endif
 }
 
-static void pneumaticWithLockFsmUnspecified(bool inhibit, bool requested, bool sw, PneumaticWithLockFsmStateEnum *pneumatic_fsm_state, bool *actuator, uint16_t *error) {
-    // check whether all is in the initial state
+static void pneumaticWithLockFsmBooted(bool inhibit, bool requested, bool sw, bool pause_after_lock_finished, bool pause_after_unlock_finished,
+    PneumaticWithLockFsmStateEnum *pneumatic_fsm_state, bool *actuator, uint16_t *error) 
+    {
     if (inhibit) {
 
     }
+    else{
+        if (!requested || !sw || !(*actuator)) {
+            *pneumatic_fsm_state = PNEUMATIC_WITH_LOCK_FSM_STATE_ERROR;
+            *error |= AUXILIARY_FSM_ERROR_UNSUPPORTED_CONFIG;
+            printf("Error; requested=%d, sw=%d, actuator=%d; file %s, line %d\n", requested, sw, *actuator, __FILE__, __LINE__);
+            return;
+        }
+        *pneumatic_fsm_state = PNEUMATIC_WITH_LOCK_FSM_STATE_INSERTED;
+        printf("New state=%d; requested=%d, sw=%d, actuator=%d; file %s, line %d\n", *pneumatic_fsm_state, requested, sw, *actuator, __FILE__, __LINE__);
+    }
 }
 
-static void pneumaticWithLockFsmLockedInserted(bool inhibit, bool requested, bool sw, PneumaticWithLockFsmStateEnum *pneumatic_fsm_state, bool *actuator, uint16_t *error) {
-
-}
-
-static void pneumaticWithLockFsmLockedInserting(bool inhibit, bool requested, bool sw, PneumaticWithLockFsmStateEnum *pneumatic_fsm_state, bool *actuator, uint16_t *error) {
-
-}
-
-static void pneumaticWithLockFsmExtracted(bool inhibit, bool requested, bool sw, PneumaticWithLockFsmStateEnum *pneumatic_fsm_state, bool *actuator, uint16_t *error) {
-
-}
-
-static void pneumaticWithLockFsmInserting(bool inhibit, bool requested, bool sw, PneumaticWithLockFsmStateEnum *pneumatic_fsm_state, bool *actuator, uint16_t *error) {
-
-}
-
-static void pneumaticWithLockFsmInserted(bool inhibit, bool requested, bool sw, PneumaticWithLockFsmStateEnum *pneumatic_fsm_state, bool *actuator, uint16_t *error) {
+static void pneumaticWithLockFsmExtracted(bool inhibit, bool requested, bool sw, bool pause_after_lock_finished, bool pause_after_unlock_finished,
+    PneumaticWithLockFsmStateEnum *pneumatic_fsm_state, bool *actuator, uint16_t *error) 
+    {
 
 }
 
-static void pneumaticWithLockFsmWithdrawing(bool inhibit, bool requested, bool sw, PneumaticWithLockFsmStateEnum *pneumatic_fsm_state, bool *actuator, uint16_t *error) {
+static void pneumaticWithLockFsmInserting(bool inhibit, bool requested, bool sw, bool pause_after_lock_finished, bool pause_after_unlock_finished,
+    PneumaticWithLockFsmStateEnum *pneumatic_fsm_state, bool *actuator, uint16_t *error) 
+    {
 
 }
 
-static void evaluatePneumaticWithLockCup(bool inhibit, bool requested, bool sw, PneumaticWithLockFsmStateEnum *pneumatic_with_lock_fsm_state, 
-    bool *actuator, uint16_t *error) 
+static void pneumaticWithLockFsmInserted(bool inhibit, bool requested, bool sw, bool pause_after_lock_finished, bool pause_after_unlock_finished,
+    PneumaticWithLockFsmStateEnum *pneumatic_fsm_state, bool *actuator, uint16_t *error) 
+    {
+
+}
+
+static void pneumaticWithLockFsmWithdrawing(bool inhibit, bool requested, bool sw, bool pause_after_lock_finished, bool pause_after_unlock_finished,
+    PneumaticWithLockFsmStateEnum *pneumatic_fsm_state, bool *actuator, uint16_t *error) 
+    {
+
+}
+
+static void pneumaticWithLockFsmPauseAfterLock(bool inhibit, bool requested, bool sw, bool pause_after_lock_finished, bool pause_after_unlock_finished,
+    PneumaticWithLockFsmStateEnum *pneumatic_fsm_state, bool *actuator, uint16_t *error) 
+    {
+
+}
+
+static void pneumaticWithLockFsmLockedInserted(bool inhibit, bool requested, bool sw, bool pause_after_lock_finished, bool pause_after_unlock_finished,
+    PneumaticWithLockFsmStateEnum *pneumatic_fsm_state, bool *actuator, uint16_t *error) 
+    {
+
+}
+
+static void pneumaticWithLockFsmPauseAfterUnlock(bool inhibit, bool requested, bool sw, bool pause_after_lock_finished, bool pause_after_unlock_finished,
+    PneumaticWithLockFsmStateEnum *pneumatic_fsm_state, bool *actuator, uint16_t *error) 
+    {
+
+}
+
+static void evaluatePneumaticWithLockCup(bool inhibit, bool requested, bool sw, bool pause_after_lock_finished, bool pause_after_unlock_finished,
+    PneumaticWithLockFsmStateEnum *pneumatic_with_lock_fsm_state, bool *actuator, uint16_t *error) 
     {
     switch (*pneumatic_with_lock_fsm_state) {
-        case PNEUMATIC_WITH_LOCK_FSM_STATE_UNSPECIFIED:
-            pneumaticWithLockFsmUnspecified(inhibit, requested, sw, pneumatic_with_lock_fsm_state, actuator, error);
-            break;
-        case PNEUMATIC_WITH_LOCK_FSM_STATE_LOCKED_INSERTED:
-            pneumaticWithLockFsmLockedInserted(inhibit, requested, sw, pneumatic_with_lock_fsm_state, actuator, error);
-            break;
-        case PNEUMATIC_WITH_LOCK_FSM_STATE_LOCKED_INSERTING:
-            pneumaticWithLockFsmLockedInserting(inhibit, requested, sw, pneumatic_with_lock_fsm_state, actuator, error);
+        case PNEUMATIC_WITH_LOCK_FSM_STATE_BOOTED:
+            pneumaticWithLockFsmBooted(inhibit, requested, sw, pause_after_lock_finished, pause_after_unlock_finished, 
+                pneumatic_with_lock_fsm_state, actuator, error);
             break;
         case PNEUMATIC_WITH_LOCK_FSM_STATE_EXTRACTED:
-            pneumaticWithLockFsmExtracted(inhibit, requested, sw, pneumatic_with_lock_fsm_state, actuator, error);
+            pneumaticWithLockFsmExtracted(inhibit, requested, sw, pause_after_lock_finished, pause_after_unlock_finished, 
+                pneumatic_with_lock_fsm_state, actuator, error);
             break;
         case PNEUMATIC_WITH_LOCK_FSM_STATE_INSERTING:
-            pneumaticWithLockFsmInserting(inhibit, requested, sw, pneumatic_with_lock_fsm_state, actuator, error);
+            pneumaticWithLockFsmInserting(inhibit, requested, sw, pause_after_lock_finished, pause_after_unlock_finished, 
+                pneumatic_with_lock_fsm_state, actuator, error);
             break;
         case PNEUMATIC_WITH_LOCK_FSM_STATE_INSERTED:
-            pneumaticWithLockFsmInserted(inhibit, requested, sw, pneumatic_with_lock_fsm_state, actuator, error);
+            pneumaticWithLockFsmInserted(inhibit, requested, sw, pause_after_lock_finished, pause_after_unlock_finished, 
+                pneumatic_with_lock_fsm_state, actuator, error);
             break;
         case PNEUMATIC_WITH_LOCK_FSM_STATE_WITHDRAWING:
-            pneumaticWithLockFsmWithdrawing(inhibit, requested, sw, pneumatic_with_lock_fsm_state, actuator, error);
+            pneumaticWithLockFsmWithdrawing(inhibit, requested, sw, pause_after_lock_finished, pause_after_unlock_finished, 
+                pneumatic_with_lock_fsm_state, actuator, error);
+            break;
+        case PNEUMATIC_WITH_LOCK_FSM_STATE_PAUSE_AFTER_LOCK:
+            pneumaticWithLockFsmPauseAfterLock(inhibit, requested, sw, pause_after_lock_finished, pause_after_unlock_finished, 
+                pneumatic_with_lock_fsm_state, actuator, error);
+            break;
+        case PNEUMATIC_WITH_LOCK_FSM_STATE_LOCKED_INSERTED:
+            pneumaticWithLockFsmLockedInserted(inhibit, requested, sw, pause_after_lock_finished, pause_after_unlock_finished, 
+                pneumatic_with_lock_fsm_state, actuator, error);
+            break;
+        case PNEUMATIC_WITH_LOCK_FSM_STATE_PAUSE_AFTER_UNLOCK:
+            pneumaticWithLockFsmPauseAfterUnlock(inhibit, requested, sw, pause_after_lock_finished, pause_after_unlock_finished, 
+                pneumatic_with_lock_fsm_state, actuator, error);
             break;
         default:
             *error |= AUXILIARY_FSM_ERROR_UNSUPPORTED_CONFIG;
             break;
     }
     return;
-
-#if 0
-    *inserted = sw;
-    *actuator = requested;
-
-    if (requested) {
-        *steady = sw;
-    } else {
-        *steady = !sw;
-    }
-
-    *transient = !(*steady);
-#endif
 }
 
-static void motorFsmUnspecified(bool requested, bool sw_a, bool sw_b, bool pre_braking_elapsed, bool braking_elapsed, MotorFsmStateEnum *motor_fsm_state, 
+static void motorFsmBooted(bool requested, bool sw_a, bool sw_b, bool pre_braking_elapsed, bool braking_elapsed, MotorFsmStateEnum *motor_fsm_state, 
     bool *actuator_insert, bool *actuator_withdraw, bool *actuator_brake, uint16_t *error)
 {
 
@@ -234,8 +301,8 @@ static void evaluateMotorCup(bool requested,
                              uint16_t *error)
 {
     switch (*motor_fsm_state) {
-        case MOTOR_FSM_STATE_UNSPECIFIED:
-            motorFsmUnspecified(requested, sw_a, sw_b, pre_braking_elapsed, braking_elapsed, motor_fsm_state, actuator_insert, actuator_withdraw, actuator_brake, error);
+        case MOTOR_FSM_STATE_BOOTED:
+            motorFsmBooted(requested, sw_a, sw_b, pre_braking_elapsed, braking_elapsed, motor_fsm_state, actuator_insert, actuator_withdraw, actuator_brake, error);
             break;
         case MOTOR_FSM_STATE_EXTRACTED:
             motorFsmExtracted(requested, sw_a, sw_b, pre_braking_elapsed, braking_elapsed, motor_fsm_state, actuator_insert, actuator_withdraw, actuator_brake, error);
@@ -266,29 +333,6 @@ static void evaluateMotorCup(bool requested,
             break;
     }
     return;
-
-#if 0
-    bool is_withdrawn = sw_a && !sw_b;
-    bool is_inserted = !sw_a && sw_b;
-    bool is_moving = !sw_a && !sw_b;
-    *invalid = sw_a && sw_b;
-    *inserted = is_inserted;
-    *actuator_insert = requested && !is_inserted;
-
-    if (*invalid) {
-        *steady = false;
-        *transient = false;
-        return;
-    }
-
-    if (requested) {
-        *steady = is_inserted;
-    } else {
-        *steady = is_withdrawn;
-    }
-
-    *transient = is_moving || !(*steady);
-#endif
 }
 
 void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *inputs,
@@ -309,9 +353,11 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *inputs,
         PneumaticFsmStateEnum pneumatic_fsm_state = FsmState->pneumatic_fsm_state[cup];
         PneumaticWithLockFsmStateEnum pneumatic_with_lock_fsm_state = FsmState->pneumatic_with_lock_fsm_state[cup];
         MotorFsmStateEnum motor_fsm_state = FsmState->motor_fsm_state[cup];
+        bool actuator = false;
+        bool pause_after_lock_is_over = false;
+        bool pause_after_unlock_is_over = false;
         bool pre_braking_time_exceeded = false;
         bool braking_time_exceeded = false;
-        bool actuator = false;
         bool actuator_insert = false;
         bool actuator_withdraw = false;
         bool actuator_brake = false;
@@ -339,19 +385,24 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *inputs,
                 FsmState->transition_elapsed[cup] = 0u;
             }
         } else if (inputs->cup_type[cup] == AUXILIARY_FSM_CUP_TYPE_PNEUMATIC_WITH_LOCK) {
-            evaluatePneumaticWithLockCup(inhibit,
-                                         requested,
-                                         inputs->cup_switch[cup],
-                                         &pneumatic_with_lock_fsm_state,
-                                         &actuator,
-                                         &error);
-            if (PNEUMATIC_WITH_LOCK_FSM_STATE_LOCKED_INSERTING == pneumatic_with_lock_fsm_state){
-                uint16_t effective_limit = (inputs->time_limit_inserting_ms[cup] == 0u) ? 1u : inputs->time_limit_inserting_ms[cup];
-                saturatingIncreaseU16(&FsmState->transition_elapsed[cup]);
-                if (FsmState->transition_elapsed[cup] > effective_limit) {
-                    error |= AUXILIARY_FSM_ERROR_TIMEOUT_INSERT;
+
+            if (PNEUMATIC_WITH_LOCK_FSM_STATE_PAUSE_AFTER_LOCK == pneumatic_with_lock_fsm_state) {
+                saturatingIncreaseU16(&FsmState->pause_after_lock_elapsed[cup]);
+                if (FsmState->pause_after_lock_elapsed[cup] > PAUSE_AFTER_LOCK_TIME_IN_TICKS) {
+                    pause_after_lock_is_over = true;
                 }
-            } else if (PNEUMATIC_WITH_LOCK_FSM_STATE_INSERTING == pneumatic_with_lock_fsm_state){
+            } else {
+                FsmState->pause_after_lock_elapsed[cup] = 0u;
+            }
+            if (PNEUMATIC_WITH_LOCK_FSM_STATE_PAUSE_AFTER_UNLOCK == pneumatic_with_lock_fsm_state) {
+                saturatingIncreaseU16(&FsmState->pause_after_unlock_elapsed[cup]);
+                if (FsmState->pause_after_unlock_elapsed[cup] > PAUSE_AFTER_UNLOCK_TIME_IN_TICKS) {
+                    pause_after_unlock_is_over = true;
+                }
+            } else {
+                FsmState->pause_after_unlock_elapsed[cup] = 0u;
+            }
+            if (PNEUMATIC_WITH_LOCK_FSM_STATE_INSERTING == pneumatic_with_lock_fsm_state){
                 uint16_t effective_limit = (inputs->time_limit_inserting_ms[cup] == 0u) ? 1u : inputs->time_limit_inserting_ms[cup];
                 saturatingIncreaseU16(&FsmState->transition_elapsed[cup]);
                 if (FsmState->transition_elapsed[cup] > effective_limit) {
@@ -366,6 +417,17 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *inputs,
             } else {
                 FsmState->transition_elapsed[cup] = 0u;
             }
+
+            evaluatePneumaticWithLockCup(inhibit,
+                                         requested,
+                                         inputs->cup_switch[cup],
+                                         pause_after_lock_is_over,
+                                         pause_after_unlock_is_over,
+                                         &pneumatic_with_lock_fsm_state,
+                                         &actuator,
+                                         &error);
+            
+            
         } else if (inputs->cup_type[cup] == AUXILIARY_FSM_CUP_TYPE_MOTOR) {
 
             if ((MOTOR_FSM_STATE_INSERTED_PRE_BRAKING == motor_fsm_state) || (MOTOR_FSM_STATE_WITHDRAWING_PRE_BRAKING == motor_fsm_state)){
@@ -384,18 +446,6 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *inputs,
             } else {
                 FsmState->braking_elapsed[cup] = 0u;
             }
-
-            evaluateMotorCup(requested,
-                             inputs->cup_switch_a[cup],
-                             inputs->cup_switch_b[cup],
-                             pre_braking_time_exceeded,
-                             braking_time_exceeded,
-                             &motor_fsm_state,
-                             &actuator_insert,
-                             &actuator_withdraw,
-                             &actuator_brake,
-                             &error);
-
             if (MOTOR_FSM_STATE_INSERTING == motor_fsm_state){
                 uint16_t effective_limit = (inputs->time_limit_inserting_ms[cup] == 0u) ? 1u : inputs->time_limit_inserting_ms[cup];
                 saturatingIncreaseU16(&FsmState->transition_elapsed[cup]);
@@ -411,6 +461,18 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *inputs,
             } else {
                 FsmState->transition_elapsed[cup] = 0u;
             }
+
+            evaluateMotorCup(requested,
+                             inputs->cup_switch_a[cup],
+                             inputs->cup_switch_b[cup],
+                             pre_braking_time_exceeded,
+                             braking_time_exceeded,
+                             &motor_fsm_state,
+                             &actuator_insert,
+                             &actuator_withdraw,
+                             &actuator_brake,
+                             &error);
+
         } else {
             error |= AUXILIARY_FSM_ERROR_UNSUPPORTED_CONFIG;
             pneumatic_fsm_state = MOTOR_FSM_STATE_ERROR;
