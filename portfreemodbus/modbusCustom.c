@@ -51,7 +51,7 @@ static bool isValidHoldingValue(USHORT address, uint16_t value) {
 		return (value >= 1u) && (value <= 4u);
 	}
 	if ((address >= MODBUS_ADDR_CUP1_TYPE) && (address <= MODBUS_ADDR_CUP3_TYPE)) {
-		return value <= 1u;
+		return value <= 2u;
 	}
 
 	return true;

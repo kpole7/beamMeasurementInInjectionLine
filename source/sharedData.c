@@ -65,7 +65,8 @@ void initializeModbusRegisters(void) {
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_ELECTRODES_CUP1)] = 4u;
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_ELECTRODES_CUP2)] = 4u;
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_ELECTRODES_CUP3)] = 4u;
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP3_TYPE)] = 1u;
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP2_TYPE)] = 1u;
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP3_TYPE)] = 2u;
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CHANNEL1_GAIN1_FACTOR)] = 14000u;
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CHANNEL2_GAIN1_FACTOR)] = 14000u;
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CHANNEL3_GAIN1_FACTOR)] = 14000u;

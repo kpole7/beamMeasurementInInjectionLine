@@ -10,8 +10,9 @@
 
 #define AUXILIARY_FSMS_MAX_CUPS 3u
 
-#define AUXILIARY_FSM_CUP_TYPE_PNEUMATIC 0u
-#define AUXILIARY_FSM_CUP_TYPE_MOTOR     1u
+#define AUXILIARY_FSM_CUP_TYPE_PNEUMATIC            0u
+#define AUXILIARY_FSM_CUP_TYPE_PNEUMATIC_WITH_LOCK  1u
+#define AUXILIARY_FSM_CUP_TYPE_MOTOR                2u
 
 #define AUXILIARY_FSM_ERROR_TIMEOUT_INSERT     0x0001u
 #define AUXILIARY_FSM_ERROR_TIMEOUT_WITHDRAW   0x0002u
@@ -26,6 +27,17 @@ typedef enum {
     PNEUMATIC_FSM_STATE_WITHDRAWING,
     PNEUMATIC_FSM_STATE_ERROR
 } PneumaticFsmStateEnum;
+
+typedef enum {
+    PNEUMATIC_WITH_LOCK_FSM_STATE_UNSPECIFIED = 0,
+    PNEUMATIC_WITH_LOCK_FSM_STATE_LOCKED_INSERTED,  // stable
+    PNEUMATIC_WITH_LOCK_FSM_STATE_LOCKED_INSERTING,
+    PNEUMATIC_WITH_LOCK_FSM_STATE_EXTRACTED,  // stable
+    PNEUMATIC_WITH_LOCK_FSM_STATE_INSERTING,
+    PNEUMATIC_WITH_LOCK_FSM_STATE_INSERTED,   // stable
+    PNEUMATIC_WITH_LOCK_FSM_STATE_WITHDRAWING,
+    PNEUMATIC_WITH_LOCK_FSM_STATE_ERROR
+} PneumaticWithLockFsmStateEnum;
 
 typedef enum {
     MOTOR_FSM_STATE_UNSPECIFIED = 0,
@@ -67,6 +79,7 @@ typedef struct {
 
 typedef struct {
     PneumaticFsmStateEnum pneumatic_fsm_state[AUXILIARY_FSMS_MAX_CUPS];
+    PneumaticWithLockFsmStateEnum pneumatic_with_lock_fsm_state[AUXILIARY_FSMS_MAX_CUPS];
     MotorFsmStateEnum motor_fsm_state[AUXILIARY_FSMS_MAX_CUPS];
     uint16_t transition_elapsed[AUXILIARY_FSMS_MAX_CUPS];
     uint16_t pre_braking_elapsed[AUXILIARY_FSMS_MAX_CUPS];
