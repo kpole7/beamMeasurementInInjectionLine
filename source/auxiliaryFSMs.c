@@ -369,8 +369,8 @@ void pneumaticFsmTick(uint16_t cup,
     FsmStatePtr->pneumatic_fsm_state[cup] = pneumatic_local_state;
     if (Trigger) {
         OutputsPtr->actuator_insert[cup] = Actuator;
-        OutputsPtr->cup_error[cup] = Error;
     }
+    OutputsPtr->cup_error[cup] = Error;
 }
 
 void pneumaticWithLockFsmTick(uint16_t Cup, 
