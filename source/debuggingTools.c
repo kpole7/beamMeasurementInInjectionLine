@@ -68,7 +68,7 @@ static char TimeStampString[16];
 // This table is used in the debug simulation mode to simulate the state of logic inputs.
 // Indexes are defined in logicInputs.h
 // SimulationInputs[EXTERNAL_INHIBITION_INDEX] is intentionally not used
-bool SimulationInputs[5] = { SWITCH_RELEASED, SWITCH_RELEASED, SWITCH_RELEASED, SWITCH_PRESSED, false };
+bool SimulationInputs[5] = { SWITCH_PRESSED, SWITCH_PRESSED, SWITCH_RELEASED, SWITCH_PRESSED, false };
 
 uint16_t SimulationState1;
 uint16_t SimulationState2;

@@ -31,8 +31,8 @@ static bool StateMotorActuatorBrake;
 //---------------------------------------------------------------------------------------------------
 
 void initializeActuatorControl(void) {
-	StateValveActuator1 = false;
-	StateValveActuator2 = false;
+	StateValveActuator1 = true; // initial state of the pneumatic valve #1 is 'inserted'
+	StateValveActuator2 = true; // initial state of the pneumatic valve #2 is 'inserted'
 	StateMotorActuatorIn = false;
 	StateMotorActuatorOut = false;
 	StateMotorActuatorBrake = false;

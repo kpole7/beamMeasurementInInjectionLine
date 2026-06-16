@@ -45,6 +45,14 @@ void initializeLogicInputs(void) {
     gpio_set_dir(GPIO_FOR_EXTERNAL_INHIBITION, GPIO_IN);
     StableState[EXTERNAL_INHIBITION_INDEX] = gpio_get(GPIO_FOR_EXTERNAL_INHIBITION);
 
+#if DEBUG_SIMULATION_MODE != 0
+    for (int K = 0; K < 4; K++) {
+        StableState[K] = simulateInput(K);
+    }
+    // In the simulation mode, the user can change the state of the external inhibition input directly by Modbus
+    StableState[EXTERNAL_INHIBITION_INDEX] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION2)];
+#endif
+
     for (int J = 0; J < 5; J++) {
         TemporaryState[J] = StableState[J];
         Counter[J] = 0;

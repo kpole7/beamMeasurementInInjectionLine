@@ -86,6 +86,8 @@ int main() {
 	// Initializations of variables, peripherals, etc.
 	mainInitialization();
 
+	printChangedRegisters("Init");
+
 	//...............
 	// The main loop
 	//...............
@@ -101,6 +103,9 @@ int main() {
 			atomic_store_explicit(&TwoMillisecondsTimeTick, false, memory_order_release);
 
 			logicInputsTick();
+
+			printChangedRegisters("Inp. tick");
+
 			modbusActivityLedService();
 #if 0
 			highLevelCtrlService();
@@ -257,8 +262,6 @@ static void mainInitialization(void){
 	eMBEnable();
 
 	startPeriodicInterrupt();
-
-	printChangedRegisters("Init");
 }
 
 static void highLevelCtrlService(void) {
