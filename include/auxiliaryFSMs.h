@@ -77,6 +77,10 @@ typedef struct {
     bool actuator_withdraw[AUXILIARY_FSMS_MAX_CUPS];
     bool actuator_brake[AUXILIARY_FSMS_MAX_CUPS];
 
+    bool trigger_insert[AUXILIARY_FSMS_MAX_CUPS];
+    bool trigger_withdraw[AUXILIARY_FSMS_MAX_CUPS];
+    bool trigger_brake[AUXILIARY_FSMS_MAX_CUPS];
+
     uint16_t cup_error[AUXILIARY_FSMS_MAX_CUPS];
 } AuxiliaryFSMsOutputs;
 
