@@ -367,25 +367,25 @@ static void auxiliaryFSMsService(void) {
 		ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP3_ERROR_STORAGE)] |= Outputs.cup_error[2];
 	}
 
-	if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)] != Outputs.actuator_insert[0]){
+	if (Outputs.trigger_insert[0]) {
 		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)] = Outputs.actuator_insert[0];
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)] = true;
 	}
 
-	if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)] != Outputs.actuator_insert[1]){
+	if (Outputs.trigger_insert[1]){
 		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)] = Outputs.actuator_insert[1];
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)] = true;
 	}
 
-	if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)] != Outputs.actuator_insert[2]){
+	if (Outputs.trigger_insert[2]){
 		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)] = Outputs.actuator_insert[2];
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)] = true;
 	}
-	if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_OUT)] != Outputs.actuator_withdraw[2]){
+	if (Outputs.trigger_withdraw[2]){
 		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_OUT)] = Outputs.actuator_withdraw[2];
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_OUT)] = true;
 	}
-	if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_BRAKE)] != Outputs.actuator_brake[2]){
+	if (Outputs.trigger_brake[2]){
 		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_BRAKE)] = Outputs.actuator_brake[2];
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_BRAKE)] = true;
 	}
