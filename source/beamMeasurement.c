@@ -368,24 +368,29 @@ static void auxiliaryFSMsService(void) {
 	}
 
 	if (Outputs.trigger_insert[0]) {
+		printf("AuxFsmTick; actuator 1: %d->%d\r\n", ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)], Outputs.actuator_insert[0]);
 		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)] = Outputs.actuator_insert[0];
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)] = true;
 	}
 
 	if (Outputs.trigger_insert[1]){
+		printf("AuxFsmTick; actuator 2: %d->%d\r\n", ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)], Outputs.actuator_insert[1]);
 		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)] = Outputs.actuator_insert[1];
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)] = true;
 	}
 
 	if (Outputs.trigger_insert[2]){
+		printf("AuxFsmTick; actuator 3 in: %d->%d\r\n", ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)], Outputs.actuator_insert[2]);
 		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)] = Outputs.actuator_insert[2];
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)] = true;
 	}
 	if (Outputs.trigger_withdraw[2]){
+		printf("AuxFsmTick; actuator 3 out: %d->%d\r\n", ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_OUT)], Outputs.actuator_withdraw[2]);
 		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_OUT)] = Outputs.actuator_withdraw[2];
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_OUT)] = true;
 	}
 	if (Outputs.trigger_brake[2]){
+		printf("AuxFsmTick; actuator 3 brake: %d->%d\r\n", ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_BRAKE)], Outputs.actuator_brake[2]);
 		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_BRAKE)] = Outputs.actuator_brake[2];
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_BRAKE)] = true;
 	}
