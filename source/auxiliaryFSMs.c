@@ -2,6 +2,7 @@
 /// Auxiliary FSM logic for Faraday cup mechanisms.
 
 #include "auxiliaryFSMs.h"
+#include "debuggingTools.h"
 #include <limits.h>
 #include <string.h>
 #include <stdio.h>
@@ -35,6 +36,9 @@ static inline void saturatingIncreaseU16(uint16_t *A) {
 // -------------------------------------------------------------------------------------------------------------
 
 static void pneumaticFsmBooted(bool Requested, bool Switch, bool PauseAfterBootFinished, PneumaticFsmStateEnum *PneumaticFsmStatePtr, bool *ActuatorPtr, bool *TriggerPtr, uint16_t *ErrorPtr) {
+    if (!PauseAfterBootFinished) {
+        return;
+    }
     if (!Requested || !Switch) {
         *PneumaticFsmStatePtr = PNEUMATIC_FSM_STATE_ERROR;
         *ErrorPtr |= AUXILIARY_FSM_ERROR_UNSUPPORTED_CONFIG;
@@ -56,14 +60,15 @@ static void pneumaticFsmExtracted(bool Requested, bool Switch, bool PauseAfterBo
         *ActuatorPtr = true;
         *TriggerPtr = true;
         *PneumaticFsmStatePtr = PNEUMATIC_FSM_STATE_INSERTING;
+#if 0
         printf("New state=%d; requested=%d, sw=%d; file %s, line %d\n", *PneumaticFsmStatePtr, Requested, Switch, __FILE__, __LINE__);
+#endif
     }
 }
 
 static void pneumaticFsmInserting(bool Requested, bool Switch, bool PauseAfterBootFinished, PneumaticFsmStateEnum *PneumaticFsmStatePtr, bool *ActuatorPtr, bool *TriggerPtr, uint16_t *ErrorPtr) {
     if (Switch) {
         *PneumaticFsmStatePtr = PNEUMATIC_FSM_STATE_INSERTED;
-        printf("New state=%d; requested=%d, sw=%d; file %s, line %d\n", *PneumaticFsmStatePtr, Requested, Switch, __FILE__, __LINE__);
     }
 }
 
@@ -78,14 +83,12 @@ static void pneumaticFsmInserted(bool Requested, bool Switch, bool PauseAfterBoo
         *ActuatorPtr = false;
         *TriggerPtr = true;
         *PneumaticFsmStatePtr = PNEUMATIC_FSM_STATE_WITHDRAWING;
-        printf("New state=%d; requested=%d, sw=%d; file %s, line %d\n", *PneumaticFsmStatePtr, Requested, Switch, __FILE__, __LINE__);
     }
 }
 
 static void pneumaticFsmWithdrawing(bool Requested, bool Switch, bool PauseAfterBootFinished, PneumaticFsmStateEnum *PneumaticFsmStatePtr, bool *ActuatorPtr, bool *TriggerPtr, uint16_t *ErrorPtr) {
     if (!Switch) {
         *PneumaticFsmStatePtr = PNEUMATIC_FSM_STATE_EXTRACTED;
-        printf("New state=%d; requested=%d, sw=%d; file %s, line %d\n", *PneumaticFsmStatePtr, Requested, Switch, __FILE__, __LINE__);
     }
 }
 
@@ -690,7 +693,7 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *inputs,
 
             // just for debug purposes, to see the state transitions in the console
             if (DebugOldState.pneumatic_fsm_state[Cup] != FsmState->pneumatic_fsm_state[Cup]) {
-                printf("FSMs tick; Cup %u state %s -> %s\n", Cup, pneumaticFsmStateToString(DebugOldState.pneumatic_fsm_state[Cup]), 
+                printf("%s  FSMs tick; Cup %u state %s -> %s\n", getTimeStampString(), Cup, pneumaticFsmStateToString(DebugOldState.pneumatic_fsm_state[Cup]), 
                 pneumaticFsmStateToString(FsmState->pneumatic_fsm_state[Cup]));
                 DebugOldState.pneumatic_fsm_state[Cup] = FsmState->pneumatic_fsm_state[Cup];
             }
@@ -699,7 +702,7 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *inputs,
 
             // just for debug purposes, to see the state transitions in the console
             if (DebugOldState.pneumatic_with_lock_fsm_state[Cup] != FsmState->pneumatic_with_lock_fsm_state[Cup]) {
-                printf("FSMs tick; Cup %u state %s -> %s\n", Cup, pneumaticWithLockFsmStateToString(DebugOldState.pneumatic_with_lock_fsm_state[Cup]), 
+                printf("%s  FSMs tick; Cup %u state %s -> %s\n", getTimeStampString(), Cup, pneumaticWithLockFsmStateToString(DebugOldState.pneumatic_with_lock_fsm_state[Cup]), 
                 pneumaticWithLockFsmStateToString(FsmState->pneumatic_with_lock_fsm_state[Cup]));
                 DebugOldState.pneumatic_with_lock_fsm_state[Cup] = FsmState->pneumatic_with_lock_fsm_state[Cup];
             }
@@ -708,7 +711,7 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *inputs,
 
             // just for debug purposes, to see the state transitions in the console
             if (DebugOldState.motor_fsm_state[Cup] != FsmState->motor_fsm_state[Cup]) {
-                printf("FSMs tick; Cup %u state %s -> %s\n", Cup, motorFsmStateToString(DebugOldState.motor_fsm_state[Cup]), 
+                printf("%s  FSMs tick; Cup %u state %s -> %s\n", getTimeStampString(), Cup, motorFsmStateToString(DebugOldState.motor_fsm_state[Cup]), 
                 motorFsmStateToString(FsmState->motor_fsm_state[Cup]));
                 DebugOldState.motor_fsm_state[Cup] = FsmState->motor_fsm_state[Cup];
             }
