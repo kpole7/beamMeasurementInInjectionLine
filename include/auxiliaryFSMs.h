@@ -88,6 +88,8 @@ typedef struct {
     PneumaticFsmStateEnum pneumatic_fsm_state[AUXILIARY_FSMS_MAX_CUPS];
     PneumaticWithLockFsmStateEnum pneumatic_with_lock_fsm_state[AUXILIARY_FSMS_MAX_CUPS];
     MotorFsmStateEnum motor_fsm_state[AUXILIARY_FSMS_MAX_CUPS];
+
+    uint16_t pause_after_boot_elapsed[AUXILIARY_FSMS_MAX_CUPS];
     uint16_t transition_elapsed[AUXILIARY_FSMS_MAX_CUPS];
     uint16_t pause_after_lock_elapsed[AUXILIARY_FSMS_MAX_CUPS];
     uint16_t pause_after_unlock_elapsed[AUXILIARY_FSMS_MAX_CUPS];
