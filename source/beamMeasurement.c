@@ -324,6 +324,20 @@ static void auxiliaryFSMsService(void) {
 	Inputs.time_limit_withdrawing_ms[0] = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_WITHDRAWING1)];
 	Inputs.time_limit_withdrawing_ms[1] = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_WITHDRAWING2)];
 	Inputs.time_limit_withdrawing_ms[2] = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_WITHDRAWING3)];
+
+	if (ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_CUP1_ERROR_RECOVERY)]){
+		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_CUP1_ERROR_RECOVERY)] = false;
+		Inputs.cup_error_recover[0] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_ERROR_RECOVERY)];
+	}
+	if (ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_CUP2_ERROR_RECOVERY)]){
+		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_CUP2_ERROR_RECOVERY)] = false;
+		Inputs.cup_error_recover[1] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_ERROR_RECOVERY)];
+	}
+	if (ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_CUP3_ERROR_RECOVERY)]){
+		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_CUP3_ERROR_RECOVERY)] = false;
+		Inputs.cup_error_recover[2] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_ERROR_RECOVERY)];
+	}
+
 	Inputs.cup_requested_state[0] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_REQUESTED_STATE)];
 	Inputs.cup_requested_state[1] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_REQUESTED_STATE)];
 	Inputs.cup_requested_state[2] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_REQUESTED_STATE)];
