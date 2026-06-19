@@ -100,10 +100,12 @@ typedef struct {
     uint16_t pause_after_unlock_elapsed[AUXILIARY_FSMS_MAX_CUPS];
     uint16_t pre_braking_elapsed[AUXILIARY_FSMS_MAX_CUPS];
     uint16_t braking_elapsed[AUXILIARY_FSMS_MAX_CUPS];
+    bool is_cup_inserted[AUXILIARY_FSMS_MAX_CUPS];
+    uint16_t active_cup;
 } AuxiliaryFSMsState;
 
-void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *inputs,
+void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *Inputs,
                        AuxiliaryFSMsState *FsmState,
-                       AuxiliaryFSMsOutputs *outputs);
+                       AuxiliaryFSMsOutputs *Outputs);
 
 #endif // AUXILIARY_FSMS_H

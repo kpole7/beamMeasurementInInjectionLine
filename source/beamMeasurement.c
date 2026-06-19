@@ -237,6 +237,7 @@ static void mainInitialization(void){
 	IsHighLevelStateInitialized = false;
 
 	memset(&AuxiliaryFSMsStateData, 0, sizeof(AuxiliaryFSMsStateData));
+	AuxiliaryFSMsStateData.active_cup = 1u;
 
 #if MODBUS_DEBUG_MODE
 	initInputPortJP1();
@@ -408,6 +409,8 @@ static void auxiliaryFSMsService(void) {
 		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_BRAKE)] = Outputs.actuator_brake[2];
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_BRAKE)] = true;
 	}
+
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP)] = clampActiveCup(AuxiliaryFSMsStateData.active_cup);
 }
 
 static uint16_t clampInstalledCups(uint16_t value) {

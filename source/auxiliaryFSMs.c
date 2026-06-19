@@ -35,7 +35,9 @@ static inline void saturatingIncreaseU16(uint16_t *A) {
 // FSM implementation for simple pneumatic actuator
 // -------------------------------------------------------------------------------------------------------------
 
-static void pneumaticFsmBooted(bool Requested, bool Recovery, bool Switch, bool PauseAfterBootFinished, bool TransitionTimeFinished, PneumaticFsmStateEnum *StatePtr, bool *ActuatorPtr, bool *TriggerPtr, uint16_t *ErrorPtr) {
+static void pneumaticFsmBooted(bool Requested, bool Recovery, bool Switch, bool PauseAfterBootFinished, bool TransitionTimeFinished, 
+    PneumaticFsmStateEnum *StatePtr, bool *ActuatorPtr, bool *TriggerPtr, uint16_t *ErrorPtr) 
+    {
     if (!PauseAfterBootFinished) {
         return;
     }
@@ -48,7 +50,9 @@ static void pneumaticFsmBooted(bool Requested, bool Recovery, bool Switch, bool 
     *StatePtr = PNEUMATIC_FSM_STATE_INSERTED;
 }
 
-static void pneumaticFsmExtracted(bool Requested, bool Recovery, bool Switch, bool PauseAfterBootFinished, bool TransitionTimeFinished, PneumaticFsmStateEnum *StatePtr, bool *ActuatorPtr, bool *TriggerPtr, uint16_t *ErrorPtr) {
+static void pneumaticFsmExtracted(bool Requested, bool Recovery, bool Switch, bool PauseAfterBootFinished, bool TransitionTimeFinished, 
+    PneumaticFsmStateEnum *StatePtr, bool *ActuatorPtr, bool *TriggerPtr, uint16_t *ErrorPtr) 
+    {
     if (Switch) {
         *StatePtr = PNEUMATIC_FSM_STATE_ERROR;
         *ErrorPtr |= AUXILIARY_FSM_ERROR_SWITCH_OF_PNEUMATIC;
@@ -65,7 +69,9 @@ static void pneumaticFsmExtracted(bool Requested, bool Recovery, bool Switch, bo
     }
 }
 
-static void pneumaticFsmInserting(bool Requested, bool Recovery, bool Switch, bool PauseAfterBootFinished, bool TransitionTimeFinished, PneumaticFsmStateEnum *StatePtr, bool *ActuatorPtr, bool *TriggerPtr, uint16_t *ErrorPtr) {
+static void pneumaticFsmInserting(bool Requested, bool Recovery, bool Switch, bool PauseAfterBootFinished, bool TransitionTimeFinished, 
+    PneumaticFsmStateEnum *StatePtr, bool *ActuatorPtr, bool *TriggerPtr, uint16_t *ErrorPtr) 
+    {
     if (Switch) {
         *StatePtr = PNEUMATIC_FSM_STATE_INSERTED;
     }
@@ -78,7 +84,9 @@ static void pneumaticFsmInserting(bool Requested, bool Recovery, bool Switch, bo
     }
 }
 
-static void pneumaticFsmInserted(bool Requested, bool Recovery, bool Switch, bool PauseAfterBootFinished, bool TransitionTimeFinished, PneumaticFsmStateEnum *StatePtr, bool *ActuatorPtr, bool *TriggerPtr, uint16_t *ErrorPtr) {
+static void pneumaticFsmInserted(bool Requested, bool Recovery, bool Switch, bool PauseAfterBootFinished, bool TransitionTimeFinished, 
+    PneumaticFsmStateEnum *StatePtr, bool *ActuatorPtr, bool *TriggerPtr, uint16_t *ErrorPtr) 
+    {
     if (!Switch) {
         *StatePtr = PNEUMATIC_FSM_STATE_ERROR;
         *ErrorPtr |= AUXILIARY_FSM_ERROR_SWITCH_OF_PNEUMATIC;
@@ -92,7 +100,9 @@ static void pneumaticFsmInserted(bool Requested, bool Recovery, bool Switch, boo
     }
 }
 
-static void pneumaticFsmWithdrawing(bool Requested, bool Recovery, bool Switch, bool PauseAfterBootFinished, bool TransitionTimeFinished, PneumaticFsmStateEnum *StatePtr, bool *ActuatorPtr, bool *TriggerPtr, uint16_t *ErrorPtr) {
+static void pneumaticFsmWithdrawing(bool Requested, bool Recovery, bool Switch, bool PauseAfterBootFinished, bool TransitionTimeFinished, 
+    PneumaticFsmStateEnum *StatePtr, bool *ActuatorPtr, bool *TriggerPtr, uint16_t *ErrorPtr) 
+    {
     if (!Switch) {
         *StatePtr = PNEUMATIC_FSM_STATE_EXTRACTED;
     }
@@ -105,7 +115,9 @@ static void pneumaticFsmWithdrawing(bool Requested, bool Recovery, bool Switch, 
     }
 }
 
-static void pneumaticFsmOnError(bool Requested, bool Recovery, bool Switch, bool PauseAfterBootFinished, bool TransitionTimeFinished, PneumaticFsmStateEnum *StatePtr, bool *ActuatorPtr, bool *TriggerPtr, uint16_t *ErrorPtr) {
+static void pneumaticFsmOnError(bool Requested, bool Recovery, bool Switch, bool PauseAfterBootFinished, bool TransitionTimeFinished, 
+    PneumaticFsmStateEnum *StatePtr, bool *ActuatorPtr, bool *TriggerPtr, uint16_t *ErrorPtr) 
+    {
     if (Recovery) {
         *ErrorPtr = 0u;
         *ActuatorPtr = true;
@@ -115,20 +127,22 @@ static void pneumaticFsmOnError(bool Requested, bool Recovery, bool Switch, bool
     }
 }
 
-static void evaluatePneumaticCup(bool Requested, bool Recovery, bool Switch, bool PauseAfterBootFinished, bool TransitionTimeFinished, PneumaticFsmStateEnum *StatePtr, 
-    bool *ActuatorPtr, bool *TriggerPtr, uint16_t *ErrorPtr) 
+static void evaluatePneumaticCup(bool Requested, bool Recovery, bool Switch, bool PauseAfterBootFinished, bool TransitionTimeFinished, 
+    PneumaticFsmStateEnum *StatePtr, bool *ActuatorPtr, bool *TriggerPtr, uint16_t *ErrorPtr, bool *IsCupInsertedPtr) 
     {
     switch (*StatePtr) {
         case PNEUMATIC_FSM_STATE_BOOTED:
             pneumaticFsmBooted(Requested, Recovery, Switch, PauseAfterBootFinished, TransitionTimeFinished, StatePtr, ActuatorPtr, TriggerPtr, ErrorPtr);
             break;
         case PNEUMATIC_FSM_STATE_EXTRACTED:
+            *IsCupInsertedPtr = false;
             pneumaticFsmExtracted(Requested, Recovery, Switch, PauseAfterBootFinished, TransitionTimeFinished, StatePtr, ActuatorPtr, TriggerPtr, ErrorPtr);
             break;
         case PNEUMATIC_FSM_STATE_INSERTING:
             pneumaticFsmInserting(Requested, Recovery, Switch, PauseAfterBootFinished, TransitionTimeFinished, StatePtr, ActuatorPtr, TriggerPtr, ErrorPtr);
             break;
         case PNEUMATIC_FSM_STATE_INSERTED:
+            *IsCupInsertedPtr = true;
             pneumaticFsmInserted(Requested, Recovery, Switch, PauseAfterBootFinished, TransitionTimeFinished, StatePtr, ActuatorPtr, TriggerPtr, ErrorPtr);
             break;
         case PNEUMATIC_FSM_STATE_WITHDRAWING:
@@ -177,7 +191,8 @@ void pneumaticFsmTick(uint16_t Cup,
                          &PneumaticLocalState,
                          &Actuator,
                          &Trigger,
-                         &Error);
+                         &Error,
+                         &FsmStatePtr->is_cup_inserted[Cup]);
     if (PneumaticLocalState == PNEUMATIC_FSM_STATE_INSERTING){
         uint16_t effective_limit = (InputsPtr->time_limit_inserting_ms[Cup] == 0u) ? 1u : InputsPtr->time_limit_inserting_ms[Cup];
         saturatingIncreaseU16(&FsmStatePtr->transition_elapsed[Cup]);
@@ -380,7 +395,7 @@ static void pneumaticWithLockFsmOnError(bool Inhibit, bool Requested, bool Recov
 
 static void evaluatePneumaticWithLockCup(bool Inhibit, bool Requested, bool Recovery, bool Switch, 
     bool PauseAfterBootFinished, bool PauseAfterLockFinished, bool PauseAfterUnlockFinished,
-    PneumaticWithLockFsmStateEnum *StatePtr, bool *ActuatorPtr, bool *TriggerPtr, uint16_t *ErrorPtr) 
+    PneumaticWithLockFsmStateEnum *StatePtr, bool *ActuatorPtr, bool *TriggerPtr, uint16_t *ErrorPtr, bool *IsCupInsertedPtr) 
     {
     switch (*StatePtr) {
         case PNEUMATIC_WITH_LOCK_FSM_STATE_BOOTED:
@@ -388,6 +403,7 @@ static void evaluatePneumaticWithLockCup(bool Inhibit, bool Requested, bool Reco
                 StatePtr, ActuatorPtr, TriggerPtr, ErrorPtr);
             break;
         case PNEUMATIC_WITH_LOCK_FSM_STATE_INSERTED:
+            *IsCupInsertedPtr = true;
             pneumaticWithLockFsmInserted(Inhibit, Requested, Recovery, Switch, PauseAfterBootFinished, PauseAfterLockFinished, PauseAfterUnlockFinished, 
                 StatePtr, ActuatorPtr, TriggerPtr, ErrorPtr);
             break;
@@ -396,6 +412,7 @@ static void evaluatePneumaticWithLockCup(bool Inhibit, bool Requested, bool Reco
                 StatePtr, ActuatorPtr, TriggerPtr, ErrorPtr);
             break;
         case PNEUMATIC_WITH_LOCK_FSM_STATE_EXTRACTED:
+            *IsCupInsertedPtr = false;
             pneumaticWithLockFsmExtracted(Inhibit, Requested, Recovery, Switch, PauseAfterBootFinished, PauseAfterLockFinished, PauseAfterUnlockFinished, 
                 StatePtr, ActuatorPtr, TriggerPtr, ErrorPtr);
             break;
@@ -408,6 +425,7 @@ static void evaluatePneumaticWithLockCup(bool Inhibit, bool Requested, bool Reco
                 StatePtr, ActuatorPtr, TriggerPtr, ErrorPtr);
             break;
         case PNEUMATIC_WITH_LOCK_FSM_STATE_LOCKED_INSERTED:
+            *IsCupInsertedPtr = true;
             pneumaticWithLockFsmLockedInserted(Inhibit, Requested, Recovery, Switch, PauseAfterBootFinished, PauseAfterLockFinished, PauseAfterUnlockFinished, 
                 StatePtr, ActuatorPtr, TriggerPtr, ErrorPtr);
             break;
@@ -493,7 +511,8 @@ void pneumaticWithLockFsmTick(uint16_t Cup,
                                  &PneumaticWithLockLocalState,
                                  &Actuator,
                                  &Trigger,
-                                 &Error);
+                                 &Error,
+                                 &FsmStatePtr->is_cup_inserted[Cup]);
     FsmStatePtr->pneumatic_with_lock_fsm_state[Cup] = PneumaticWithLockLocalState;
     if (Trigger) {
         OutputsPtr->actuator_insert[Cup] = Actuator;
@@ -699,7 +718,8 @@ static void evaluateMotorCup(bool Requested,
                              bool *TriggerInsertPtr,
                              bool *TriggerWithdrawPtr,
                              bool *TriggerBrakePtr,
-                             uint16_t *ErrorPtr)
+                             uint16_t *ErrorPtr,
+                             bool *IsCupInsertedPtr)
 {
     switch (*StatePtr) {
         case MOTOR_FSM_STATE_BOOTED:
@@ -707,6 +727,7 @@ static void evaluateMotorCup(bool Requested,
                 ActuatorWithdrawPtr, ActuatorBrakePtr, TriggerInsertPtr, TriggerWithdrawPtr, TriggerBrakePtr, ErrorPtr);
             break;
         case MOTOR_FSM_STATE_INSERTED:
+            *IsCupInsertedPtr = true;
             motorFsmInserted(Requested, Recovery, SwitchA, SwitchB, IsPauseAfterBootFinished, IsPreBrakingComplete, IsBrakingComplete, StatePtr, ActuatorInsertPtr, 
                 ActuatorWithdrawPtr, ActuatorBrakePtr, TriggerInsertPtr, TriggerWithdrawPtr, TriggerBrakePtr, ErrorPtr);
             break;
@@ -723,6 +744,7 @@ static void evaluateMotorCup(bool Requested,
                 ActuatorWithdrawPtr, ActuatorBrakePtr, TriggerInsertPtr, TriggerWithdrawPtr, TriggerBrakePtr, ErrorPtr);
             break;
         case MOTOR_FSM_STATE_EXTRACTED:
+            *IsCupInsertedPtr = false;
             motorFsmExtracted(Requested, Recovery, SwitchA, SwitchB, IsPauseAfterBootFinished, IsPreBrakingComplete, IsBrakingComplete, StatePtr, ActuatorInsertPtr, 
                 ActuatorWithdrawPtr, ActuatorBrakePtr, TriggerInsertPtr, TriggerWithdrawPtr, TriggerBrakePtr, ErrorPtr);
             break;
@@ -823,7 +845,8 @@ void motorFsmTick(uint16_t Cup,
                      &TriggerInsert,
                      &TriggerWithdraw,
                      &TriggerBrake,
-                     &Error);
+                     &Error,
+                     &FsmStatePtr->is_cup_inserted[Cup]);
 
     FsmStatePtr->motor_fsm_state[Cup] = MotorLocalState;
     if (TriggerInsert) {
@@ -923,9 +946,9 @@ static char *motorFsmStateToString(MotorFsmStateEnum state) {
     }
 }
 
-void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *inputs,
+void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *Inputs,
                        AuxiliaryFSMsState *FsmState,
-                       AuxiliaryFSMsOutputs *outputs)
+                       AuxiliaryFSMsOutputs *Outputs)
 {
     // just for debug purposes, to see the state transitions in the console
     static AuxiliaryFSMsState DebugOldState = {0};
@@ -939,17 +962,17 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *inputs,
         DebugOldStateInitialized = true;
     }
 
-    if (!inputs || !FsmState || !outputs) {
+    if (!Inputs || !FsmState || !Outputs) {
         return;
     }
 
-    memset(outputs, 0, sizeof(AuxiliaryFSMsOutputs));
+    memset(Outputs, 0, sizeof(AuxiliaryFSMsOutputs));
 
-    uint16_t installed_cups = clampInstalledCups(inputs->installed_cups);
+    uint16_t installed_cups = clampInstalledCups(Inputs->installed_cups);
 
     for (uint16_t Cup = 0; Cup < installed_cups; Cup++) {
-        if (AUXILIARY_FSM_CUP_TYPE_PNEUMATIC == inputs->cup_type[Cup]) {
-            pneumaticFsmTick(Cup, inputs, FsmState, outputs);
+        if (AUXILIARY_FSM_CUP_TYPE_PNEUMATIC == Inputs->cup_type[Cup]) {
+            pneumaticFsmTick(Cup, Inputs, FsmState, Outputs);
 
             // just for debug purposes, to see the state transitions in the console
             if (DebugOldState.pneumatic_fsm_state[Cup] != FsmState->pneumatic_fsm_state[Cup]) {
@@ -957,8 +980,8 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *inputs,
                 pneumaticFsmStateToString(FsmState->pneumatic_fsm_state[Cup]));
                 DebugOldState.pneumatic_fsm_state[Cup] = FsmState->pneumatic_fsm_state[Cup];
             }
-        } else if (AUXILIARY_FSM_CUP_TYPE_PNEUMATIC_WITH_LOCK == inputs->cup_type[Cup]) {
-            pneumaticWithLockFsmTick(Cup, inputs, FsmState, outputs);
+        } else if (AUXILIARY_FSM_CUP_TYPE_PNEUMATIC_WITH_LOCK == Inputs->cup_type[Cup]) {
+            pneumaticWithLockFsmTick(Cup, Inputs, FsmState, Outputs);
 
             // just for debug purposes, to see the state transitions in the console
             if (DebugOldState.pneumatic_with_lock_fsm_state[Cup] != FsmState->pneumatic_with_lock_fsm_state[Cup]) {
@@ -966,8 +989,8 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *inputs,
                 pneumaticWithLockFsmStateToString(FsmState->pneumatic_with_lock_fsm_state[Cup]));
                 DebugOldState.pneumatic_with_lock_fsm_state[Cup] = FsmState->pneumatic_with_lock_fsm_state[Cup];
             }
-        } else if (AUXILIARY_FSM_CUP_TYPE_MOTOR == inputs->cup_type[Cup]) {
-            motorFsmTick(Cup, inputs, FsmState, outputs);
+        } else if (AUXILIARY_FSM_CUP_TYPE_MOTOR == Inputs->cup_type[Cup]) {
+            motorFsmTick(Cup, Inputs, FsmState, Outputs);
 
             // just for debug purposes, to see the state transitions in the console
             if (DebugOldState.motor_fsm_state[Cup] != FsmState->motor_fsm_state[Cup]) {
@@ -978,5 +1001,12 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *inputs,
         } else {
             printf("Error; file %s, line %d\n", __FILE__, __LINE__);
         }
+        if (FsmState->is_cup_inserted[Cup]) {
+            FsmState->active_cup = Cup+1; // we use 1-based indexing for active cup
+        }
+    }
+    if (DebugOldState.active_cup != FsmState->active_cup) {
+        printf("%s  FSMs tick; active cup %u -> %u\n", getTimeStampString(), DebugOldState.active_cup, FsmState->active_cup);
+        DebugOldState.active_cup = FsmState->active_cup;
     }
 }

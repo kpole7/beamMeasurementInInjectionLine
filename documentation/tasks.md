@@ -53,37 +53,16 @@ Add. 3  Mnemonic: HighLevelCtrl
         working properly. 
     Detailed description.
         The module operates according to the following list of rules:
-        Rule 1. If the external lock is active, perform the “lock the beam” action.
-
-
-
-        Rule 2. If any module is in a failure state, perform the “respond to failure” action,
-                otherwise, perform the "return to normal" action.
-        Rule 3. For all the auxiliary FSMs: if an auxiliary FSM is in a steady state other than 
-                the state reqested by the user, set the request flag for that auxiliary FSM and force 
-                the output port to the appropriate state; illustrative example for cup #1:
-                if (Cup1Steady && (Cup1Inserted != Cup1Control)) than { Cup1RequestedState = Cup1Control;
-                    force the appropriate output signal }
-        Rule 4. Assign the ActiveCup register the index of the first Faraday cup inserted, as viewed from 
-                the ion source; if none is inserted, retain the previous value; 
-        In any case, all rules must be processed.
-        If the rules conflict on a particular issue, the rule with the lower number takes precedence.
-        The numbering of the Faraday cups (for InstalledCups = 3) is as follows:
-            Cup #1 is closest to the ion source;
-            Cup #2 is between Cup #1 and Cup #3;
-            Cup #3 is farthest from the ion source and closest to the cyclotron;
-        "Lock the beam" action = Hold the second cup in an inserted position to block the ion beam.
-        “Respond to failure” action = { backup ErrorCode in LastError register; update ErrorCode register;
-            update ErrorStorage register }
-        "Return to normal" action = { if ErrorCode!=0, then { backup ErrorCode in LastError register}; 
-            update ErrorCode register }
+        Rule 1. If the 'inhibition' signal is active, overwrite coils Cup2Control and Cup2RequestedState with
+                '1' in order to ensure that the cup related to 'inhibition' remains inserted when the 
+                'inhibition' signal ends.
+        Rule 2. Under normal conditions (if there are no inhibition or errors), the value of the CupNControl 
+                coil should be transfered to CupNRequestedState.
+        The module determines ErrorCode, LastError, ErrorStorage on the basis of Cup1Error, ... Cup3Error.
     Input data:
-        Cup1Control, Cup2Control, Cup3Control, ExternalInhibition,
-        Cup1Error, Cup2Error, Cup3Error, Cup1Steady, Cup2Steady, Cup3Steady, 
-        Cup1Inserted, Cup2Inserted, Cup3Inserted, 
+        Cup1Control, Cup2Control, Cup3Control, ExternalInhibition, Cup1Error, Cup2Error, Cup3Error
     Output data:
-        ErrorCode, LastError, ErrorStorage, ActiveCup, 
-        Cup1RequestedState, Cup2RequestedState, Cup3RequestedState
+        ErrorCode, LastError, ErrorStorage, Cup1RequestedState, Cup2RequestedState, Cup3RequestedState.
     The frequency with which the task is processed:
         500 Hz
 
@@ -143,14 +122,20 @@ Add. 5  Mnemonic: AuxiliaryFSMs
         At every stage of the mechanism's operation, the signals from the switches must be checked for 
         correctness (the rules for checking correctness should be derived from the description above).
         Static local variables in the module will be necessary to determine whether the mechanisms have 
-        reached a steady state.    
+        reached a steady state.
+        The module determines ActiveCup register. The numbering of the Faraday cups (for InstalledCups = 3) 
+        is as follows:
+            Cup #1 is closest to the ion source;
+            Cup #2 is between Cup #1 and Cup #3;
+            Cup #3 is farthest from the ion source and closest to the cyclotron;
+
     Input data:
         Cup1Switch, ExternalInhibition, Cup2Switch, Cup3Switch1, Cup3Switch2,
         Cup1RequestedState, Cup2RequestedState, Cup3RequestedState.
     Output data:
         Actuator1Control, Actuator2Control, Actuator3Control,
         Cup1Error, Cup2Error, Cup3Error, Cup1LastError, Cup2LastError, Cup3LastError, 
-        Cup1ErrorStorage, Cup2ErrorStorage, Cup3ErrorStorage.
+        Cup1ErrorStorage, Cup2ErrorStorage, Cup3ErrorStorage, ActiveCup.
     The frequency with which the task is processed:
         500 Hz
 
