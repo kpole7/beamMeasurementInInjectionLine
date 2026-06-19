@@ -19,8 +19,8 @@ static uint16_t clampInstalledCups(uint16_t Value)
     if (Value < 1u) {
         return 1u;
     }
-    if (Value > AUXILIARY_FSMS_MAX_CUPS) {
-        return AUXILIARY_FSMS_MAX_CUPS;
+    if (Value > MAX_CUPS) {
+        return MAX_CUPS;
     }
     return Value;
 }
@@ -170,7 +170,7 @@ void pneumaticFsmTick(uint16_t Cup,
     bool Trigger = false;
     uint16_t Error = 0u;
 
-    if (InputsPtr->cup_type[Cup] != AUXILIARY_FSM_CUP_TYPE_PNEUMATIC){
+    if (InputsPtr->cup_type[Cup] != CUP_TYPE_PNEUMATIC){
         return;
     }
 
@@ -458,7 +458,7 @@ void pneumaticWithLockFsmTick(uint16_t Cup,
     bool PauseAfterUnlockIsOver = false;
     uint16_t Error = 0u;
 
-    if (InputsPtr->cup_type[Cup] != AUXILIARY_FSM_CUP_TYPE_PNEUMATIC_WITH_LOCK) {
+    if (InputsPtr->cup_type[Cup] != CUP_TYPE_PNEUMATIC_WITH_LOCK) {
         return;
     }
     if (PNEUMATIC_WITH_LOCK_FSM_STATE_BOOTED == PneumaticWithLockLocalState) {
@@ -788,7 +788,7 @@ void motorFsmTick(uint16_t Cup,
     bool TriggerBrake = false;
     uint16_t Error = 0u;
 
-    if (InputsPtr->cup_type[Cup] != AUXILIARY_FSM_CUP_TYPE_MOTOR) {
+    if (InputsPtr->cup_type[Cup] != CUP_TYPE_MOTOR) {
         return;
     }
 
@@ -954,7 +954,7 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *Inputs,
     static AuxiliaryFSMsState DebugOldState = {0};
     static bool DebugOldStateInitialized = false;
     if (!DebugOldStateInitialized) {
-        for (uint16_t cup = 0; cup < AUXILIARY_FSMS_MAX_CUPS; cup++) {
+        for (uint16_t cup = 0; cup < MAX_CUPS; cup++) {
             DebugOldState.pneumatic_fsm_state[cup] = PNEUMATIC_FSM_STATE_UNDEFINED;
             DebugOldState.pneumatic_with_lock_fsm_state[cup] = PNEUMATIC_WITH_LOCK_FSM_STATE_UNDEFINED;
             DebugOldState.motor_fsm_state[cup] = MOTOR_FSM_STATE_UNDEFINED;
@@ -971,7 +971,7 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *Inputs,
     uint16_t installed_cups = clampInstalledCups(Inputs->installed_cups);
 
     for (uint16_t Cup = 0; Cup < installed_cups; Cup++) {
-        if (AUXILIARY_FSM_CUP_TYPE_PNEUMATIC == Inputs->cup_type[Cup]) {
+        if (CUP_TYPE_PNEUMATIC == Inputs->cup_type[Cup]) {
             pneumaticFsmTick(Cup, Inputs, FsmState, Outputs);
 
             // just for debug purposes, to see the state transitions in the console
@@ -980,7 +980,7 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *Inputs,
                 pneumaticFsmStateToString(FsmState->pneumatic_fsm_state[Cup]));
                 DebugOldState.pneumatic_fsm_state[Cup] = FsmState->pneumatic_fsm_state[Cup];
             }
-        } else if (AUXILIARY_FSM_CUP_TYPE_PNEUMATIC_WITH_LOCK == Inputs->cup_type[Cup]) {
+        } else if (CUP_TYPE_PNEUMATIC_WITH_LOCK == Inputs->cup_type[Cup]) {
             pneumaticWithLockFsmTick(Cup, Inputs, FsmState, Outputs);
 
             // just for debug purposes, to see the state transitions in the console
@@ -989,7 +989,7 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *Inputs,
                 pneumaticWithLockFsmStateToString(FsmState->pneumatic_with_lock_fsm_state[Cup]));
                 DebugOldState.pneumatic_with_lock_fsm_state[Cup] = FsmState->pneumatic_with_lock_fsm_state[Cup];
             }
-        } else if (AUXILIARY_FSM_CUP_TYPE_MOTOR == Inputs->cup_type[Cup]) {
+        } else if (CUP_TYPE_MOTOR == Inputs->cup_type[Cup]) {
             motorFsmTick(Cup, Inputs, FsmState, Outputs);
 
             // just for debug purposes, to see the state transitions in the console

@@ -52,13 +52,11 @@ Add. 3  Mnemonic: HighLevelCtrl
         state machines that control the individual Faraday cups. The module checks whether the device is 
         working properly. 
     Detailed description.
-        The module operates according to the following list of rules:
-        Rule 1. If the 'inhibition' signal is active, overwrite coils Cup2Control and Cup2RequestedState with
-                '1' in order to ensure that the cup related to 'inhibition' remains inserted when the 
-                'inhibition' signal ends.
-        Rule 2. Under normal conditions (if there are no inhibition or errors), the value of the CupNControl 
-                coil should be transfered to CupNRequestedState.
-        The module determines ErrorCode, LastError, ErrorStorage on the basis of Cup1Error, ... Cup3Error.
+        The module performs the following actions:
+        1.  If the 'inhibition' signal is active, overwrite coils Cup2Control with '1' in order to ensure 
+            that the cup related to 'inhibition' remains inserted when the 'inhibition' signal ends.
+        2.  The value of the CupNControl coil is transfered to CupNRequestedState.
+        3.  The module determines ErrorCode, LastError, ErrorStorage on the basis of Cup1Error ... Cup3Error.
     Input data:
         Cup1Control, Cup2Control, Cup3Control, ExternalInhibition, Cup1Error, Cup2Error, Cup3Error
     Output data:

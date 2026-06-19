@@ -8,9 +8,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-
-/// Maximum number of Faraday cups supported
-#define MAX_CUPS 3
+#include "configFaradayCups.h"
 
 /// Inputs for a single tick of the HighLevelCtrl state machine.
 typedef struct {
@@ -25,6 +23,8 @@ typedef struct {
     
     /// Error status for each cup (bitmap)
     uint16_t cup_error[MAX_CUPS];
+
+    uint16_t cup_type[MAX_CUPS];  // Type of each cup (e.g., pneumatic, motorized)
 } HighLevelCtrlInputs;
 
 /// Outputs produced by a single tick of the HighLevelCtrl state machine.
@@ -38,10 +38,6 @@ typedef struct {
     /// Bitwise OR of all errors that have occurred (can be reset via Modbus)
     uint16_t error_storage;
     
-    /// The first inserted Faraday cup as seen from ion source side (1-3).
-    /// If none is inserted, this field is not updated.
-    uint16_t active_cup;
-    
     /// Requested state for each cup to AuxiliaryFSM: true = insert, false = withdraw
     bool cup_requested_state[MAX_CUPS];
 } HighLevelCtrlOutputs;
@@ -50,9 +46,6 @@ typedef struct {
 typedef struct {
     /// Previous value of error_code (used to detect transitions)
     uint16_t prev_error_code;
-    
-    /// Retained active cup (does not change when no cup is inserted)
-    uint16_t retained_active_cup;
     
     /// Accumulated error history (bitwise OR of all errors seen).
     /// Persists until explicitly cleared (e.g., via Modbus adapter).

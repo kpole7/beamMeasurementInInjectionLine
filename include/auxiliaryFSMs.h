@@ -7,12 +7,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-
-#define AUXILIARY_FSMS_MAX_CUPS 3u
-
-#define AUXILIARY_FSM_CUP_TYPE_PNEUMATIC            0u
-#define AUXILIARY_FSM_CUP_TYPE_PNEUMATIC_WITH_LOCK  1u
-#define AUXILIARY_FSM_CUP_TYPE_MOTOR                2u
+#include "configFaradayCups.h"
 
 #define AUXILIARY_FSM_ERROR_TIMEOUT_INSERT                 0x0001u
 #define AUXILIARY_FSM_ERROR_TIMEOUT_WITHDRAW               0x0002u
@@ -64,43 +59,43 @@ typedef struct {
     uint16_t installed_cups;
     bool external_inhibition;
 
-    uint16_t cup_type[AUXILIARY_FSMS_MAX_CUPS];
+    uint16_t cup_type[MAX_CUPS];
 
-    uint16_t time_limit_inserting_ms[AUXILIARY_FSMS_MAX_CUPS];
-    uint16_t time_limit_withdrawing_ms[AUXILIARY_FSMS_MAX_CUPS];
+    uint16_t time_limit_inserting_ms[MAX_CUPS];
+    uint16_t time_limit_withdrawing_ms[MAX_CUPS];
 
-    bool cup_requested_state[AUXILIARY_FSMS_MAX_CUPS];
-    bool cup_error_recover[AUXILIARY_FSMS_MAX_CUPS];
+    bool cup_requested_state[MAX_CUPS];
+    bool cup_error_recover[MAX_CUPS];
 
-    bool cup_switch[AUXILIARY_FSMS_MAX_CUPS];
-    bool cup_switch_a[AUXILIARY_FSMS_MAX_CUPS];
-    bool cup_switch_b[AUXILIARY_FSMS_MAX_CUPS];
+    bool cup_switch[MAX_CUPS];
+    bool cup_switch_a[MAX_CUPS];
+    bool cup_switch_b[MAX_CUPS];
 } AuxiliaryFSMsInputs;
 
 typedef struct {
-    bool actuator_insert[AUXILIARY_FSMS_MAX_CUPS];
-    bool actuator_withdraw[AUXILIARY_FSMS_MAX_CUPS];
-    bool actuator_brake[AUXILIARY_FSMS_MAX_CUPS];
+    bool actuator_insert[MAX_CUPS];
+    bool actuator_withdraw[MAX_CUPS];
+    bool actuator_brake[MAX_CUPS];
 
-    bool trigger_insert[AUXILIARY_FSMS_MAX_CUPS];
-    bool trigger_withdraw[AUXILIARY_FSMS_MAX_CUPS];
-    bool trigger_brake[AUXILIARY_FSMS_MAX_CUPS];
+    bool trigger_insert[MAX_CUPS];
+    bool trigger_withdraw[MAX_CUPS];
+    bool trigger_brake[MAX_CUPS];
 
-    uint16_t cup_error[AUXILIARY_FSMS_MAX_CUPS];
+    uint16_t cup_error[MAX_CUPS];
 } AuxiliaryFSMsOutputs;
 
 typedef struct {
-    PneumaticFsmStateEnum pneumatic_fsm_state[AUXILIARY_FSMS_MAX_CUPS];
-    PneumaticWithLockFsmStateEnum pneumatic_with_lock_fsm_state[AUXILIARY_FSMS_MAX_CUPS];
-    MotorFsmStateEnum motor_fsm_state[AUXILIARY_FSMS_MAX_CUPS];
+    PneumaticFsmStateEnum pneumatic_fsm_state[MAX_CUPS];
+    PneumaticWithLockFsmStateEnum pneumatic_with_lock_fsm_state[MAX_CUPS];
+    MotorFsmStateEnum motor_fsm_state[MAX_CUPS];
 
-    uint16_t pause_after_boot_elapsed[AUXILIARY_FSMS_MAX_CUPS];
-    uint16_t transition_elapsed[AUXILIARY_FSMS_MAX_CUPS];
-    uint16_t pause_after_lock_elapsed[AUXILIARY_FSMS_MAX_CUPS];
-    uint16_t pause_after_unlock_elapsed[AUXILIARY_FSMS_MAX_CUPS];
-    uint16_t pre_braking_elapsed[AUXILIARY_FSMS_MAX_CUPS];
-    uint16_t braking_elapsed[AUXILIARY_FSMS_MAX_CUPS];
-    bool is_cup_inserted[AUXILIARY_FSMS_MAX_CUPS];
+    uint16_t pause_after_boot_elapsed[MAX_CUPS];
+    uint16_t transition_elapsed[MAX_CUPS];
+    uint16_t pause_after_lock_elapsed[MAX_CUPS];
+    uint16_t pause_after_unlock_elapsed[MAX_CUPS];
+    uint16_t pre_braking_elapsed[MAX_CUPS];
+    uint16_t braking_elapsed[MAX_CUPS];
+    bool is_cup_inserted[MAX_CUPS];
     uint16_t active_cup;
 } AuxiliaryFSMsState;
 

@@ -233,7 +233,6 @@ static void mainInitialization(void){
 	initializeModbusRegisters();
 
 	memset(&HighLevelState, 0, sizeof(HighLevelState));
-	HighLevelState.retained_active_cup = 1u;
 	IsHighLevelStateInitialized = false;
 
 	memset(&AuxiliaryFSMsStateData, 0, sizeof(AuxiliaryFSMsStateData));
@@ -269,7 +268,6 @@ static void highLevelCtrlService(void) {
 	HighLevelCtrlInputs Inputs;
 	HighLevelCtrlOutputs Outputs;
 	uint16_t ErrorStorageIndex = holdingIndexFromAddress(MODBUS_ADDR_ERROR_STORAGE);
-	uint16_t ActiveCupIndex = holdingIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP);
 	uint16_t ErrorCodeIndex = holdingIndexFromAddress(MODBUS_ADDR_ERROR_CODE);
 	uint16_t LastErrorIndex = holdingIndexFromAddress(MODBUS_ADDR_LAST_ERROR);
 
@@ -277,6 +275,11 @@ static void highLevelCtrlService(void) {
 
 	Inputs.installed_cups = clampInstalledCups(ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_INSTALLED_CUPS)]);
 	Inputs.external_inhibition = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION2)];
+
+	Inputs.cup_type[0] = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_TYPE)];
+	Inputs.cup_type[1] = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP2_TYPE)];
+	Inputs.cup_type[2] = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP3_TYPE)];
+
 	Inputs.cup_control[0] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_CONTROL)];
 	Inputs.cup_control[1] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_CONTROL)];
 	Inputs.cup_control[2] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_CONTROL)];
@@ -285,9 +288,8 @@ static void highLevelCtrlService(void) {
 	Inputs.cup_error[2] = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP3_ERROR)];
 
 	if (!IsHighLevelStateInitialized) {
-		HighLevelState.prev_error_code = ModbusHoldingRegisters[ErrorCodeIndex];
-		HighLevelState.retained_active_cup = clampActiveCup(ModbusHoldingRegisters[ActiveCupIndex]);
-		HighLevelState.error_storage = ModbusHoldingRegisters[ErrorStorageIndex];
+		HighLevelState.prev_error_code = 0u;
+		HighLevelState.error_storage = 0u;
 		IsHighLevelStateInitialized = true;
 	}
 
@@ -301,7 +303,6 @@ static void highLevelCtrlService(void) {
 		ModbusHoldingRegisters[LastErrorIndex] = Outputs.last_error;
 	}
 	ModbusHoldingRegisters[ErrorStorageIndex] = Outputs.error_storage;
-	ModbusHoldingRegisters[ActiveCupIndex] = clampActiveCup(Outputs.active_cup);
 
 	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_REQUESTED_STATE)] = Outputs.cup_requested_state[0];
 	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_REQUESTED_STATE)] = Outputs.cup_requested_state[1];
