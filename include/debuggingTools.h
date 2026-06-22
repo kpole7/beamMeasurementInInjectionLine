@@ -7,10 +7,10 @@
 #include "masterConfig.h"
 #include <stdatomic.h>
 
-#define AUXILIARY_INPUT_JP1 28 // The jumper JP1 tells pico whether printing should be enabled
+#define AUXILIARY_INPUT_JP1 28
 
-#define AUXILIARY_PIN_1 22
-#define AUXILIARY_PIN_2 8
+#define AUXILIARY_PIN_1 8
+#define AUXILIARY_PIN_2 22
 
 #if defined(APP_DEBUG_BUILD)
 #define APP_DEBUG 1
@@ -67,6 +67,8 @@ char *getTimeStampString(void);
 char *getTimeStampStringWithoutUpdate(void);
 
 void printChangedRegisters( const char *ContextComment );
+
+void debugCommandInterpreter(void);
 
 #if DEBUG_SIMULATION_MODE
 void simulationMainLoopTick(void);

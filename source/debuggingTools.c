@@ -495,4 +495,32 @@ bool simulateInput(int InputIndex){
 
 #endif // DEBUG_SIMULATION_MODE
 
+void debugCommandInterpreter(void) {
+	int InputCharacter = getchar_timeout_us(0); // non-blocking read
+
+	if (InputCharacter != PICO_ERROR_TIMEOUT) {
+		switch (InputCharacter) {
+			case 'p':
+				printf("\nPrinting analog measurements\n");
+				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] |= 1u;
+				break;
+			case 's':
+				printf("\nStopped printing analog measurements\n");
+				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] &= ~1u;
+				break;
+			case '1':
+			case '2':
+			case '3':
+				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 1u) == 1u) {
+					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT1)] = InputCharacter - '0';
+				}
+				break;
+			default:
+				break;
+		}
+	}
+}
+
+
+
 

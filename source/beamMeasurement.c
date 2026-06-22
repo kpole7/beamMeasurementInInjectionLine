@@ -97,6 +97,7 @@ int main() {
 			atomic_store_explicit(&SlowProcessesTimeTick1, false, memory_order_release);
 
 			getVoltageSamples();
+			debugCommandInterpreter();
 		}
 
 		if (atomic_load_explicit(&TwoMillisecondsTimeTick, memory_order_acquire)) {

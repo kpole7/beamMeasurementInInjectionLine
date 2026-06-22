@@ -62,7 +62,7 @@ static bool repeatingTimerISR(repeating_timer_t *rt) {
 	TimeDivider &= 63;
 
 	if (0 == TimeDivider) {
-		// frequency = 1000Hz / 64 = 15.625Hz
+		// frequency = 1000Hz / 64 = 15.625Hz (measured on 2026.06.22)
 		auxiliaryPinOutputValue1(true); // just for debugging purposes
 
 		atomic_store_explicit(&SlowProcessesTimeTick1, true, memory_order_release);
