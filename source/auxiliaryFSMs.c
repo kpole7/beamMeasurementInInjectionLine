@@ -969,6 +969,7 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *Inputs,
     memset(Outputs, 0, sizeof(AuxiliaryFSMsOutputs));
 
     uint16_t installed_cups = clampInstalledCups(Inputs->installed_cups);
+    uint16_t ActiveCupIndex = UINT16_MAX;
 
     for (uint16_t Cup = 0; Cup < installed_cups; Cup++) {
         if (CUP_TYPE_PNEUMATIC == Inputs->cup_type[Cup]) {
@@ -1001,10 +1002,11 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *Inputs,
         } else {
             printf("Error; file %s, line %d\n", __FILE__, __LINE__);
         }
-        if (FsmState->is_cup_inserted[Cup]) {
-            FsmState->active_cup = Cup+1; // we use 1-based indexing for active cup
+        if ((FsmState->is_cup_inserted[Cup]) && (UINT16_MAX == ActiveCupIndex)) {
+            ActiveCupIndex = Cup;
         }
     }
+    FsmState->active_cup = ActiveCupIndex+1; // we use 1-based indexing for active cup
     if (DebugOldState.active_cup != FsmState->active_cup) {
         printf("%s  FSMs tick; active cup %u -> %u\n", getTimeStampString(), DebugOldState.active_cup, FsmState->active_cup);
         DebugOldState.active_cup = FsmState->active_cup;

@@ -3,3 +3,4 @@
 3. Make MODBUS_ADDR_RANGE_CHANGE_THRESHOLD for each individual channel.
 4. Apply hysteresis to MODBUS_ADDR_RANGE_CHANGE_THRESHOLD.
 5. Is there a need to add a feature for reporting inconsistencies in the actuatorCtrl module?
+6. Check the CPU usage for different tasks.
