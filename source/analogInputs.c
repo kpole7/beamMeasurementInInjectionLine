@@ -30,11 +30,16 @@
 #define GPIO_FOR_CHANNEL_MULTIPLEXER_CONTROL_0 12
 #define GPIO_FOR_CHANNEL_MULTIPLEXER_CONTROL_1 11
 
+#define FILTER_COEFFICIENT_A 0.05
+#define FILTER_COEFFICIENT_B (1.0 - FILTER_COEFFICIENT_A)
+
 //---------------------------------------------------------------------------------------------------
 // Global variables
 //---------------------------------------------------------------------------------------------------
 
 uint16_t AnalogRangeChangeThreshold = DEFAULT_ANALOG_RANGE_CHANGE_THRESHOLD;
+
+bool IirFilterReset = false;
 
 //---------------------------------------------------------------------------------------------------
 // Local constants
@@ -62,6 +67,10 @@ static uint16_t LocalActiveCup = 0xFFFFu;
 
 /// @brief This variable stores the index of the currently measured channel
 static uint16_t ActiveChannel;
+
+static bool PrintoutsForTestingPurposes;
+static double FilteredValues0[ANALOG_MAX_CHANNELS];
+static double FilteredValues1[ANALOG_MAX_CHANNELS];
 
 //---------------------------------------------------------------------------------------------------
 // Local function prototypes
@@ -153,12 +162,13 @@ void getVoltageSamples(void) {
 			}
 		}
 
-			// just for testing purposes
-			bool PrintoutsForTestingPurposes =
-				((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 1u) != 0u);
+		// just for testing purposes
+		if (PrintoutsForTestingPurposes != ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 1u) != 0u)){
+			PrintoutsForTestingPurposes  = ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 1u) != 0u);
+		}
 
-			// Defensive clamp to avoid out-of-bounds writes when local state is invalid.
-			SafeActiveCup = (LocalActiveCup <= 2u) ? LocalActiveCup : 0u;
+		// Defensive clamp to avoid out-of-bounds writes when local state is invalid.
+		SafeActiveCup = (LocalActiveCup <= 2u) ? LocalActiveCup : 0u;
 
 		// Calculations are carried out on the basis of the samples stored in the buffers, 
 		// and the results are stored in Modbus input registers
@@ -181,14 +191,14 @@ void getVoltageSamples(void) {
 					Accumulator0 += RawBufferAdc0[Channel][K];
 					Accumulator1 += RawBufferAdc1[Channel][K];
 				}
-					if (Accumulator1 < ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_RANGE_CHANGE_THRESHOLD)]) {
-						Offset = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CHANNEL1_GAIN1_OFFSET) + SafeActiveCup*4 + Channel];
-						Factor = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CHANNEL1_GAIN1_FACTOR) + SafeActiveCup*4 + Channel];
+				if (Accumulator1 < ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_RANGE_CHANGE_THRESHOLD)]) {
+					Offset = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CHANNEL1_GAIN1_OFFSET) + SafeActiveCup*4 + Channel];
+					Factor = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CHANNEL1_GAIN1_FACTOR) + SafeActiveCup*4 + Channel];
 					Result = (int32_t)Accumulator0;
 					HighLowIndicator = 'H'; // just for testing purposes
 				} else {
-						Offset = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CHANNEL1_GAIN2_OFFSET) + SafeActiveCup*4 + Channel];
-						Factor = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CHANNEL1_GAIN2_FACTOR) + SafeActiveCup*4 + Channel];
+					Offset = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CHANNEL1_GAIN2_OFFSET) + SafeActiveCup*4 + Channel];
+					Factor = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CHANNEL1_GAIN2_FACTOR) + SafeActiveCup*4 + Channel];
 					Result = (int32_t)(Accumulator1*10u); // unify units
 					HighLowIndicator = 'L'; // just for testing purposes
 				}
@@ -200,24 +210,37 @@ void getVoltageSamples(void) {
 				Result += SignedOffset;
 				Result = (Result * (int32_t)Factor) / 100000; // unit = 100nA
 
-					if (Result < 0) {
-						ModbusInputRegisters[SafeActiveCup*5 + Channel] = 0u;
+				if (Result < 0) {
+					ModbusInputRegisters[SafeActiveCup*5 + Channel] = 0u;
 				}
 				else{
-						ModbusInputRegisters[SafeActiveCup*5 + Channel] = (uint16_t)Result;
+					ModbusInputRegisters[SafeActiveCup*5 + Channel] = (uint16_t)Result;
 				}
 
 				// just for testing purposes
 				if (PrintoutsForTestingPurposes) {
-					printf("Ch%u: %4lu %3lu %u.%u uA  ", Channel, Accumulator0, Accumulator1, 
+					if (IirFilterReset) {
+						FilteredValues0[Channel] = (double)Accumulator0;
+						FilteredValues1[Channel] = (double)Accumulator1;
+					}
+					FilteredValues0[Channel] = (FilteredValues0[Channel] * FILTER_COEFFICIENT_B) + ((double)Accumulator0 * FILTER_COEFFICIENT_A);
+					FilteredValues1[Channel] = (FilteredValues1[Channel] * FILTER_COEFFICIENT_B) + ((double)Accumulator1 * FILTER_COEFFICIENT_A);
+					printf("Ch%u: %4lu [%4lu] %3lu [%4lu] %u.%u uA |", Channel, 
+							Accumulator0, (uint32_t)(FilteredValues0[Channel]+0.5f), 
+							Accumulator1, (uint32_t)(FilteredValues1[Channel]+0.5f), 
 							(unsigned int)(ModbusInputRegisters[SafeActiveCup*5 + Channel]/10), 
 							(unsigned int)(ModbusInputRegisters[SafeActiveCup*5 + Channel]%10));
+#if 0							
 					if (Channel == 3u){
 						printf("  %c  %d.%d uA  Offs= %ld  params: %u %u", HighLowIndicator, (int)(Result/10), (int)(Result%10), SignedOffset, Offset, Factor);
 					}
+#endif
+				} else {
+					FilteredValues0[Channel] = (double)Accumulator0;
+					FilteredValues1[Channel] = (double)Accumulator1;
 				}
-
 			}
+			IirFilterReset = false;
 			if (PrintoutsForTestingPurposes) {
 				printf("\r\n"); // just for testing purposes
 			}

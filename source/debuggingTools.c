@@ -7,6 +7,7 @@
 #include "modbusConfig.h"
 #include "logicInputs.h"
 #include "sharedData.h"
+#include "analogInputs.h"
 #include "pico/stdlib.h"
 #include <stdbool.h>
 #include <stdio.h>
@@ -501,12 +502,16 @@ void debugCommandInterpreter(void) {
 	if (InputCharacter != PICO_ERROR_TIMEOUT) {
 		switch (InputCharacter) {
 			case 'p':
-				printf("\nPrinting analog measurements\n");
+				printf("Printing analog measurements\n");
 				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] |= 1u;
 				break;
 			case 's':
-				printf("\nStopped printing analog measurements\n");
-				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] &= ~1u;
+				printf("Stopped printing analog measurements\n");
+				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] &= UINT16_MAX - 1u;
+				break;
+			case 'r':
+				printf("IIR filter reset\n");
+				IirFilterReset = true;
 				break;
 			case '1':
 			case '2':
