@@ -191,14 +191,14 @@ void getVoltageSamples(void) {
 					Accumulator0 += RawBufferAdc0[Channel][K];
 					Accumulator1 += RawBufferAdc1[Channel][K];
 				}
-				if (Accumulator1 < ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_RANGE_CHANGE_THRESHOLD)]) {
-					Offset = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CHANNEL1_GAIN1_OFFSET) + SafeActiveCup*4 + Channel];
-					Factor = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CHANNEL1_GAIN1_FACTOR) + SafeActiveCup*4 + Channel];
+				if (Accumulator1 < 170u) {
+					Offset = 0u;
+					Factor = 14000u;
 					Result = (int32_t)Accumulator0;
 					HighLowIndicator = 'H'; // just for testing purposes
 				} else {
-					Offset = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CHANNEL1_GAIN2_OFFSET) + SafeActiveCup*4 + Channel];
-					Factor = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_CHANNEL1_GAIN2_FACTOR) + SafeActiveCup*4 + Channel];
+					Offset = 0u;
+					Factor = 14000u;
 					Result = (int32_t)(Accumulator1*10u); // unify units
 					HighLowIndicator = 'L'; // just for testing purposes
 				}
