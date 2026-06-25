@@ -152,6 +152,11 @@ Add. 6  Mnemonic: AnalogInputs
                             for example, when ActiveCup equals 1, the ActiveChannel variable takes on values 
                             ranging from 0 to ElectrodesInsideCup1 - 1;
         During a cyclic call, the module performs the following steps:
+
+
+        ToDo Update below text
+
+
         A.  The module reads the values of ADC0 and ADC1 (these are digital values corresponding to the same 
             analog signal, with the difference that the analog signal in the ADC1 channel is amplified 10 
             times more than in the ADC0 channel); ADC0 and ADC1 are the special registers in 

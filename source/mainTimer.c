@@ -26,6 +26,8 @@ atomic_bool TwoMillisecondsTimeTick;
 /// It is used in the timer ISR and in the main loop
 atomic_bool SlowProcessesTimeTick1;
 
+atomic_bool SlowProcessesTimeTick2;
+
 //---------------------------------------------------------------------------------------------------
 // Local variables
 //---------------------------------------------------------------------------------------------------
@@ -54,27 +56,21 @@ void startPeriodicInterrupt(void) {
 /// @callergraph
 static bool repeatingTimerISR(repeating_timer_t *rt) {
 	static uint8_t TimeDivider;
-
-	auxiliaryPinOutputValue1(false);
-	auxiliaryPinOutputValue2(true);
-
 	TimeDivider++;
 	TimeDivider &= 63;
 
 	if (0 == TimeDivider) {
 		// frequency = 1000Hz / 64 = 15.625Hz (measured on 2026.06.22)
-		auxiliaryPinOutputValue1(true); // just for debugging purposes
-
 		atomic_store_explicit(&SlowProcessesTimeTick1, true, memory_order_release);
+	}
+	if (32 == TimeDivider) {
+		atomic_store_explicit(&SlowProcessesTimeTick2, true, memory_order_release);
 	}
 
 	if (1 == (TimeDivider & 1)) {
 		// frequency = 1000Hz / 2 = 500Hz
 		atomic_store_explicit(&TwoMillisecondsTimeTick, true, memory_order_release);
 	}
-
-	auxiliaryPinOutputValue2(false);
-
 	// continue cyclic interrupts
 	return true;
 }

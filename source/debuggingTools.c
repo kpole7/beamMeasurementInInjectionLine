@@ -518,6 +518,37 @@ void debugCommandInterpreter(void) {
 			case '3':
 				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 1u) == 1u) {
 					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT1)] = InputCharacter - '0';
+					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT2)] = 0;
+				}
+				break;
+			case '!': // shift + 1
+				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 1u) == 1u) {
+					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT2)] = 1;
+				}
+				break;
+			case '@': // shift + 2
+				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 1u) == 1u) {
+					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT2)] = 2;
+				}
+				break;
+			case '#': // shift + 3
+				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 1u) == 1u) {
+					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT2)] = 3;
+				}
+				break;
+			case '$': // shift + 4
+				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 1u) == 1u) {
+					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT2)] = 4;
+				}
+				break;
+			case '%': // shift + 5
+			case '^': // shift + 6
+			case '&': // shift + 7
+			case '*': // shift + 8
+			case '(': // shift + 9
+			case ')': // shift + 0
+				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 1u) == 1u) {
+					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT2)] = 0;
 				}
 				break;
 			default:

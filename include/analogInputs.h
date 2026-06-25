@@ -19,7 +19,7 @@ extern bool IirFilterReset;
 
 void initializeAdcMeasurements(void);
 
-void getVoltageSamples(void);
+void analogInputsMeasurements(void);
 
 float getVoltage( uint16_t ChannelNumber );
 

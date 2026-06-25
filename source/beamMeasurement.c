@@ -96,12 +96,30 @@ int main() {
 		if (atomic_load_explicit(&SlowProcessesTimeTick1, memory_order_acquire)) {
 			atomic_store_explicit(&SlowProcessesTimeTick1, false, memory_order_release);
 
-			getVoltageSamples();
+
+			auxiliaryPinOutputValue2(true);
+
+
+			analogInputsMeasurements();
 			debugCommandInterpreter();
+		}
+		if (atomic_load_explicit(&SlowProcessesTimeTick2, memory_order_acquire)) {
+			atomic_store_explicit(&SlowProcessesTimeTick2, false, memory_order_release);
+
+
+			auxiliaryPinOutputValue2(true);
+
+
+
 		}
 
 		if (atomic_load_explicit(&TwoMillisecondsTimeTick, memory_order_acquire)) {
 			atomic_store_explicit(&TwoMillisecondsTimeTick, false, memory_order_release);
+
+
+
+			auxiliaryPinOutputValue2(true);
+
 
 			logicInputsTick();
 
@@ -119,7 +137,7 @@ int main() {
 			simulationMainLoopTick();
 #endif
 
-	updateTimeStamp(FAST_PERIPHERALS_TICK_PERIOD_MS);
+			updateTimeStamp(FAST_PERIPHERALS_TICK_PERIOD_MS);
 
 #if MODBUS_DEBUG_MODE
 			// Reading the states of jumpers.
@@ -152,6 +170,11 @@ int main() {
 		}
 
 		printChangedRegisters("Modbus");
+
+
+
+		auxiliaryPinOutputValue2(false);
+
 
 	} // The main loop
 }
