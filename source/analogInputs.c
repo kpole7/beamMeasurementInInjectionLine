@@ -33,10 +33,12 @@
 #define GPIO_FOR_CHANNEL_MULTIPLEXER_CONTROL_0 12
 #define GPIO_FOR_CHANNEL_MULTIPLEXER_CONTROL_1 11
 
-#define ADC_VALUE_LIMIT 2300u	// experimentaly determined value
-#define COEFFICIENT_LIMIT 1200000u	// experimentaly determined value
+#define ADC_VALUE_LIMIT 3200u	// experimentaly determined value
+#define COEFFICIENT_LIMIT 300000u	// experimentaly determined value
 #define CALCULATION_RESULT_MAX 32000 // experimentaly determined value
 #define CALCULATION_RESULT_MIN 320 // experimentaly determined value (?)
+
+#define TEMPORARY_RESCALING 0x4000 // must be a power of 2 to optimize the calculation
 
 #define ADC_SIGNAL_TOO_LARGE 1u
 #define ADC_INVALID_CALIBRATION_DATA 2u
@@ -215,20 +217,20 @@ void analogInputsMeasurements(void) {
 					AccumulatorLowGain += RawBufferAdc1[Channel][K];
 				}
 				if (IsSignalLarge[Channel]) {
-					if (AccumulatorLowGain < ADC_RAW_BUFFER_SIZE * ModbusHoldingRegisters[HoldingBaseIndexX + 2u]){
+					if (AccumulatorLowGain < ModbusHoldingRegisters[HoldingBaseIndexX + 2u]){
 						IsSignalLarge[Channel] = false;
 					}
 				} else {
-					if (AccumulatorLowGain > ADC_RAW_BUFFER_SIZE * ModbusHoldingRegisters[HoldingBaseIndexX + 1u]){
+					if (AccumulatorLowGain > ModbusHoldingRegisters[HoldingBaseIndexX + 1u]){
 						IsSignalLarge[Channel] = true;
 					}
 				}
 				CalculationsTemporaryData.cup_number = SafeActiveCup;
 				CalculationsTemporaryData.channel_number = Channel;
 				if (IsSignalLarge[Channel]) {
-					uint16_t X1 = ADC_RAW_BUFFER_SIZE * ModbusHoldingRegisters[HoldingBaseIndexX];
-					uint16_t X2 = ADC_RAW_BUFFER_SIZE * ModbusHoldingRegisters[HoldingBaseIndexX+1u];
-					uint16_t X3 = ADC_RAW_BUFFER_SIZE * ModbusHoldingRegisters[HoldingBaseIndexX+2u];
+					uint16_t X1 = ModbusHoldingRegisters[HoldingBaseIndexX];
+					uint16_t X2 = ModbusHoldingRegisters[HoldingBaseIndexX+1u];
+					uint16_t X3 = ModbusHoldingRegisters[HoldingBaseIndexX+2u];
 
 					CalculationsTemporaryData.accumulator = AccumulatorLowGain;
 					CalculationsTemporaryData.is_signal_large = true;
@@ -244,9 +246,9 @@ void analogInputsMeasurements(void) {
 						CalculationsTemporaryData.y_b = ModbusHoldingRegisters[HoldingBaseIndexY+2u];
 					}
 				} else {
-					uint16_t X1 = ADC_RAW_BUFFER_SIZE * ModbusHoldingRegisters[HoldingBaseIndexX+3u];
-					uint16_t X2 = ADC_RAW_BUFFER_SIZE * ModbusHoldingRegisters[HoldingBaseIndexX+4u];
-					uint16_t X3 = ADC_RAW_BUFFER_SIZE * ModbusHoldingRegisters[HoldingBaseIndexX+5u];
+					uint16_t X1 = ModbusHoldingRegisters[HoldingBaseIndexX+3u];
+					uint16_t X2 = ModbusHoldingRegisters[HoldingBaseIndexX+4u];
+					uint16_t X3 = ModbusHoldingRegisters[HoldingBaseIndexX+5u];
 
 					CalculationsTemporaryData.accumulator = AccumulatorHighGain;
 					CalculationsTemporaryData.is_signal_large = false;
@@ -272,8 +274,9 @@ void analogInputsMeasurements(void) {
 					Result = UINT16_MAX;
 					ErrorCode = ADC_SIGNAL_TOO_LARGE;
 				}
+				uint32_t Coefficient = 0;
 				if (0 == ErrorCode) {
-					uint32_t Coefficient = (uint32_t)(CalculationsTemporaryData.y_a - CalculationsTemporaryData.y_b) * 0x10000ul;
+					Coefficient = (uint32_t)(CalculationsTemporaryData.y_a - CalculationsTemporaryData.y_b) * (uint32_t)TEMPORARY_RESCALING;
 					Coefficient /= (uint32_t)(CalculationsTemporaryData.x_a - CalculationsTemporaryData.x_b);
 					if ((Coefficient > COEFFICIENT_LIMIT) || (CalculationsTemporaryData.x_a <= CalculationsTemporaryData.x_b) || 
 					(CalculationsTemporaryData.y_a <= CalculationsTemporaryData.y_b)) 
@@ -283,7 +286,7 @@ void analogInputsMeasurements(void) {
 					}
 					if (0 == ErrorCode) {
 						Result = ((int32_t)Coefficient * ((int32_t)CalculationsTemporaryData.accumulator - (int32_t)CalculationsTemporaryData.x_b));
-						Result = Result / 0x10000l + (int32_t)CalculationsTemporaryData.y_b;
+						Result = Result / (int32_t)TEMPORARY_RESCALING + (int32_t)CalculationsTemporaryData.y_b;
 						if (Result > CALCULATION_RESULT_MAX) {
 							Result = UINT16_MAX;
 							ErrorCode = ADC_OTHER_CALCULATION_ERROR;
@@ -320,13 +323,17 @@ void analogInputsMeasurements(void) {
 								ErrorCode);
 					}
 					if (SelectedChannel == (Channel + 1u)) {
-						printf("Ch%u: %4lu [%4lu] %3lu [%4lu] %u.%02u uA %c%u|", Channel, 
+						printf("Ch%u: %4lu [%4lu] %3lu [%4lu] %u.%02u uA %c%u | x1=%u x2=%u y1=%u y2=%u | coef=%lu res=%ld | BaseIndexX=%u BaseIndexY=%u", Channel, 
 								AccumulatorHighGain, (uint32_t)(FilteredValues0[Channel]+0.5f), 
 								AccumulatorLowGain, (uint32_t)(FilteredValues1[Channel]+0.5f), 
 								(unsigned int)(ModbusInputRegisters[SafeActiveCup*5 + Channel]/100), 
 								(unsigned int)(ModbusInputRegisters[SafeActiveCup*5 + Channel]%100),
 								IsSignalLarge[Channel] ? 'L' : 'H',										// L = low gain, H = high gain
-								ErrorCode);
+								ErrorCode,
+								CalculationsTemporaryData.x_a, CalculationsTemporaryData.x_b,
+								CalculationsTemporaryData.y_a, CalculationsTemporaryData.y_b,
+								Coefficient, Result,
+								HoldingBaseIndexX, HoldingBaseIndexY);
 					}
 				} else {
 					FilteredValues0[Channel] = (double)AccumulatorHighGain;
