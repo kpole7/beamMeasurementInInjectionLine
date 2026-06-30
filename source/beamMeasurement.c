@@ -106,20 +106,10 @@ int main() {
 		if (atomic_load_explicit(&SlowProcessesTimeTick2, memory_order_acquire)) {
 			atomic_store_explicit(&SlowProcessesTimeTick2, false, memory_order_release);
 
-
-			auxiliaryPinOutputValue2(true);
-
-
-
 		}
 
 		if (atomic_load_explicit(&TwoMillisecondsTimeTick, memory_order_acquire)) {
 			atomic_store_explicit(&TwoMillisecondsTimeTick, false, memory_order_release);
-
-
-
-			auxiliaryPinOutputValue2(true);
-
 
 			logicInputsTick();
 

@@ -57,13 +57,13 @@ void startPeriodicInterrupt(void) {
 static bool repeatingTimerISR(repeating_timer_t *rt) {
 	static uint8_t TimeDivider;
 	TimeDivider++;
-	TimeDivider &= 63;
+	TimeDivider &= 7;
 
 	if (0 == TimeDivider) {
-		// frequency = 1000Hz / 64 = 15.625Hz (measured on 2026.06.22)
+		// frequency = 1000Hz / 8 = 125Hz (measured on 2026.06.30)
 		atomic_store_explicit(&SlowProcessesTimeTick1, true, memory_order_release);
 	}
-	if (32 == TimeDivider) {
+	if (4 == TimeDivider) {
 		atomic_store_explicit(&SlowProcessesTimeTick2, true, memory_order_release);
 	}
 

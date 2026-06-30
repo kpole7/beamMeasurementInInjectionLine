@@ -16,10 +16,12 @@
 //---------------------------------------------------------------------------------------------------
 
 /// This is size of the buffer for raw samples; it must be a power of 2 for the correct operation of the circular buffer
-#define ADC_RAW_BUFFER_SIZE 4
+#define ADC_RAW_BUFFER_SIZE 32
 
 /// This mask is used for calculating the index in the circular buffer for raw samples
-#define ADC_INDEX_MASK 3
+#define ADC_INDEX_MASK (ADC_RAW_BUFFER_SIZE - 1)
+
+#define ACCUMULATOR_DIVIDER 8u
 
 #define ANALOG_MAX_CHANNELS 4
 
@@ -163,9 +165,8 @@ void analogInputsMeasurements(void) {
 	} else {
 		ActiveChannel = 0;
 
-			// Keep local cup state synchronized with the debug argument register.
-			if (LocalActiveCup + 1u != ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT1)])
-		{
+		// Keep local cup state synchronized with the debug argument register.
+		if (LocalActiveCup + 1u != ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT1)]) {
 			if (0 == ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT1)]){
 				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT1)] = 1u; // just for testing purposes (initialization of the register)
 			}
@@ -199,7 +200,7 @@ void analogInputsMeasurements(void) {
 		// and the results are stored in Modbus input registers
 		static uint16_t CalculationDivider = 0;
 		CalculationDivider++;
-		CalculationDivider &= 3u;
+		CalculationDivider &= ADC_INDEX_MASK;
 		if (CalculationDivider == 0) {
 			if (PrintoutsForTestingPurposes) {
 				printf("Cup %u ", SafeActiveCup + 1u); // just for testing purposes
@@ -216,6 +217,8 @@ void analogInputsMeasurements(void) {
 					AccumulatorHighGain += RawBufferAdc0[Channel][K];
 					AccumulatorLowGain += RawBufferAdc1[Channel][K];
 				}
+				AccumulatorHighGain /= ACCUMULATOR_DIVIDER;
+				AccumulatorLowGain /= ACCUMULATOR_DIVIDER;
 				if (IsSignalLarge[Channel]) {
 					if (AccumulatorLowGain < ModbusHoldingRegisters[HoldingBaseIndexX + 2u]){
 						IsSignalLarge[Channel] = false;
@@ -267,6 +270,9 @@ void analogInputsMeasurements(void) {
 
 
 				auxiliaryPinOutputValue1(false); // just for debugging purposes
+
+				// ToDo: add a separate function for the calculations and error handling, to make the code more readable and maintainable
+
 
 				int32_t Result = 0;
 				uint16_t ErrorCode = 0;
