@@ -488,6 +488,15 @@ void simulationMainLoopTick(void){
 		}
 	}
 	// SimulationInputs[EXTERNAL_INHIBITION_INDEX] is intentionally not used
+
+
+
+
+
+
+
+
+
 }
 
 bool simulateInput(int InputIndex){

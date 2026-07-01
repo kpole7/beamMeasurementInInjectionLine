@@ -116,9 +116,9 @@ int main() {
 			printChangedRegisters("Inp. tick");
 
 			modbusActivityLedService();
-#if 0
+
 			highLevelCtrlService();
-#endif
+
 			auxiliaryFSMsService();
 
 #if DEBUG_SIMULATION_MODE == 0

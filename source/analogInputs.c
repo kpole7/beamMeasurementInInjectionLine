@@ -10,6 +10,7 @@
 #include <stdatomic.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 //---------------------------------------------------------------------------------------------------
 // Macro directives
@@ -112,6 +113,7 @@ static double FilteredValues1[ANALOG_MAX_CHANNELS];
 
 static void controlSelectedCup( uint16_t CupNumber );
 static void controlSelectedChannel( uint16_t ChannelNumber );
+static int32_t randomGaussian(int32_t Mean, int32_t StandardDeviation);
 
 //---------------------------------------------------------------------------------------------------
 // Function definitions
@@ -273,6 +275,7 @@ void analogInputsMeasurements(void) {
 
 				// ToDo: add a separate function for the calculations and error handling, to make the code more readable and maintainable
 
+#if DEBUG_SIMULATION_MODE == 0
 
 				int32_t Result = 0;
 				uint16_t ErrorCode = 0;
@@ -306,10 +309,23 @@ void analogInputsMeasurements(void) {
 						}
 					}
 				}
+
+#else
+
+				int32_t Result = ModbusHoldingRegisters[SafeActiveCup*4 + Channel + holdingIndexFromAddress(MODBUS_ADDR_SIM_AMPLIFIER_CUP1_ELECTRODE1)];
+				uint16_t ErrorCode = 0;
+				int32_t DeviationForSimulation = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_AMPLIFIER_RANDOM_OFFSET)] +
+					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_AMPLIFIER_RANDOM_RATE)] * Result / 0x4000;
+				int32_t RandomNumber = randomGaussian( 0, DeviationForSimulation );
+				Result += RandomNumber;
+
+#endif
+
 				ModbusInputRegisters[SafeActiveCup*5 + Channel] = (uint16_t)Result;
 
 				auxiliaryPinOutputValue1(true); // just for debugging purposes
 
+#if DEBUG_SIMULATION_MODE == 0
 				// just for testing purposes
 				if (PrintoutsForTestingPurposes) {
 					if (IirFilterReset) {
@@ -345,7 +361,7 @@ void analogInputsMeasurements(void) {
 					FilteredValues0[Channel] = (double)AccumulatorHighGain;
 					FilteredValues1[Channel] = (double)AccumulatorLowGain;
 				}
-
+#endif
 
 
 				auxiliaryPinOutputValue1(false); // just for debugging purposes
@@ -384,4 +400,12 @@ static void controlSelectedCup( uint16_t CupNumber ){
 static void controlSelectedChannel( uint16_t ChannelNumber ){
 	gpio_put(GPIO_FOR_CHANNEL_MULTIPLEXER_CONTROL_0, (ChannelNumber & 1u) == 0u);
 	gpio_put(GPIO_FOR_CHANNEL_MULTIPLEXER_CONTROL_1, (ChannelNumber & 2u) == 0u);
+}
+
+static int32_t randomGaussian(int32_t Mean, int32_t StandardDeviation) {
+	int32_t RandomValue = 0;
+	for (int J = 0; J < 10; J++) {
+		RandomValue += rand();
+	}
+	return Mean + RandomValue * StandardDeviation / 0x8000;
 }
