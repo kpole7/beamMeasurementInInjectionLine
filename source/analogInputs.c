@@ -167,6 +167,18 @@ void analogInputsMeasurements(void) {
 	} else {
 		ActiveChannel = 0;
 
+#if 1
+		// Keep local cup state synchronized with the ActiveCup Modbus register.
+		if (LocalActiveCup + 1u != ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP)]) {
+			if (0 == ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP)]){
+				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP)] = 1u; // just for testing purposes (initialization of the register)
+			}
+			LocalActiveCup = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP)];
+			LocalActiveCup--;
+			if (LocalActiveCup > 2u){
+				LocalActiveCup = 0u;
+			}
+#else
 		// Keep local cup state synchronized with the debug argument register.
 		if (LocalActiveCup + 1u != ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT1)]) {
 			if (0 == ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT1)]){
@@ -177,6 +189,7 @@ void analogInputsMeasurements(void) {
 			if (LocalActiveCup > 2u){
 				LocalActiveCup = 0u;
 			}
+#endif
 			SafeActiveCup = LocalActiveCup;
 
 			for (uint16_t J = 0; J < ANALOG_MAX_CHANNELS; J++) {
@@ -316,7 +329,7 @@ void analogInputsMeasurements(void) {
 				uint16_t ErrorCode = 0;
 				int32_t DeviationForSimulation = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_AMPLIFIER_RANDOM_OFFSET)] +
 					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_AMPLIFIER_RANDOM_RATE)] * Result / 0x4000;
-				int32_t RandomNumber = randomGaussian( 0, DeviationForSimulation );
+				int32_t RandomNumber = randomGaussian( 0, DeviationForSimulation ) / 0x800;
 				Result += RandomNumber;
 
 #endif
@@ -407,5 +420,5 @@ static int32_t randomGaussian(int32_t Mean, int32_t StandardDeviation) {
 	for (int J = 0; J < 10; J++) {
 		RandomValue += rand();
 	}
-	return Mean + RandomValue * StandardDeviation / 0x8000;
+	return Mean + (RandomValue * StandardDeviation) / 0x8000;
 }
