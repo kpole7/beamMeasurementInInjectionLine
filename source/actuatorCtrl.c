@@ -4,6 +4,7 @@
 #include "actuatorCtrl.h"
 #include "sharedData.h"
 #include "pico/stdlib.h"
+#include "debuggingTools.h"
 #include <stdio.h>
 
 //---------------------------------------------------------------------------------------------------
@@ -38,24 +39,24 @@ void initializeActuatorControl(void) {
 	StateMotorActuatorBrake = false;
 
 	gpio_init(GPIO_FOR_VALVE_ACTUATOR_1);
+	gpio_put(GPIO_FOR_VALVE_ACTUATOR_1, !StateValveActuator1);
 	gpio_set_dir(GPIO_FOR_VALVE_ACTUATOR_1, GPIO_OUT);
-	gpio_put(GPIO_FOR_VALVE_ACTUATOR_1, StateValveActuator1);
 
 	gpio_init(GPIO_FOR_VALVE_ACTUATOR_2);
+	gpio_put(GPIO_FOR_VALVE_ACTUATOR_2, !StateValveActuator2);
 	gpio_set_dir(GPIO_FOR_VALVE_ACTUATOR_2, GPIO_OUT);
-	gpio_put(GPIO_FOR_VALVE_ACTUATOR_2, StateValveActuator2);
 
 	gpio_init(GPIO_FOR_MOTOR_ACTUATOR_IN);
-	gpio_set_dir(GPIO_FOR_MOTOR_ACTUATOR_IN, GPIO_OUT);
 	gpio_put(GPIO_FOR_MOTOR_ACTUATOR_IN, StateMotorActuatorIn);
+	gpio_set_dir(GPIO_FOR_MOTOR_ACTUATOR_IN, GPIO_OUT);
 
 	gpio_init(GPIO_FOR_MOTOR_ACTUATOR_OUT);
-	gpio_set_dir(GPIO_FOR_MOTOR_ACTUATOR_OUT, GPIO_OUT);
 	gpio_put(GPIO_FOR_MOTOR_ACTUATOR_OUT, StateMotorActuatorOut);
+	gpio_set_dir(GPIO_FOR_MOTOR_ACTUATOR_OUT, GPIO_OUT);
 
 	gpio_init(GPIO_FOR_MOTOR_ACTUATOR_BRAKE);
-	gpio_set_dir(GPIO_FOR_MOTOR_ACTUATOR_BRAKE, GPIO_OUT);
 	gpio_put(GPIO_FOR_MOTOR_ACTUATOR_BRAKE, StateMotorActuatorBrake);
+	gpio_set_dir(GPIO_FOR_MOTOR_ACTUATOR_BRAKE, GPIO_OUT);
 }
 
 void actuatorCtrlTick(void) {
@@ -67,8 +68,8 @@ void actuatorCtrlTick(void) {
 
 	// just for testing purposes
 	static bool DebugPrintoutsEnabled = false;
-	if (((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 2u) != 0u) != DebugPrintoutsEnabled) {
-		DebugPrintoutsEnabled = ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 2u) != 0u);
+	if (((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_LOGIC) != 0u) != DebugPrintoutsEnabled) {
+		DebugPrintoutsEnabled = ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_LOGIC) != 0u);
 		if (DebugPrintoutsEnabled) {
 			printf("Debug printouts for actuator control enabled\r\n");
 		}
@@ -98,12 +99,12 @@ void actuatorCtrlTick(void) {
 
 	if (TrigValveActuator1) {
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)] = false;
-		gpio_put(GPIO_FOR_VALVE_ACTUATOR_1, StateValveActuator1); // Pneumatic valve #1
+		gpio_put(GPIO_FOR_VALVE_ACTUATOR_1, !StateValveActuator1); // Pneumatic valve #1
 	}
 
 	if (TrigValveActuator2) {
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)] = false;
-		gpio_put(GPIO_FOR_VALVE_ACTUATOR_2, StateValveActuator2); // Pneumatic valve #2
+		gpio_put(GPIO_FOR_VALVE_ACTUATOR_2, !StateValveActuator2); // Pneumatic valve #2
 	}
 
 	if (TrigMotorActuatorIn) {

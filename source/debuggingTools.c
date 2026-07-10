@@ -505,48 +505,99 @@ bool simulateInput(int InputIndex){
 
 #endif // DEBUG_SIMULATION_MODE
 
+static void printSettingsInfo(void) {
+	bool IsAny = false;
+	printf("Print settings: ");
+	if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_ANALOG) != 0u) {
+		printf("analog ");
+		IsAny = true;
+	}
+	if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_LOGIC) != 0u) {
+		if (IsAny) {
+			printf("+ ");
+		}
+		printf("logic ");
+		IsAny = true;
+	}
+	if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_ACTUATORS) != 0u) {
+		if (IsAny) {
+			printf("+ ");
+		}
+		printf("actuators ");
+		IsAny = true;
+	}
+	if (!IsAny) {
+		printf("none");
+	}
+	printf("\r\n");
+}
+
 void debugCommandInterpreter(void) {
 	int InputCharacter = getchar_timeout_us(0); // non-blocking read
 
 	if (InputCharacter != PICO_ERROR_TIMEOUT) {
 		switch (InputCharacter) {
-			case 'p':
-				printf("Printing analog measurements\n");
-				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] |= 1u;
+			case 'A':
+				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] |= PRINTOUTS_ANALOG;
+				printSettingsInfo();
 				break;
+			case 'a':
+				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] &= ~PRINTOUTS_ANALOG;
+				printSettingsInfo();
+				break;
+			case 'L':
+				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] |= PRINTOUTS_LOGIC;
+				printSettingsInfo();
+				break;
+			case 'l':
+				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] &= ~PRINTOUTS_LOGIC;
+				printSettingsInfo();
+				break;
+			case 'T':
+				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] |= PRINTOUTS_ACTUATORS;
+				printSettingsInfo();
+				break;
+			case 't':
+				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] &= ~PRINTOUTS_ACTUATORS;
+				printSettingsInfo();
+				break;
+			case 'S':
 			case 's':
-				printf("Stopped printing analog measurements\n");
-				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] &= UINT16_MAX - 1u;
+				printSettingsInfo();
 				break;
-			case 'r':
+			case 'F':
 				printf("IIR filter reset\n");
 				IirFilterReset = true;
 				break;
+
+			// set LocalActiveCup
 			case '1':
 			case '2':
 			case '3':
-				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 1u) == 1u) {
+				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_ANALOG) != 0u) {
 					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT1)] = InputCharacter - '0';
 					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT2)] = 0;
 				}
 				break;
+
+			// set SelectedChannel
 			case '!': // shift + 1
-				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 1u) == 1u) {
+				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_ANALOG) != 0u) {
 					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT2)] = 1;
 				}
 				break;
 			case '@': // shift + 2
-				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 1u) == 1u) {
+				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_ANALOG) != 0u) {
 					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT2)] = 2;
 				}
 				break;
 			case '#': // shift + 3
-				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 1u) == 1u) {
+				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_ANALOG) != 0u) {
 					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT2)] = 3;
 				}
 				break;
 			case '$': // shift + 4
-				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 1u) == 1u) {
+				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_ANALOG) != 0u) {
 					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT2)] = 4;
 				}
 				break;
@@ -556,7 +607,7 @@ void debugCommandInterpreter(void) {
 			case '*': // shift + 8
 			case '(': // shift + 9
 			case ')': // shift + 0
-				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 1u) == 1u) {
+				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_ANALOG) != 0u) {
 					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT2)] = 0;
 				}
 				break;

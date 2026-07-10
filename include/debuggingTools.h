@@ -12,6 +12,10 @@
 #define AUXILIARY_PIN_1 8
 #define AUXILIARY_PIN_2 22
 
+#define PRINTOUTS_ANALOG 1u
+#define PRINTOUTS_LOGIC 2u
+#define PRINTOUTS_ACTUATORS 4u
+
 #if defined(APP_DEBUG_BUILD)
 #define APP_DEBUG 1
 #else

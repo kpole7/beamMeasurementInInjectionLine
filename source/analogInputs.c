@@ -206,7 +206,7 @@ void analogInputsMeasurements(void) {
 		}
 
 		// just for testing purposes
-		PrintoutsForTestingPurposes  = ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 1u) != 0u);
+		PrintoutsForTestingPurposes  = ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_ANALOG) != 0u);
 
 		// Defensive clamp to avoid out-of-bounds writes when local state is invalid.
 		SafeActiveCup = (LocalActiveCup <= 2u) ? LocalActiveCup : 0u;

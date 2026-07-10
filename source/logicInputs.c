@@ -23,13 +23,11 @@ static uint16_t Counter[5];
 void initializeLogicInputs(void) {
     gpio_init(GPIO_FOR_LIMIT_SWITCH_1);
     gpio_set_dir(GPIO_FOR_LIMIT_SWITCH_1, GPIO_IN);
-    // the Modbus coil shows '1' when the uC pin is at a low voltage level, and '0' when the uC pin is at a high voltage level
-    StableState[LIMIT_SWITCH_1_INDEX] = !gpio_get(GPIO_FOR_LIMIT_SWITCH_1);
+    StableState[LIMIT_SWITCH_1_INDEX] = gpio_get(GPIO_FOR_LIMIT_SWITCH_1);
 
     gpio_init(GPIO_FOR_LIMIT_SWITCH_2);
     gpio_set_dir(GPIO_FOR_LIMIT_SWITCH_2, GPIO_IN);
-    // the Modbus coil shows '1' when the uC pin is at a low voltage level, and '0' when the uC pin is at a high voltage level
-    StableState[LIMIT_SWITCH_2_INDEX] = !gpio_get(GPIO_FOR_LIMIT_SWITCH_2);
+    StableState[LIMIT_SWITCH_2_INDEX] = gpio_get(GPIO_FOR_LIMIT_SWITCH_2);
 
     gpio_init(GPIO_FOR_LIMIT_SWITCH_3A);
     gpio_set_dir(GPIO_FOR_LIMIT_SWITCH_3A, GPIO_IN);
@@ -68,8 +66,8 @@ void logicInputsTick(void) {
     // the Modbus coils show '1' when the uC pins are at a low voltage level, 
     // and '0' when the uC pins are at a high voltage level in the below lines related to the limit switches, 
     // so the values read from the uC pins are inverted
-    CurrentState[LIMIT_SWITCH_1_INDEX] = !gpio_get(GPIO_FOR_LIMIT_SWITCH_1);
-    CurrentState[LIMIT_SWITCH_2_INDEX] = !gpio_get(GPIO_FOR_LIMIT_SWITCH_2);
+    CurrentState[LIMIT_SWITCH_1_INDEX] = gpio_get(GPIO_FOR_LIMIT_SWITCH_1);
+    CurrentState[LIMIT_SWITCH_2_INDEX] = gpio_get(GPIO_FOR_LIMIT_SWITCH_2);
     CurrentState[LIMIT_SWITCH_3A_INDEX] = !gpio_get(GPIO_FOR_LIMIT_SWITCH_3A);
     CurrentState[LIMIT_SWITCH_3B_INDEX] = !gpio_get(GPIO_FOR_LIMIT_SWITCH_3B);
 
@@ -111,8 +109,8 @@ void logicInputsTick(void) {
     // just for testing purposes
 	(void)getTimeStampString(); // Update the time stamp string for printouts.
     static bool PrintoutsForTestingPurposes = false;
-    if (((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 4u) != 0u) != PrintoutsForTestingPurposes) {
-        PrintoutsForTestingPurposes = ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & 4u) != 0u);
+    if (((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_ACTUATORS) != 0u) != PrintoutsForTestingPurposes) {
+        PrintoutsForTestingPurposes = ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_ACTUATORS) != 0u);
         if (PrintoutsForTestingPurposes) {
             printf("%s  LIn  printouts enabled\r\n", getTimeStampStringWithoutUpdate());
         }

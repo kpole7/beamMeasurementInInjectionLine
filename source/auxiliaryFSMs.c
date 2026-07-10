@@ -8,7 +8,7 @@
 #include <stdio.h>
 
 
-#define PAUSE_AFTER_BOOT_TIME_IN_TICKS 500u // 1 second with 2ms tick period
+#define PAUSE_AFTER_BOOT_TIME_IN_TICKS 5000u // 10 seconds with 2ms tick period
 #define PRE_BRAKING_TIME_IN_TICKS 5u
 #define BRAKING_TIME_IN_TICKS 400u
 #define PAUSE_AFTER_LOCK_TIME_IN_TICKS 500u
@@ -226,16 +226,15 @@ static void pneumaticWithLockFsmBooted(bool Inhibit, bool Requested, bool Recove
     bool PauseAfterBootFinished, bool PauseAfterLockFinished, bool PauseAfterUnlockFinished,
     PneumaticWithLockFsmStateEnum *StatePtr, bool *ActuatorPtr, bool *TriggerPtr, uint16_t *ErrorPtr) 
 {
+    if (!PauseAfterBootFinished) {
+        // wait until the pause after boot is over
+        return;
+    }
 
     if (Inhibit) {
         *StatePtr = PNEUMATIC_WITH_LOCK_FSM_STATE_PAUSE_AFTER_LOCK;
     }
     else{
-        if (!PauseAfterBootFinished) {
-            // wait until the pause after boot is over
-            return;
-        }
-
         if (!Switch) {
             *StatePtr = PNEUMATIC_WITH_LOCK_FSM_STATE_ERROR;
             *ErrorPtr |= AUXILIARY_FSM_ERROR_SWITCH_OF_PNEUMATIC_WITH_LOCK;
@@ -1017,7 +1016,8 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *Inputs,
     uint16_t installed_cups = clampInstalledCups(Inputs->installed_cups);
     uint16_t ActiveCupIndex = UINT16_MAX;
 
-    for (uint16_t Cup = 0; Cup < installed_cups; Cup++) {
+//    for (uint16_t Cup = 0; Cup < installed_cups; Cup++) {
+    for (uint16_t Cup = 0; Cup < 2; Cup++) {
         if (CUP_TYPE_PNEUMATIC == Inputs->cup_type[Cup]) {
             pneumaticFsmTick(Cup, Inputs, FsmState, Outputs);
 
