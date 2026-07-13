@@ -36,11 +36,7 @@ void highLevelCtrlTick(const HighLevelCtrlInputs *Inputs,
     memset(Outputs, 0, sizeof(HighLevelCtrlOutputs));
     
     for (uint16_t i = 0; i < MAX_CUPS; i++) {
-        if (Inputs->external_inhibition && (CUP_TYPE_PNEUMATIC_WITH_LOCK == Inputs->cup_type[i])) {
-            Outputs->cup_requested_state[i] = true;  // Force insert if external inhibition is active for pneumatic with lock
-        } else {
-            Outputs->cup_requested_state[i] = Inputs->cup_control[i];
-        }
+        Outputs->cup_requested_state[i] = Inputs->cup_control[i];
     }
 
     //--------------------------------------------------------------------------

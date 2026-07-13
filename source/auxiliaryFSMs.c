@@ -332,7 +332,7 @@ static void pneumaticWithLockFsmPauseAfterLock(bool Inhibit, bool Requested, boo
         printf("Error; requested=%d, sw=%d; file %s, line %d\n", Requested, Switch, __FILE__, __LINE__);
         return;
     }
-    *StatePtr = PNEUMATIC_WITH_LOCK_FSM_STATE_INSERTED;
+    *StatePtr = PNEUMATIC_WITH_LOCK_FSM_STATE_LOCKED_INSERTED;
 }
 
 static void pneumaticWithLockFsmLockedInserted(bool Inhibit, bool Requested, bool Recovery, bool Switch, 
@@ -363,15 +363,23 @@ static void pneumaticWithLockFsmPauseAfterUnlock(bool Inhibit, bool Requested, b
         // wait until the pause after unlock is over
         return;
     }
-    // the pause after unlock is over, recover the cup to the requested state
+    // the pause after unlock is over, recover the cup to the requested state if necessary
     if (Requested) {
-        *ActuatorPtr = true;
-        *TriggerPtr = true;
-        *StatePtr = PNEUMATIC_WITH_LOCK_FSM_STATE_INSERTING;
+        if (Switch) {
+            *StatePtr = PNEUMATIC_WITH_LOCK_FSM_STATE_INSERTED;
+        } else {
+            *ActuatorPtr = true;
+            *TriggerPtr = true;
+            *StatePtr = PNEUMATIC_WITH_LOCK_FSM_STATE_INSERTING;
+        }
     } else {
-        *ActuatorPtr = false;
-        *TriggerPtr = true;
-        *StatePtr = PNEUMATIC_WITH_LOCK_FSM_STATE_WITHDRAWING;
+        if (!Switch) {
+            *StatePtr = PNEUMATIC_WITH_LOCK_FSM_STATE_EXTRACTED;
+        } else {
+            *ActuatorPtr = false;
+            *TriggerPtr = true;
+            *StatePtr = PNEUMATIC_WITH_LOCK_FSM_STATE_WITHDRAWING;
+        }
     }
 }
 

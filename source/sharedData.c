@@ -169,6 +169,8 @@ void initializeModbusRegisters(void) {
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION3_OUT)] = 2000u;
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM3_INERTIAL_MOTION)] = 70u;
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM3_BRAKED_MOTION)] = 7u;
+
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] = 6u; // PRINTOUTS_LOGIC | PRINTOUTS_ACTUATORS
 }
 
 

@@ -285,6 +285,18 @@ static void highLevelCtrlService(void) {
 	uint16_t ErrorCodeIndex = holdingIndexFromAddress(MODBUS_ADDR_ERROR_CODE);
 	uint16_t LastErrorIndex = holdingIndexFromAddress(MODBUS_ADDR_LAST_ERROR);
 
+	// Special case: Force insert if external inhibition is active for pneumatic with lock
+	if (!ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_CONTROL)] &&
+		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION2)] &&
+		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_SWITCH)] &&
+		(ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP2_TYPE)] == CUP_TYPE_PNEUMATIC_WITH_LOCK)) 
+		{
+		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_CONTROL)] = true;
+		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)] = true;
+		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)] = true;
+		printf("\r\nForcing insert for cup 2 (pneumatic with lock) due to external inhibition and switch active\r\n\r\n");
+	}
+
 	memset(&Inputs, 0, sizeof(Inputs));
 
 	Inputs.installed_cups = clampInstalledCups(ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_INSTALLED_CUPS)]);
