@@ -13,8 +13,8 @@
 
 #define GPIO_FOR_VALVE_ACTUATOR_1 7
 #define GPIO_FOR_VALVE_ACTUATOR_2 6
-#define GPIO_FOR_MOTOR_ACTUATOR_IN 18
-#define GPIO_FOR_MOTOR_ACTUATOR_OUT 19
+#define GPIO_FOR_MOTOR_ACTUATOR_IN 19
+#define GPIO_FOR_MOTOR_ACTUATOR_OUT 18
 #define GPIO_FOR_MOTOR_ACTUATOR_BRAKE 16
 
 //---------------------------------------------------------------------------------------------------

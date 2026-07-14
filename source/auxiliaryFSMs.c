@@ -879,6 +879,10 @@ void motorFsmTick(uint16_t Cup,
         saturatingIncreaseU16(&FsmStatePtr->transition_elapsed[Cup]);
         if (FsmStatePtr->transition_elapsed[Cup] > effective_limit) {
             TransitionTimeExceeded = true;
+
+            printf("  FsmStatePtr->transition_elapsed[Cup]=%d; effective_limit=%d; Cup=%d file %s, line %d\n", FsmStatePtr->transition_elapsed[Cup], 
+                effective_limit, Cup, __FILE__, __LINE__);
+
         }
     } else {
         FsmStatePtr->transition_elapsed[Cup] = 0u;
@@ -1024,8 +1028,7 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *Inputs,
     uint16_t installed_cups = clampInstalledCups(Inputs->installed_cups);
     uint16_t ActiveCupIndex = UINT16_MAX;
 
-//    for (uint16_t Cup = 0; Cup < installed_cups; Cup++) {
-    for (uint16_t Cup = 0; Cup < 2; Cup++) {
+    for (uint16_t Cup = 0; Cup < installed_cups; Cup++) {
         if (CUP_TYPE_PNEUMATIC == Inputs->cup_type[Cup]) {
             pneumaticFsmTick(Cup, Inputs, FsmState, Outputs);
 
