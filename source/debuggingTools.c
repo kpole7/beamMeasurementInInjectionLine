@@ -8,22 +8,12 @@
 #include "logicInputs.h"
 #include "sharedData.h"
 #include "analogInputs.h"
+#include "mainTimer.h"
 #include "pico/stdlib.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define MAIN_LOOP_TICK_PERIOD_MS 2u
-#define SIMULATION_1_PROPAGATION_FROM_EXTRACTED_TO_SWITCH_ON		(600ul / MAIN_LOOP_TICK_PERIOD_MS)  // 600 ms
-#define SIMULATION_1_PROPAGATION_FROM_INSERTED_TO_SWITCH_OFF		(200ul / MAIN_LOOP_TICK_PERIOD_MS)  // 200 ms
-#define SIMULATION_2_PROPAGATION_FROM_EXTRACTED_TO_SWITCH_ON		(600ul / MAIN_LOOP_TICK_PERIOD_MS)  // 600 ms
-#define SIMULATION_2_PROPAGATION_FROM_INSERTED_TO_SWITCH_OFF		(200ul / MAIN_LOOP_TICK_PERIOD_MS)  // 200 ms
-
-#define SIMULATION_3_PROPAGATION_FROM_EXTRACTED_TO_SWITCH_B_OFF		(100ul / MAIN_LOOP_TICK_PERIOD_MS)  // 100 ms
-#define SIMULATION_3_PROPAGATION_FROM_SWITCH_B_OFF_TO_SWITCH_A_ON	(3000ul / MAIN_LOOP_TICK_PERIOD_MS) // 3 s
-#define SIMULATION_3_PROPAGATION_FROM_INSERTED_TO_SWITCH_A_OFF		(200ul / MAIN_LOOP_TICK_PERIOD_MS)  // 200 ms
-#define SIMULATION_3_PROPAGATION_FROM_SWITCH_A_OFF_TO_SWITCH_B_ON	(4000ul / MAIN_LOOP_TICK_PERIOD_MS) // 4 s
 
 #define SIMULATION_STATE_1_REST_INSIDE 0
 #define SIMULATION_STATE_1_GOING_OUTSIDE 1
@@ -413,7 +403,7 @@ void simulationMainLoopTick(void){
 	//  Actuator 1 time flow simulation
 	if (SimulationState1 == SIMULATION_STATE_1_GOING_INSIDE) {
 		SimulationCounter1++;
-		if (SimulationCounter1 >= SIMULATION_1_PROPAGATION_FROM_EXTRACTED_TO_SWITCH_ON) {
+		if (SimulationCounter1 >= ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION1_IN)]) {
 			SimulationState1 = SIMULATION_STATE_1_REST_INSIDE;
 			SimulationCounter1 = 0;
 			SimulationInputs[LIMIT_SWITCH_1_INDEX] = SWITCH_PRESSED;
@@ -422,7 +412,7 @@ void simulationMainLoopTick(void){
 	}
 	if (SimulationState1 == SIMULATION_STATE_1_GOING_OUTSIDE) {
 		SimulationCounter1++;
-		if (SimulationCounter1 >= SIMULATION_1_PROPAGATION_FROM_INSERTED_TO_SWITCH_OFF) {
+		if (SimulationCounter1 >= ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION1_OUT)]) {
 			SimulationState1 = SIMULATION_STATE_1_REST_OUTSIDE;
 			SimulationCounter1 = 0;
 			SimulationInputs[LIMIT_SWITCH_1_INDEX] = SWITCH_RELEASED;
@@ -433,7 +423,7 @@ void simulationMainLoopTick(void){
 	// 	Actuator 2 time flow simulation
 	if (SimulationState2 == SIMULATION_STATE_2_GOING_INSIDE) {
 		SimulationCounter2++;
-		if (SimulationCounter2 >= SIMULATION_2_PROPAGATION_FROM_EXTRACTED_TO_SWITCH_ON) {
+		if (SimulationCounter2 >= ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION2_IN)]) {
 			SimulationState2 = SIMULATION_STATE_2_REST_INSIDE;
 			SimulationCounter2 = 0;
 			SimulationInputs[LIMIT_SWITCH_2_INDEX] = SWITCH_PRESSED;
@@ -442,7 +432,7 @@ void simulationMainLoopTick(void){
 	}
 	if (SimulationState2 == SIMULATION_STATE_2_GOING_OUTSIDE) {
 		SimulationCounter2++;
-		if (SimulationCounter2 >= SIMULATION_2_PROPAGATION_FROM_INSERTED_TO_SWITCH_OFF) {
+		if (SimulationCounter2 >= ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION2_OUT)]) {
 			SimulationState2 = SIMULATION_STATE_2_REST_OUTSIDE;
 			SimulationCounter2 = 0;
 			SimulationInputs[LIMIT_SWITCH_2_INDEX] = SWITCH_RELEASED;
@@ -453,7 +443,7 @@ void simulationMainLoopTick(void){
 	// 	Actuator 3 time flow simulation
 	if (SimulationState3 == SIMULATION_STATE_3_GOING_INSIDE_TO_SWITCH_A) {
 		SimulationCounter3++;
-		if (SimulationCounter3 >= SIMULATION_3_PROPAGATION_FROM_SWITCH_B_OFF_TO_SWITCH_A_ON) {
+		if (SimulationCounter3 >= ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION3_IN)]) {
 			SimulationState3 = SIMULATION_STATE_3_REST_INSIDE;
 			SimulationCounter3 = 0;
 			SimulationInputs[LIMIT_SWITCH_3A_INDEX] = SWITCH_PRESSED;
@@ -462,7 +452,7 @@ void simulationMainLoopTick(void){
 	}
 	if (SimulationState3 == SIMULATION_STATE_3_GOING_INSIDE_TO_SWITCH_B) {
 		SimulationCounter3++;
-		if (SimulationCounter3 >= SIMULATION_3_PROPAGATION_FROM_EXTRACTED_TO_SWITCH_B_OFF) {
+		if (SimulationCounter3 >= ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM3_INERTIAL_MOTION)]) {
 			SimulationState3 = SIMULATION_STATE_3_GOING_INSIDE_TO_SWITCH_A;
 			SimulationCounter3 = 0;
 			SimulationInputs[LIMIT_SWITCH_3B_INDEX] = SWITCH_RELEASED;
@@ -471,7 +461,7 @@ void simulationMainLoopTick(void){
 	}
 	if (SimulationState3 == SIMULATION_STATE_3_GOING_OUTSIDE_TO_SWITCH_B) {
 		SimulationCounter3++;
-		if (SimulationCounter3 >= SIMULATION_3_PROPAGATION_FROM_SWITCH_A_OFF_TO_SWITCH_B_ON) {
+		if (SimulationCounter3 >= ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION3_OUT)]) {
 			SimulationState3 = SIMULATION_STATE_3_REST_OUTSIDE;
 			SimulationCounter3 = 0;
 			SimulationInputs[LIMIT_SWITCH_3B_INDEX] = SWITCH_PRESSED;
@@ -480,7 +470,7 @@ void simulationMainLoopTick(void){
 	}
 	if (SimulationState3 == SIMULATION_STATE_3_GOING_OUTSIDE_TO_SWITCH_A) {
 		SimulationCounter3++;
-		if (SimulationCounter3 >= SIMULATION_3_PROPAGATION_FROM_INSERTED_TO_SWITCH_A_OFF) {
+		if (SimulationCounter3 >= ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM3_INERTIAL_MOTION)]) {
 			SimulationState3 = SIMULATION_STATE_3_GOING_OUTSIDE_TO_SWITCH_B;
 			SimulationCounter3 = 0;
 			SimulationInputs[LIMIT_SWITCH_3A_INDEX] = SWITCH_RELEASED;

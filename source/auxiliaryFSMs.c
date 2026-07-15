@@ -879,10 +879,10 @@ void motorFsmTick(uint16_t Cup,
         saturatingIncreaseU16(&FsmStatePtr->transition_elapsed[Cup]);
         if (FsmStatePtr->transition_elapsed[Cup] > effective_limit) {
             TransitionTimeExceeded = true;
-
+#if 0 // just for debug purposes
             printf("  FsmStatePtr->transition_elapsed[Cup]=%d; effective_limit=%d; Cup=%d file %s, line %d\n", FsmStatePtr->transition_elapsed[Cup], 
                 effective_limit, Cup, __FILE__, __LINE__);
-
+#endif
         }
     } else {
         FsmStatePtr->transition_elapsed[Cup] = 0u;

@@ -2,6 +2,7 @@
 // This source code file was written by K.O. (2025 - 2026)
 
 #include "sharedData.h"
+#include "mainTimer.h"
 
 //..............................................................................
 // Variables for Modbus communication
@@ -161,14 +162,14 @@ void initializeModbusRegisters(void) {
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP3_CHANNEL2_UPPER_LIMIT)] = 65535u;
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP3_CHANNEL3_UPPER_LIMIT)] = 65535u;
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP3_CHANNEL4_UPPER_LIMIT)] = 65535u;
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION1_IN)] = 300u;
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION1_OUT)] = 100u;
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION2_IN)] = 300u;
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION2_OUT)] = 100u;
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION3_IN)] = 1500u;
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION3_OUT)] = 2000u;
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM3_INERTIAL_MOTION)] = 70u;
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM3_BRAKED_MOTION)] = 7u;
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION1_IN)]  = ( 150u / MAIN_LOOP_TICK_PERIOD_MS); // 150 ms
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION1_OUT)] = ( 140u / MAIN_LOOP_TICK_PERIOD_MS);
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION2_IN)]  = ( 810u / MAIN_LOOP_TICK_PERIOD_MS);
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION2_OUT)] = ( 200u / MAIN_LOOP_TICK_PERIOD_MS);
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION3_IN)]  = (2740u / MAIN_LOOP_TICK_PERIOD_MS);
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION3_OUT)] = (2820u / MAIN_LOOP_TICK_PERIOD_MS);
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM3_INERTIAL_MOTION)] = ( 420u / MAIN_LOOP_TICK_PERIOD_MS);
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM3_BRAKED_MOTION)]   = (  70u / MAIN_LOOP_TICK_PERIOD_MS);
 
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] = 6u; // PRINTOUTS_LOGIC | PRINTOUTS_ACTUATORS
 }
