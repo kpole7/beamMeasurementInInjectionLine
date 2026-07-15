@@ -58,8 +58,7 @@ static char TimeStampString[16];
 
 // This table is used in the debug simulation mode to simulate the state of logic inputs.
 // Indexes are defined in logicInputs.h
-// SimulationInputs[EXTERNAL_INHIBITION_INDEX] is intentionally not used
-bool SimulationInputs[5] = { SWITCH_PRESSED, SWITCH_PRESSED, SWITCH_RELEASED, SWITCH_PRESSED, false };
+bool SimulationInputs[5] = { SWITCH_PRESSED, SWITCH_PRESSED, SWITCH_PRESSED, SWITCH_RELEASED, false };
 
 uint16_t SimulationState1;
 uint16_t SimulationState2;
@@ -295,7 +294,9 @@ void simulationMainLoopTick(void){
 			else{
 				SimulationState1 = SIMULATION_STATE_1_GOING_INSIDE;
 				SimulationCounter1 = 0;
-				printf("%s  Sim  Actuator 1   ....|.........<<\r\n", getTimeStampStringWithoutUpdate());
+				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_SIMULATION) != 0u) {
+					printf("%s  Sim  Actuator 1   ....|.........<<\r\n", getTimeStampStringWithoutUpdate());
+				}
 			}
 		}
 		else {
@@ -305,7 +306,9 @@ void simulationMainLoopTick(void){
 			else{
 				SimulationState1 = SIMULATION_STATE_1_GOING_OUTSIDE;
 				SimulationCounter1 = 0;
-				printf("%s  Sim  Actuator 1   >>..|.........\r\n", getTimeStampStringWithoutUpdate());
+				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_SIMULATION) != 0u) {
+					printf("%s  Sim  Actuator 1   >>..|.........\r\n", getTimeStampStringWithoutUpdate());
+				}
 			}
 		}
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)] = false;
@@ -320,7 +323,9 @@ void simulationMainLoopTick(void){
 			else{
 				SimulationState2 = SIMULATION_STATE_2_GOING_INSIDE;
 				SimulationCounter2 = 0;
-				printf("%s  Sim  Actuator 2   ....|.........<<\r\n", getTimeStampStringWithoutUpdate());
+				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_SIMULATION) != 0u) {
+					printf("%s  Sim  Actuator 2   ....|.........<<\r\n", getTimeStampStringWithoutUpdate());
+				}
 			}
 		}
 		else {
@@ -330,7 +335,9 @@ void simulationMainLoopTick(void){
 			else{
 				SimulationState2 = SIMULATION_STATE_2_GOING_OUTSIDE;
 				SimulationCounter2 = 0;
-				printf("%s  Sim  Actuator 2   >>..|.........\r\n", getTimeStampStringWithoutUpdate());
+				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_SIMULATION) != 0u) {
+					printf("%s  Sim  Actuator 2   >>..|.........\r\n", getTimeStampStringWithoutUpdate());
+				}
 			}
 		}
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)] = false;
@@ -351,7 +358,9 @@ void simulationMainLoopTick(void){
 				else{
 					SimulationState3 = SIMULATION_STATE_3_GOING_INSIDE_TO_SWITCH_B;
 					SimulationCounter3 = 0;
-					printf("%s  Sim  Actuator 3   ....|...........|..<< new state=%u\r\n", getTimeStampStringWithoutUpdate(), SimulationState3);
+					if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_SIMULATION) != 0u) {
+						printf("%s  Sim  Actuator 3   ....|...........|..<< new state=%u\r\n", getTimeStampStringWithoutUpdate(), SimulationState3);
+					}
 				}
 			}
 			else {
@@ -360,7 +369,9 @@ void simulationMainLoopTick(void){
 					printf("%s  Sim  Warning, Line %u, unexpected state %u\r\n", getTimeStampStringWithoutUpdate(), __LINE__, SimulationState3);
 				}
 				else{
-					printf("%s  Sim  Actuator 3   []..|...........|.... new state=%u\r\n", getTimeStampStringWithoutUpdate(), SimulationState3);
+					if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_SIMULATION) != 0u) {
+						printf("%s  Sim  Actuator 3   []..|...........|.... new state=%u\r\n", getTimeStampStringWithoutUpdate(), SimulationState3);
+					}
 				}
 			}
 		}
@@ -382,7 +393,9 @@ void simulationMainLoopTick(void){
 				else{
 					SimulationState3 = SIMULATION_STATE_3_GOING_OUTSIDE_TO_SWITCH_A;
 					SimulationCounter3 = 0;
-					printf("%s  Sim  Actuator 3   >>..|...........|.... new state=%u\r\n", getTimeStampStringWithoutUpdate(), SimulationState3);
+					if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_SIMULATION) != 0u) {
+						printf("%s  Sim  Actuator 3   >>..|...........|.... new state=%u\r\n", getTimeStampStringWithoutUpdate(), SimulationState3);
+					}
 				}
 			}
 			else {
@@ -391,7 +404,9 @@ void simulationMainLoopTick(void){
 					printf("%s  Sim  Warning, Line %u, unexpected state %u\r\n", getTimeStampStringWithoutUpdate(), __LINE__, SimulationState3);
 				}
 				else{
-					printf("%s  Sim  Actuator 3   ....|...........|..[] new state=%u\r\n", getTimeStampStringWithoutUpdate(), SimulationState3);
+					if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_SIMULATION) != 0u) {
+						printf("%s  Sim  Actuator 3   ....|...........|..[] new state=%u\r\n", getTimeStampStringWithoutUpdate(), SimulationState3);
+					}
 				}
 			}
 		}
@@ -407,7 +422,9 @@ void simulationMainLoopTick(void){
 			SimulationState1 = SIMULATION_STATE_1_REST_INSIDE;
 			SimulationCounter1 = 0;
 			SimulationInputs[LIMIT_SWITCH_1_INDEX] = SWITCH_PRESSED;
-			printf("%s  Sim  Actuator 1   ..<<|---------\r\n", getTimeStampStringWithoutUpdate());
+			if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_SIMULATION) != 0u) {
+				printf("%s  Sim  Actuator 1   ..<<|---------\r\n", getTimeStampStringWithoutUpdate());
+			}
 		}
 	}
 	if (SimulationState1 == SIMULATION_STATE_1_GOING_OUTSIDE) {
@@ -416,7 +433,9 @@ void simulationMainLoopTick(void){
 			SimulationState1 = SIMULATION_STATE_1_REST_OUTSIDE;
 			SimulationCounter1 = 0;
 			SimulationInputs[LIMIT_SWITCH_1_INDEX] = SWITCH_RELEASED;
-			printf("%s  Sim  Actuator 1   ----|>>.......\r\n", getTimeStampStringWithoutUpdate());
+			if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_SIMULATION) != 0u) {
+				printf("%s  Sim  Actuator 1   ----|>>.......\r\n", getTimeStampStringWithoutUpdate());
+			}
 		}
 	}
 
@@ -427,7 +446,9 @@ void simulationMainLoopTick(void){
 			SimulationState2 = SIMULATION_STATE_2_REST_INSIDE;
 			SimulationCounter2 = 0;
 			SimulationInputs[LIMIT_SWITCH_2_INDEX] = SWITCH_PRESSED;
-			printf("%s  Sim  Actuator 2   ..<<|---------\r\n", getTimeStampStringWithoutUpdate());
+			if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_SIMULATION) != 0u) {
+				printf("%s  Sim  Actuator 2   ..<<|---------\r\n", getTimeStampStringWithoutUpdate());
+			}
 		}
 	}
 	if (SimulationState2 == SIMULATION_STATE_2_GOING_OUTSIDE) {
@@ -436,7 +457,9 @@ void simulationMainLoopTick(void){
 			SimulationState2 = SIMULATION_STATE_2_REST_OUTSIDE;
 			SimulationCounter2 = 0;
 			SimulationInputs[LIMIT_SWITCH_2_INDEX] = SWITCH_RELEASED;
-			printf("%s  Sim  Actuator 2   ----|>>.......\r\n", getTimeStampStringWithoutUpdate());
+			if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_SIMULATION) != 0u) {
+				printf("%s  Sim  Actuator 2   ----|>>.......\r\n", getTimeStampStringWithoutUpdate());
+			}
 		}
 	}
 
@@ -447,7 +470,9 @@ void simulationMainLoopTick(void){
 			SimulationState3 = SIMULATION_STATE_3_REST_INSIDE;
 			SimulationCounter3 = 0;
 			SimulationInputs[LIMIT_SWITCH_3A_INDEX] = SWITCH_PRESSED;
-			printf("%s  Sim  Actuator 3   ..<<|-----------|---- new state=%u\r\n", getTimeStampStringWithoutUpdate(), SimulationState3);
+			if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_SIMULATION) != 0u) {
+				printf("%s  Sim  Actuator 3   ..<<|-----------|---- new state=%u\r\n", getTimeStampStringWithoutUpdate(), SimulationState3);
+			}
 		}
 	}
 	if (SimulationState3 == SIMULATION_STATE_3_GOING_INSIDE_TO_SWITCH_B) {
@@ -456,7 +481,9 @@ void simulationMainLoopTick(void){
 			SimulationState3 = SIMULATION_STATE_3_GOING_INSIDE_TO_SWITCH_A;
 			SimulationCounter3 = 0;
 			SimulationInputs[LIMIT_SWITCH_3B_INDEX] = SWITCH_RELEASED;
-			printf("%s  Sim  Actuator 3   ....|.........<<|---- new state=%u\r\n", getTimeStampStringWithoutUpdate(), SimulationState3);
+			if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_SIMULATION) != 0u) {
+				printf("%s  Sim  Actuator 3   ....|.........<<|---- new state=%u\r\n", getTimeStampStringWithoutUpdate(), SimulationState3);
+			}
 		}
 	}
 	if (SimulationState3 == SIMULATION_STATE_3_GOING_OUTSIDE_TO_SWITCH_B) {
@@ -465,7 +492,9 @@ void simulationMainLoopTick(void){
 			SimulationState3 = SIMULATION_STATE_3_REST_OUTSIDE;
 			SimulationCounter3 = 0;
 			SimulationInputs[LIMIT_SWITCH_3B_INDEX] = SWITCH_PRESSED;
-			printf("%s  Sim  Actuator 3   ----|-----------|>>.. new state=%u\r\n", getTimeStampStringWithoutUpdate(), SimulationState3);
+			if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_SIMULATION) != 0u) {
+				printf("%s  Sim  Actuator 3   ----|-----------|>>.. new state=%u\r\n", getTimeStampStringWithoutUpdate(), SimulationState3);
+			}
 		}
 	}
 	if (SimulationState3 == SIMULATION_STATE_3_GOING_OUTSIDE_TO_SWITCH_A) {
@@ -474,19 +503,11 @@ void simulationMainLoopTick(void){
 			SimulationState3 = SIMULATION_STATE_3_GOING_OUTSIDE_TO_SWITCH_B;
 			SimulationCounter3 = 0;
 			SimulationInputs[LIMIT_SWITCH_3A_INDEX] = SWITCH_RELEASED;
-			printf("%s  Sim  Actuator 3   ----|>>.........|.... new state=%u\r\n", getTimeStampStringWithoutUpdate(), SimulationState3);
+			if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_SIMULATION) != 0u) {
+				printf("%s  Sim  Actuator 3   ----|>>.........|.... new state=%u\r\n", getTimeStampStringWithoutUpdate(), SimulationState3);
+			}
 		}
 	}
-	// SimulationInputs[EXTERNAL_INHIBITION_INDEX] is intentionally not used
-
-
-
-
-
-
-
-
-
 }
 
 bool simulateInput(int InputIndex){
@@ -514,6 +535,13 @@ static void printSettingsInfo(void) {
 			printf("+ ");
 		}
 		printf("actuators ");
+		IsAny = true;
+	}
+	if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_SIMULATION) != 0u) {
+		if (IsAny) {
+			printf("+ ");
+		}
+		printf("simulation ");
 		IsAny = true;
 	}
 	if (!IsAny) {
@@ -552,10 +580,31 @@ void debugCommandInterpreter(void) {
 				printSettingsInfo();
 				break;
 			case 'S':
-			case 's':
+				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] |= PRINTOUTS_SIMULATION;
 				printSettingsInfo();
 				break;
-			case 'F':
+			case 's':
+				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] &= ~PRINTOUTS_SIMULATION;
+				printSettingsInfo();
+				break;
+			case 'P':
+			case 'p':
+				printSettingsInfo();
+				break;
+
+#if DEBUG_SIMULATION_MODE
+			case 'B':
+				SimulationInputs[EXTERNAL_INHIBITION_INDEX] = true;
+				SimulationState2 = SIMULATION_STATE_2_REST_INSIDE;
+				SimulationCounter2 = 0;
+				SimulationInputs[LIMIT_SWITCH_2_INDEX] = SWITCH_PRESSED;
+				break;
+			case 'b':
+				SimulationInputs[EXTERNAL_INHIBITION_INDEX] = false;
+				break;
+#endif // DEBUG_SIMULATION_MODE
+
+				case 'F':
 				printf("IIR filter reset\n");
 				IirFilterReset = true;
 				break;

@@ -73,11 +73,9 @@ void logicInputsTick(void) {
 
     CurrentState[EXTERNAL_INHIBITION_INDEX] = gpio_get(GPIO_FOR_EXTERNAL_INHIBITION);
 #else
-    for (int K = 0; K < 4; K++) {
+    for (int K = 0; K < 5; K++) {
         CurrentState[K] = simulateInput(K);
     }
-    // In the simulation mode, the user can change the state of the external inhibition input directly by Modbus
-    CurrentState[EXTERNAL_INHIBITION_INDEX] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION2)];
 #endif
 
     // Debouncing logic: the stable state changes only if the current state is the same for DEBOUNCE_TICKS consecutive ticks
@@ -101,10 +99,7 @@ void logicInputsTick(void) {
     ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_SWITCH)] = StableState[LIMIT_SWITCH_2_INDEX];
     ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH_A)] = StableState[LIMIT_SWITCH_3A_INDEX];
     ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH_B)] = StableState[LIMIT_SWITCH_3B_INDEX];
-#if DEBUG_SIMULATION_MODE == 0
-    // In the simulation mode, no modification is needed
     ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION2)] = StableState[EXTERNAL_INHIBITION_INDEX];
-#endif
 
     // just for testing purposes
 	(void)getTimeStampString(); // Update the time stamp string for printouts.
