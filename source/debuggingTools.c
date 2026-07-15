@@ -62,7 +62,7 @@ bool SimulationInputs[5] = { SWITCH_PRESSED, SWITCH_PRESSED, SWITCH_PRESSED, SWI
 
 uint16_t SimulationState1;
 uint16_t SimulationState2;
-uint16_t SimulationState3;
+uint16_t SimulationState3 = SIMULATION_STATE_3_REST_INSIDE;
 
 uint16_t SimulationCounter1;
 uint16_t SimulationCounter2;
