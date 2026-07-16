@@ -1,0 +1,120 @@
+Hello!
+Compilation time is Jul 16 2026, 09:57:37
+Simulation mode is ON
+000:00:000        Init  01: 0->1  03: 0->1  05: 0->1  07: 0->1  09: 0->1  16: 0->1  17: 0->1  18: 0->1  19: 0->1  20: 0->1  1003: 0000 -> 02BC  1004: 0000 -> 02BC  
+    1005: 0000 -> 0FA0  1006: 0000 -> 012C  1007: 0000 -> 012C  1008: 0000 -> 1130  1022: 0000 -> 0003  1023: 0000 -> 0004  1024: 0000 -> 0004  1025: 0000 -> 0004  
+    1027: 0000 -> 0001  1028: 0000 -> 0002  1029: 0000 -> 5E69  1030: 0000 -> 096A  1031: 0000 -> 0896  1032: 0000 -> 009E  1033: 0000 -> 06BD  1034: 0000 -> 00B4  
+    1035: 0000 -> 00A4  1036: 0000 -> 06CD  1037: 0000 -> 0635  1038: 0000 -> 002B  1039: 0000 -> 06C4  1040: 0000 -> 00B8  1041: 0000 -> 00A6  1042: 0000 -> 06E6  
+    1043: 0000 -> 0656  1044: 0000 -> 0042  1045: 0000 -> 06C3  1046: 0000 -> 00BB  1047: 0000 -> 00AB  1048: 0000 -> 0703  1049: 0000 -> 067D  1050: 0000 -> 006C  
+    1051: 0000 -> 06BA  1052: 0000 -> 00B1  1053: 0000 -> 00A2  1054: 0000 -> 06B7  1055: 0000 -> 061E  1056: 0000 -> 0016  1057: 0000 -> 06BF  1058: 0000 -> 00B9  
+    1059: 0000 -> 00A7  1060: 0000 -> 06EA  1061: 0000 -> 0659  1062: 0000 -> 004B  1063: 0000 -> 06C0  1064: 0000 -> 00B9  1065: 0000 -> 00A9  1066: 0000 -> 06EE  
+    1067: 0000 -> 0660  1068: 0000 -> 0051  1069: 0000 -> 06B6  1070: 0000 -> 00B0  1071: 0000 -> 00A3  1072: 0000 -> 06B1  1073: 0000 -> 0616  1074: 0000 -> 0016  
+    1075: 0000 -> 06CD  1076: 0000 -> 00C6  1077: 0000 -> 00B6  1078: 0000 -> 073B  1079: 0000 -> 06D8  1080: 0000 -> 00D5  1081: 0000 -> 06BD  1082: 0000 -> 00B5  
+    1083: 0000 -> 00A5  1084: 0000 -> 06D7  1085: 0000 -> 0643  1086: 0000 -> 0037  1087: 0000 -> 06BC  1088: 0000 -> 00B5  1089: 0000 -> 00A6  1090: 0000 -> 06DC  
+    1091: 0000 -> 0648  1092: 0000 -> 003B  1093: 0000 -> 06BC  1094: 0000 -> 00B4  1095: 0000 -> 00A5  1096: 0000 -> 06D2  1097: 0000 -> 063B  1098: 0000 -> 0031  
+    1099: 0000 -> 06BC  1100: 0000 -> 00B5  1101: 0000 -> 00A4  1102: 0000 -> 06D0  1103: 0000 -> 0639  1104: 0000 -> 002C  1117: 0000 -> FFFF  1118: 0000 -> FFFF  
+    1119: 0000 -> FFFF  1120: 0000 -> FFFF  1121: 0000 -> FFFF  1122: 0000 -> FFFF  1123: 0000 -> FFFF  1124: 0000 -> FFFF  1125: 0000 -> FFFF  1126: 0000 -> FFFF  
+    1127: 0000 -> FFFF  1128: 0000 -> FFFF  1130: 0000 -> 004B  1132: 0000 -> 0046  1134: 0000 -> 0195  1136: 0000 -> 0064  1138: 0000 -> 055A  1140: 0000 -> 0582  
+    1142: 0000 -> 00D2  1143: 0000 -> 0023  1165: 0000 -> 0006  
+000:00:000  LIn  printouts enabled
+000:00:000  LIn  sw1 pressed
+000:00:000  LIn  sw2 pressed
+000:00:000  LIn  sw3A pressed
+000:00:000   Inp. tick  11: 0->1            
+000:00:000  FSMs tick (Pnm); Cup 1 state UNDEFINED -> BOOTED
+000:00:000  FSMs tick (P+L); Cup 2 state UNDEFINED -> BOOTED
+000:00:000  FSMs tick (Mot); Cup 3 state UNDEFINED -> BOOTED
+000:00:002   Main loop  1009: 0000 -> 0001  
+000:10:000  FSMs tick (Pnm); Cup 1 state BOOTED -> INSERTED
+000:10:000  FSMs tick (P+L); Cup 2 state BOOTED -> INSERTED
+000:10:000  FSMs tick (Mot); Cup 3 state BOOTED -> INSERTED
+000:10:002  FSMs tick; active cup 0 -> 1
+002:01:192      Modbus  01: 1->0            
+002:01:192  FSMs tick (Pnm); Cup 1 state INSERTED -> WITHDRAWING
+AuxFsmTick; actuator 1: 1->0
+002:01:194   Main loop  16: 1->0  19: 1->0  
+002:01:342  LIn  sw1 released
+002:01:342   Inp. tick  03: 1->0            
+002:01:342  FSMs tick (Pnm); Cup 1 state WITHDRAWING -> EXTRACTED
+002:01:344  FSMs tick; active cup 1 -> 2
+002:01:346   Main loop  1009: 0001 -> 0002  
+002:11:012      Modbus  01: 0->1            
+002:11:012  FSMs tick (Pnm); Cup 1 state EXTRACTED -> INSERTING
+AuxFsmTick; actuator 1: 0->1
+002:11:014   Main loop  16: 0->1  19: 0->1  
+002:11:172  LIn  sw1 pressed
+002:11:172   Inp. tick  03: 0->1            
+002:11:172  FSMs tick (Pnm); Cup 1 state INSERTING -> INSERTED
+002:11:174  FSMs tick; active cup 2 -> 1
+002:11:176   Main loop  1009: 0002 -> 0001  
+002:22:734      Modbus  05: 1->0            
+002:22:734  FSMs tick (P+L); Cup 2 state INSERTED -> WITHDRAWING
+AuxFsmTick; actuator 2: 1->0
+002:22:736   Main loop  17: 1->0  20: 1->0  
+002:22:944  LIn  sw2 released
+002:22:944   Inp. tick  07: 1->0            
+002:22:944  FSMs tick (P+L); Cup 2 state WITHDRAWING -> EXTRACTED
+002:29:660      Modbus  05: 0->1            
+002:29:660  FSMs tick (P+L); Cup 2 state EXTRACTED -> INSERTING
+AuxFsmTick; actuator 2: 0->1
+002:29:662   Main loop  17: 0->1  20: 0->1  
+002:30:480  LIn  sw2 pressed
+002:30:480   Inp. tick  07: 0->1            
+002:30:480  FSMs tick (P+L); Cup 2 state INSERTING -> INSERTED
+002:36:486      Modbus  05: 1->0            
+002:36:486  FSMs tick (P+L); Cup 2 state INSERTED -> WITHDRAWING
+AuxFsmTick; actuator 2: 1->0
+002:36:488   Main loop  17: 1->0  20: 1->0  
+002:36:696  LIn  sw2 released
+002:36:696   Inp. tick  07: 1->0            
+002:36:696  FSMs tick (P+L); Cup 2 state WITHDRAWING -> EXTRACTED
+002:55:358  LIn  sw2 pressed
+002:55:358  LIn  INH active
+002:55:358   Inp. tick  06: 0->1  07: 0->1  
+
+Forcing insert for cup 2 (pneumatic with lock) due to external inhibition and switch active
+
+002:55:358  FSMs tick (P+L); Cup 2 state EXTRACTED -> PAUSE_AFTER_LOCK
+002:55:358  Sim  Warning, Line 321, unexpected state 0
+002:55:360   Main loop  05: 0->1  17: 0->1  20: 0->1            
+002:56:360  FSMs tick (P+L); Cup 2 state PAUSE_AFTER_LOCK -> LOCKED_INSERTED
+003:06:610  LIn  INH not active
+003:06:610   Inp. tick  06: 1->0            
+003:06:610  FSMs tick (P+L); Cup 2 state LOCKED_INSERTED -> PAUSE_AFTER_UNLOCK
+003:07:112  FSMs tick (P+L); Cup 2 state PAUSE_AFTER_UNLOCK -> INSERTED
+003:19:860      Modbus  09: 1->0            
+003:19:860  FSMs tick (Mot); Cup 3 state INSERTED -> WITHDRAWING
+AuxFsmTick; actuator 3 out: 0->1
+003:19:862   Main loop  18: 1->0  22: 0->1  
+003:20:290  LIn  sw3A released
+003:20:290   Inp. tick  11: 1->0            
+003:23:110  LIn  sw3B pressed
+003:23:110   Inp. tick  12: 0->1            
+003:23:110  FSMs tick (Mot); Cup 3 state WITHDRAWING -> WITHDRAWING_PRE_BRAKING
+AuxFsmTick; actuator 3 out: 1->0
+003:23:112   Main loop  22: 1->0            
+003:23:122  FSMs tick (Mot); Cup 3 state WITHDRAWING_PRE_BRAKING -> WITHDRAWING_BRAKING
+AuxFsmTick; actuator 3 brake: 0->1
+003:23:124   Main loop  23: 0->1            
+003:23:924  FSMs tick (Mot); Cup 3 state WITHDRAWING_BRAKING -> EXTRACTED
+AuxFsmTick; actuator 3 brake: 1->0
+003:23:926   Main loop  23: 1->0            
+003:30:450      Modbus  09: 0->1            
+003:30:450  FSMs tick (Mot); Cup 3 state EXTRACTED -> INSERTING
+AuxFsmTick; actuator 3 in: 0->1
+003:30:452   Main loop  18: 0->1  21: 0->1  
+003:30:880  LIn  sw3B released
+003:30:880   Inp. tick  12: 1->0            
+003:33:620  LIn  sw3A pressed
+003:33:620   Inp. tick  11: 0->1            
+003:33:620  FSMs tick (Mot); Cup 3 state INSERTING -> INSERTING_PRE_BRAKING
+AuxFsmTick; actuator 3 in: 1->0
+003:33:622   Main loop  21: 1->0            
+003:33:632  FSMs tick (Mot); Cup 3 state INSERTING_PRE_BRAKING -> INSERTING_BRAKING
+AuxFsmTick; actuator 3 brake: 0->1
+003:33:634   Main loop  23: 0->1            
+003:34:434  FSMs tick (Mot); Cup 3 state INSERTING_BRAKING -> INSERTED
+AuxFsmTick; actuator 3 brake: 1->0
+003:34:436   Main loop  23: 1->0            
+
+

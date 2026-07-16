@@ -261,7 +261,6 @@ static void mainInitialization(void){
 	printf("\r\n\r\n\r\n\r\n\r\n\r\nHello!\r\nCompilation time is %s\r\n", CompilationTime);
 #if DEBUG_SIMULATION_MODE
 	printf("Simulation mode is ON\r\n");
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] = PRINTOUTS_ACTUATORS; // Logic Inputs printouts enabled
 #else
 	printf("Simulation mode is OFF\r\n");
 #endif
