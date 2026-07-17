@@ -283,6 +283,7 @@ void printChangedRegisters( const char *ContextComment ) {
 #if DEBUG_SIMULATION_MODE
 
 void simulationMainLoopTick(void){
+	static bool OldExternalInhibition2 = false;
 	(void)getTimeStampString(); // Update the time stamp string for printouts.
 
 	// 	Actuator 1 event simulation
@@ -314,34 +315,45 @@ void simulationMainLoopTick(void){
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)] = false;
 	}
 
-	// 	Actuator 2 event simulation
+	// 	Actuator 2 event simulation: user's request
 	if (ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)]){
-		if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)]) {
-			if (SimulationState2 != SIMULATION_STATE_2_REST_OUTSIDE) {
-				printf("%s  Sim  Warning, Line %u, unexpected state %u\r\n", getTimeStampStringWithoutUpdate(), __LINE__, SimulationState2);
-			}
-			else{
-				SimulationState2 = SIMULATION_STATE_2_GOING_INSIDE;
-				SimulationCounter2 = 0;
-				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_SIMULATION) != 0u) {
-					printf("%s  Sim  Actuator 2   ....|.........<<\r\n", getTimeStampStringWithoutUpdate());
+		if (!ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION2)]) {
+			if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)]) {
+				if (SimulationState2 != SIMULATION_STATE_2_REST_OUTSIDE) {
+					printf("%s  Sim  Warning, Line %u, unexpected state %u\r\n", getTimeStampStringWithoutUpdate(), __LINE__, SimulationState2);
+				}
+				else{
+					SimulationState2 = SIMULATION_STATE_2_GOING_INSIDE;
+					SimulationCounter2 = 0;
+					if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_SIMULATION) != 0u) {
+						printf("%s  Sim  Actuator 2   ....|.........<<\r\n", getTimeStampStringWithoutUpdate());
+					}
 				}
 			}
-		}
-		else {
-			if (SimulationState2 != SIMULATION_STATE_2_REST_INSIDE) {
-				printf("%s  Sim  Warning, Line %u, unexpected state %u\r\n", getTimeStampStringWithoutUpdate(), __LINE__, SimulationState2);
-			}
-			else{
-				SimulationState2 = SIMULATION_STATE_2_GOING_OUTSIDE;
-				SimulationCounter2 = 0;
-				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_SIMULATION) != 0u) {
-					printf("%s  Sim  Actuator 2   >>..|.........\r\n", getTimeStampStringWithoutUpdate());
+			else {
+				if (SimulationState2 != SIMULATION_STATE_2_REST_INSIDE) {
+					printf("%s  Sim  Warning, Line %u, unexpected state %u\r\n", getTimeStampStringWithoutUpdate(), __LINE__, SimulationState2);
+				}
+				else{
+					SimulationState2 = SIMULATION_STATE_2_GOING_OUTSIDE;
+					SimulationCounter2 = 0;
+					if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_SIMULATION) != 0u) {
+						printf("%s  Sim  Actuator 2   >>..|.........\r\n", getTimeStampStringWithoutUpdate());
+					}
 				}
 			}
 		}
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)] = false;
 	}
+	// 	Actuator 2 event simulation: external inhibition signal
+	if (!OldExternalInhibition2 && ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION2)] && (SIMULATION_STATE_2_REST_OUTSIDE == SimulationState2)) {
+		SimulationState2 = SIMULATION_STATE_2_GOING_INSIDE;
+		SimulationCounter2 = 0;
+		if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_SIMULATION) != 0u) {
+			printf("%s  Sim  Actuator 2   ....|.........<<  Ext Inh\r\n", getTimeStampStringWithoutUpdate());
+		}
+	}
+	OldExternalInhibition2 = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION2)];
 
 	// 	Actuator 3 event simulation: insert
 	if (ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)]){

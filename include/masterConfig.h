@@ -17,7 +17,7 @@
 #define MODBUS_DEBUG_PRINT 0
 
 // In this mode, peripheral devices are ignored and overridden by software simulation
-#define DEBUG_SIMULATION_MODE 0
+#define DEBUG_SIMULATION_MODE 1
 
 
 #endif // MASTER_CONFIG_H
