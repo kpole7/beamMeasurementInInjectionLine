@@ -3,6 +3,7 @@
 
 #include "sharedData.h"
 #include "mainTimer.h"
+#include "compilationTime.h"
 
 //..............................................................................
 // Variables for Modbus communication
@@ -150,15 +151,27 @@ void initializeModbusRegisters(void) {
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP3_CHANNEL4_GAIN_HIGH_POINT2)] = 1744u;
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP3_CHANNEL4_GAIN_HIGH_POINT3)] = 1593u;
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP3_CHANNEL4_GAIN_HIGH_POINT4)] = 44u;
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION1_IN)]  = ( 150u / MAIN_LOOP_TICK_PERIOD_MS); // 150 ms
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION1_OUT)] = ( 140u / MAIN_LOOP_TICK_PERIOD_MS);
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION2_IN)]  = ( 810u / MAIN_LOOP_TICK_PERIOD_MS);
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION2_OUT)] = ( 200u / MAIN_LOOP_TICK_PERIOD_MS);
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION3_IN)]  = (2740u / MAIN_LOOP_TICK_PERIOD_MS);
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION3_OUT)] = (2820u / MAIN_LOOP_TICK_PERIOD_MS);
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM3_INERTIAL_MOTION)] = ( 420u / MAIN_LOOP_TICK_PERIOD_MS);
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM3_BRAKED_MOTION)]   = (  70u / MAIN_LOOP_TICK_PERIOD_MS);
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEVICE_NAME01)] = 19317u;
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEVICE_NAME02)] = 25195u;
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEVICE_NAME03)] = 26912u;
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEVICE_NAME04)] = 18017u;
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEVICE_NAME05)] = 29281u;
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEVICE_NAME06)] = 25697u;
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEVICE_NAME07)] = 31073u;
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION1_IN)] = 75u;
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION1_OUT)] = 70u;
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION2_IN)] = 405u;
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION2_OUT)] = 100u;
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION3_IN)] = 1370u;
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM_PROPAGATION3_OUT)] = 1410u;
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM3_INERTIAL_MOTION)] = 210u;
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_MECHANISM3_BRAKED_MOTION)] = 35u;
 
+	for (int J = 0; J <= MODBUS_ADDR_COMPILATION_TIME11 - MODBUS_ADDR_COMPILATION_TIME01; J++) {
+		ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_COMPILATION_TIME01) + J] = 	
+			((uint16_t)CompilationTime[J*2] << 8) + (uint16_t)CompilationTime[J*2 + 1];
+	}
+	
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] = 6u; // PRINTOUTS_LOGIC | PRINTOUTS_ACTUATORS
 }
 
