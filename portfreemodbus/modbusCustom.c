@@ -19,7 +19,10 @@ static bool isDefinedCoilAddress(USHORT address) {
 static bool isWritableCoilAddress(USHORT address) {
 	return (address == MODBUS_ADDR_CUP1_CONTROL) ||
 	       (address == MODBUS_ADDR_CUP2_CONTROL) ||
-	       (address == MODBUS_ADDR_CUP3_CONTROL);
+	       (address == MODBUS_ADDR_CUP3_CONTROL) ||
+	       (address == MODBUS_ADDR_CUP1_ERROR_RECOVERY) ||
+	       (address == MODBUS_ADDR_CUP2_ERROR_RECOVERY) ||
+	       (address == MODBUS_ADDR_CUP3_ERROR_RECOVERY);
 }
 
 static bool isDefinedHoldingAddress(USHORT address) {
@@ -28,10 +31,16 @@ static bool isDefinedHoldingAddress(USHORT address) {
 }
 
 static bool isWritableHoldingAddress(USHORT address) {
-	if ((address >= MODBUS_ADDR_ERROR_STORAGE) && (address <= MODBUS_ADDR_ACTIVE_CUP)){
+	if (address == MODBUS_ADDR_ERROR_STORAGE) {
 		return true;
 	}
-	if ((address >= MODBUS_ADDR_CUP1_ERROR_STORAGE) && (address <= MODBUS_ADDR_THE_LAST_HOLDING_REGISTER)) {
+	if ((address >= MODBUS_ADDR_CUP1_ERROR_STORAGE) && (address <= MODBUS_ADDR_CUP3_ERROR_STORAGE)) {
+		return true;
+	}
+	if ((address >= MODBUS_ADDR_TIME_LIMIT_INSERTING1) && (address <= MODBUS_ADDR_CUP3_CHANNEL4_GAIN_HIGH_POINT4)) {
+		return true;
+	}
+	if ((address >= MODBUS_ADDR_SIM_MECHANISM_PROPAGATION1_IN) && (address <= MODBUS_ADDR_DEBUG_ARGUMENT2)) {
 		return true;
 	}
 	return false;
@@ -40,9 +49,6 @@ static bool isWritableHoldingAddress(USHORT address) {
 static bool isValidHoldingValue(USHORT address, uint16_t value) {
 	if ((address >= MODBUS_ADDR_TIME_LIMIT_INSERTING1) && (address <= MODBUS_ADDR_TIME_LIMIT_WITHDRAWING3)) {
 		return value >= 1u;
-	}
-	if (address == MODBUS_ADDR_ACTIVE_CUP) {
-		return (value >= 1u) && (value <= 3u);
 	}
 	if (address == MODBUS_ADDR_INSTALLED_CUPS) {
 		return (value >= 1u) && (value <= 3u);
