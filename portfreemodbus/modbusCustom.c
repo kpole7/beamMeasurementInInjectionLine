@@ -12,6 +12,15 @@
 #include "mb.h"
 #include "sharedData.h"
 
+static uint16_t VerifiedConfigurationRegisters = MODBUS_ADDR_TIME_LIMIT_INSERTING1;
+
+static void verifyConfigurationRegisters(USHORT usAddress, USHORT usNRegs) {
+	if (usAddress == VerifiedConfigurationRegisters) {
+		VerifiedConfigurationRegisters += usNRegs;
+		ModbusInputRegisters[holdingIndexFromAddress(MODBUS_ADDR_SUCCESSFULL_INITIALIZATION)] = VerifiedConfigurationRegisters-1;
+	}
+}
+
 static bool isDefinedCoilAddress(USHORT address) {
 	return ((address >= MODBUS_COILS_ADDRESS) && (address <= MODBUS_COILS_ADDRESS + MODBUS_COILS_NUMBER - 1));
 }
@@ -68,20 +77,6 @@ static bool isDefinedInputRegisterAddress(USHORT address) {
 	(address <= MODBUS_INPUT_REGISTERS_ADDRESS + MODBUS_INPUT_REGISTERS_NUMBER - 1);
 }
 
-#if 0
-static uint16_t holdingIndexFromAddress(USHORT address) {
-	return (uint16_t)(address - MODBUS_HOLDING_REGISTERS_ADDRESS);
-}
-
-static uint16_t inputIndexFromAddress(USHORT address) {
-	return (uint16_t)(address - MODBUS_INPUT_REGISTERS_ADDRESS);
-}
-
-static uint16_t coilIndexFromAddress(USHORT address) {
-	return (uint16_t)(address - MODBUS_COILS_ADDRESS);
-}
-#endif
-
 /// This is callback function for reading and writing holding registers
 /// @callgraph
 /// @callergraph
@@ -115,6 +110,8 @@ eMBErrorCode    eMBRegHoldingCB( UCHAR * pucRegBuffer, USHORT usAddress,
 
 			ModbusHoldingRegisters[holdingIndexFromAddress(address)] = value;
 		}
+
+		verifyConfigurationRegisters(usAddress, usNRegs);
         return MB_ENOERR;
 	}
 
