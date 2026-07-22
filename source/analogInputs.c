@@ -167,29 +167,16 @@ void analogInputsMeasurements(void) {
 	} else {
 		ActiveChannel = 0;
 
-#if 1
 		// Keep local cup state synchronized with the ActiveCup Modbus register.
-		if (LocalActiveCup + 1u != ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP)]) {
-			if (0 == ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP)]){
-				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP)] = 1u; // just for testing purposes (initialization of the register)
+		if (LocalActiveCup + 1u != ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP)]) {
+			if (0 == ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP)]){
+				ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP)] = 1u; // just for testing purposes (initialization of the register)
 			}
-			LocalActiveCup = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP)];
+			LocalActiveCup = ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP)];
 			LocalActiveCup--;
 			if (LocalActiveCup > 2u){
 				LocalActiveCup = 0u;
 			}
-#else
-		// Keep local cup state synchronized with the debug argument register.
-		if (LocalActiveCup + 1u != ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT1)]) {
-			if (0 == ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT1)]){
-				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT1)] = 1u; // just for testing purposes (initialization of the register)
-			}
-			LocalActiveCup = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT1)];
-			LocalActiveCup--;
-			if (LocalActiveCup > 2u){
-				LocalActiveCup = 0u;
-			}
-#endif
 			SafeActiveCup = LocalActiveCup;
 
 			for (uint16_t J = 0; J < ANALOG_MAX_CHANNELS; J++) {

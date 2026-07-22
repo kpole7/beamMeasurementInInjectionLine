@@ -436,7 +436,7 @@ static void auxiliaryFSMsService(void) {
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_BRAKE)] = true;
 	}
 
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP)] = clampActiveCup(AuxiliaryFSMsStateData.active_cup);
+	ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP)] = clampActiveCup(AuxiliaryFSMsStateData.active_cup);
 }
 
 static uint16_t clampInstalledCups(uint16_t value) {
