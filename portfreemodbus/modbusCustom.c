@@ -17,7 +17,7 @@ static uint16_t VerifiedConfigurationRegisters = MODBUS_ADDR_TIME_LIMIT_INSERTIN
 static void verifyConfigurationRegisters(USHORT usAddress, USHORT usNRegs) {
 	if (usAddress == VerifiedConfigurationRegisters) {
 		VerifiedConfigurationRegisters += usNRegs;
-		ModbusInputRegisters[holdingIndexFromAddress(MODBUS_ADDR_SUCCESSFULL_INITIALIZATION)] = VerifiedConfigurationRegisters-1;
+		ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_SUCCESSFULL_INITIALIZATION)] = VerifiedConfigurationRegisters-1;
 	}
 }
 
