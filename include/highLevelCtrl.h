@@ -32,9 +32,6 @@ typedef struct {
     /// Error code for the entire device (bitmap of all cup errors)
     uint16_t error_code;
     
-    /// Code of the last error that occurred
-    uint16_t last_error;
-    
     /// Bitwise OR of all errors that have occurred (can be reset via Modbus)
     uint16_t error_storage;
     

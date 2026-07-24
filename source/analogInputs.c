@@ -315,7 +315,7 @@ void analogInputsMeasurements(void) {
 				int32_t Result = ModbusHoldingRegisters[SafeActiveCup*4 + Channel + holdingIndexFromAddress(MODBUS_ADDR_SIM_AMPLIFIER_CUP1_ELECTRODE1)];
 				uint16_t ErrorCode = 0;
 				int32_t DeviationForSimulation = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_AMPLIFIER_RANDOM_OFFSET)] +
-					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_AMPLIFIER_RANDOM_RATE)] * Result / 0x4000;
+					(ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_AMPLIFIER_RANDOM_RATE)] * Result) / 0x100;
 				int32_t RandomNumber = randomGaussian( 0, DeviationForSimulation ) / 0x800;
 				Result += RandomNumber;
 

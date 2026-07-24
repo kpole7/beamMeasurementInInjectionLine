@@ -5,6 +5,8 @@
 #include "mainTimer.h"
 #include "compilationTime.h"
 
+#include <stdlib.h> // rand()
+
 //..............................................................................
 // Variables for Modbus communication
 //..............................................................................
@@ -54,15 +56,8 @@ void initializeModbusRegisters(void) {
 
 	// Defaults from ModbusRegisters.csv
 	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_CONTROL)] = true;
-	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_SWITCH)] = true;
 	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_CONTROL)] = true;
-	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_SWITCH)] = true;
 	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_CONTROL)] = true;
-	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_REQUESTED_STATE)] = true;
-	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_REQUESTED_STATE)] = true;
-	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_REQUESTED_STATE)] = true;
-	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)] = true;
-	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)] = true;
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_INSERTING1)] = 700u;
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_INSERTING2)] = 700u;
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_INSERTING3)] = 4000u;
@@ -171,7 +166,15 @@ void initializeModbusRegisters(void) {
 		ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_COMPILATION_TIME01) + J] = 	
 			((uint16_t)CompilationTime[J*2] << 8) + (uint16_t)CompilationTime[J*2 + 1];
 	}
-	
+
+	// filling with random values for testing purposes
+	for (int J = 0; J <= MODBUS_ADDR_SIM_AMPLIFIER_CUP3_ELECTRODE4 - MODBUS_ADDR_SIM_AMPLIFIER_CUP1_ELECTRODE1; J++) {
+		ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_AMPLIFIER_CUP1_ELECTRODE1) + J] = 
+			(uint16_t)((rand() % 155u)*(rand() % 155u)); // 155*155=24025 / 100 = 240.25 uA
+	}
+	// live random values for testing purposes
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_AMPLIFIER_RANDOM_OFFSET)] = 20u;
+
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] = 6u; // PRINTOUTS_LOGIC | PRINTOUTS_ACTUATORS
 }
 

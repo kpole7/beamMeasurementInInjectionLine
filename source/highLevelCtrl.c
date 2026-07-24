@@ -45,10 +45,8 @@ void highLevelCtrlTick(const HighLevelCtrlInputs *Inputs,
     uint16_t new_error_code = calculateErrorCode(Inputs);
     
     if (new_error_code != 0) {
-        // - backup ErrorCode in LastError register
         // - update ErrorCode register
         // - update ErrorStorage register
-        Outputs->last_error = State->prev_error_code;
         Outputs->error_code = new_error_code;
         State->error_storage |= new_error_code;  // Accumulate errors
     }

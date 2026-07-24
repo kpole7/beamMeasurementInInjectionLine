@@ -282,7 +282,6 @@ static void highLevelCtrlService(void) {
 	HighLevelCtrlOutputs Outputs;
 	uint16_t ErrorStorageIndex = holdingIndexFromAddress(MODBUS_ADDR_ERROR_STORAGE);
 	uint16_t ErrorCodeIndex = holdingIndexFromAddress(MODBUS_ADDR_ERROR_CODE);
-	uint16_t LastErrorIndex = holdingIndexFromAddress(MODBUS_ADDR_LAST_ERROR);
 
 	// Special case: Force insert if external inhibition is active for pneumatic with lock
 	if (!ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_CONTROL)] &&
@@ -324,9 +323,6 @@ static void highLevelCtrlService(void) {
 	highLevelCtrlTick(&Inputs, &HighLevelState, &Outputs);
 
 	ModbusHoldingRegisters[ErrorCodeIndex] = Outputs.error_code;
-	if (Outputs.last_error != 0u) {
-		ModbusHoldingRegisters[LastErrorIndex] = Outputs.last_error;
-	}
 	ModbusHoldingRegisters[ErrorStorageIndex] = Outputs.error_storage;
 
 	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_REQUESTED_STATE)] = Outputs.cup_requested_state[0];
@@ -381,29 +377,14 @@ static void auxiliaryFSMsService(void) {
 	auxiliaryFSMsTick(&Inputs, &AuxiliaryFSMsStateData, &Outputs);
 
 	if (Outputs.cup_error[0] != ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_ERROR)]) {
-		if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_LAST_ERROR)] != ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_ERROR)]) &&
-			(ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_ERROR)] != 0u)) 
-			{
-			ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_LAST_ERROR)] = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_ERROR)];
-		}
 		ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_ERROR)] = Outputs.cup_error[0];
 		ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_ERROR_STORAGE)] |= Outputs.cup_error[0];
 	}
 	if (Outputs.cup_error[1] != ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP2_ERROR)]) {
-		if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP2_LAST_ERROR)] != ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP2_ERROR)]) &&
-			(ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP2_ERROR)] != 0u)) 
-			{
-			ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP2_LAST_ERROR)] = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP2_ERROR)];
-		}
 		ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP2_ERROR)] = Outputs.cup_error[1];
 		ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP2_ERROR_STORAGE)] |= Outputs.cup_error[1];
 	}
 	if (Outputs.cup_error[2] != ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP3_ERROR)]) {
-		if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP3_LAST_ERROR)] != ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP3_ERROR)]) &&
-			(ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP3_ERROR)] != 0u)) 
-			{
-			ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP3_LAST_ERROR)] = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP3_ERROR)];
-		}
 		ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP3_ERROR)] = Outputs.cup_error[2];
 		ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP3_ERROR_STORAGE)] |= Outputs.cup_error[2];
 	}
