@@ -556,6 +556,13 @@ static void printSettingsInfo(void) {
 		printf("simulation ");
 		IsAny = true;
 	}
+	if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_SIM_EVENT) != 0u) {
+		if (IsAny) {
+			printf("+ ");
+		}
+		printf("sim event ");
+		IsAny = true;
+	}
 	if (!IsAny) {
 		printf("none");
 	}
@@ -563,6 +570,9 @@ static void printSettingsInfo(void) {
 }
 
 void debugCommandInterpreter(void) {
+	static uint16_t StoredEventCode;
+	uint16_t PressedDigitValue;
+	bool DoNotClearStoredEventCode = false;
 	int InputCharacter = getchar_timeout_us(0); // non-blocking read
 
 	if (InputCharacter != PICO_ERROR_TIMEOUT) {
@@ -614,6 +624,18 @@ void debugCommandInterpreter(void) {
 			case 'b':
 				SimulationInputs[EXTERNAL_INHIBITION_INDEX] = false;
 				break;
+			case 'E':
+				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_ANALOG) == 0u) {
+					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] |= PRINTOUTS_SIM_EVENT;
+				}
+				printSettingsInfo();
+				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_EVENT_CODE)] = 0;
+				printf("%s  Sim  Event code cleared\r\n", getTimeStampStringWithoutUpdate());
+				break;
+			case 'e':
+				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] &= ~PRINTOUTS_SIM_EVENT;
+				printSettingsInfo();
+				break;
 #endif // DEBUG_SIMULATION_MODE
 
 				case 'F':
@@ -621,49 +643,66 @@ void debugCommandInterpreter(void) {
 				IirFilterReset = true;
 				break;
 
-			// set LocalActiveCup
+			case '0':
 			case '1':
 			case '2':
 			case '3':
-				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_ANALOG) != 0u) {
-					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT1)] = InputCharacter - '0';
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+				// set LocalActiveCup
+				PressedDigitValue = InputCharacter - '0';
+				if (((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_ANALOG) != 0u) &&
+					(PressedDigitValue >= 1 && PressedDigitValue <= 3)) 
+				{
+					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT1)] = PressedDigitValue;
 					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT2)] = 0;
+				}
+
+				// set SimEventCode
+				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_SIM_EVENT) != 0u)	{
+					StoredEventCode += PressedDigitValue;
+					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_EVENT_CODE)] = StoredEventCode;
+					printf("%s  Sim  Event code set to %u\r\n", getTimeStampStringWithoutUpdate(), StoredEventCode);
 				}
 				break;
 
-			// set SelectedChannel
 			case '!': // shift + 1
-				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_ANALOG) != 0u) {
-					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT2)] = 1;
-				}
-				break;
 			case '@': // shift + 2
-				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_ANALOG) != 0u) {
-					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT2)] = 2;
-				}
-				break;
 			case '#': // shift + 3
-				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_ANALOG) != 0u) {
-					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT2)] = 3;
-				}
-				break;
 			case '$': // shift + 4
-				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_ANALOG) != 0u) {
-					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT2)] = 4;
-				}
-				break;
 			case '%': // shift + 5
 			case '^': // shift + 6
 			case '&': // shift + 7
 			case '*': // shift + 8
 			case '(': // shift + 9
 			case ')': // shift + 0
-				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_ANALOG) != 0u) {
-					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT2)] = 0;
+				const char *ShiftedDigits = ")!@#$%^&*(";
+				PressedDigitValue = strchr(ShiftedDigits, InputCharacter) - ShiftedDigits;
+
+				// set SelectedChannel
+				if (((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_ANALOG) != 0u) &&
+					(PressedDigitValue >= 1) && (PressedDigitValue <= 4)) 
+				{
+					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT2)] = PressedDigitValue;
 				}
+
+				// preparatory step for setting SimEventCode
+				if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_SIM_EVENT) != 0u)	{
+					StoredEventCode = PressedDigitValue * 10;
+					DoNotClearStoredEventCode = true;
+				}
+
 				break;
 			default:
+				DoNotClearStoredEventCode = true;
 				break;
+		}
+		if (!DoNotClearStoredEventCode) {
+			StoredEventCode = 0;
 		}
 	}
 }
