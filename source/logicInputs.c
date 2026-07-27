@@ -101,6 +101,84 @@ void logicInputsTick(void) {
     ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH_B)] = StableState[LIMIT_SWITCH_3B_INDEX];
     ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_EXTERNAL_INHIBITION2)] = StableState[EXTERNAL_INHIBITION_INDEX];
 
+#if DEBUG_SIMULATION_MODE
+    if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_SIM_EVENT) != 0u)	{
+        if (SIM_EVENT_SWITCH1_PERMANENT_OFF == ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_EVENT_CODE)]){
+            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_SWITCH)] = false;
+        }
+        if (SIM_EVENT_SWITCH1_PERMANENT_ON == ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_EVENT_CODE)]){
+            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_SWITCH)] = true;
+        }
+        if (SIM_EVENT_SWITCH2_PERMANENT_OFF == ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_EVENT_CODE)]){
+            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_SWITCH)] = false;
+        }
+        if (SIM_EVENT_SWITCH2_PERMANENT_ON == ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_EVENT_CODE)]){
+            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_SWITCH)] = true;
+        }
+        if (SIM_EVENT_SWITCH3A_PERMANENT_OFF == ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_EVENT_CODE)]){
+            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH_A)] = false;
+        }
+        if (SIM_EVENT_SWITCH3A_PERMANENT_ON == ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_EVENT_CODE)]){
+            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH_A)] = true;
+        }
+        if (SIM_EVENT_SWITCH3B_PERMANENT_OFF == ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_EVENT_CODE)]){
+            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH_B)] = false;
+        }
+        if (SIM_EVENT_SWITCH3B_PERMANENT_ON == ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_EVENT_CODE)]){
+            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH_B)] = true;
+        }
+
+        if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_SWITCH)] &&
+           (SIM_EVENT_SWITCH1_TEMPORARY_OFF == ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_EVENT_CODE)])) 
+        {
+            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_SWITCH)] = false;
+            ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_EVENT_CODE)] = 0u;
+        }
+        if (!ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_SWITCH)] &&
+            (SIM_EVENT_SWITCH1_TEMPORARY_ON == ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_EVENT_CODE)]))
+        {
+            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_SWITCH)] = true;
+            ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_EVENT_CODE)] = 0u;
+        }
+        if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_SWITCH)] &&
+           (SIM_EVENT_SWITCH2_TEMPORARY_OFF == ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_EVENT_CODE)])) 
+        {
+            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_SWITCH)] = false;
+            ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_EVENT_CODE)] = 0u;
+        }
+        if (!ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_SWITCH)] &&
+            (SIM_EVENT_SWITCH2_TEMPORARY_ON == ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_EVENT_CODE)]))
+        {
+            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_SWITCH)] = true;
+            ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_EVENT_CODE)] = 0u;
+        }
+        if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH_A)] &&
+           (SIM_EVENT_SWITCH3A_TEMPORARY_OFF == ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_EVENT_CODE)])) 
+        {
+            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH_A)] = false;
+            ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_EVENT_CODE)] = 0u;
+        }
+        if (!ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH_A)] &&
+            (SIM_EVENT_SWITCH3A_TEMPORARY_ON == ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_EVENT_CODE)]))
+        {
+            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH_A)] = true;
+            ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_EVENT_CODE)] = 0u;
+        }
+        if (ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH_B)] &&
+           (SIM_EVENT_SWITCH3B_TEMPORARY_OFF == ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_EVENT_CODE)])) 
+        {
+            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH_B)] = false;
+            ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_EVENT_CODE)] = 0u;
+        }
+        if (!ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH_B)] &&
+            (SIM_EVENT_SWITCH3B_TEMPORARY_ON == ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_EVENT_CODE)]))
+        {
+            ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_SWITCH_B)] = true;
+            ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_EVENT_CODE)] = 0u;
+        }
+    }
+#endif // DEBUG_SIMULATION_MODE
+
     // just for testing purposes
 	(void)getTimeStampString(); // Update the time stamp string for printouts.
     static bool PrintoutsForTestingPurposes = false;
