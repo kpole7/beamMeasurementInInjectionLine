@@ -280,8 +280,8 @@ static void mainInitialization(void){
 static void highLevelCtrlService(void) {
 	HighLevelCtrlInputs Inputs;
 	HighLevelCtrlOutputs Outputs;
-	uint16_t ErrorStorageIndex = holdingIndexFromAddress(MODBUS_ADDR_ERROR_STORAGE);
-	uint16_t ErrorCodeIndex = holdingIndexFromAddress(MODBUS_ADDR_ERROR_CODE);
+	uint16_t ErrorStorageIndex = inputIndexFromAddress(MODBUS_ADDR_ERROR_STORAGE);
+	uint16_t ErrorCodeIndex = inputIndexFromAddress(MODBUS_ADDR_ERROR_CODE);
 
 	// Special case: Force insert if external inhibition is active for pneumatic with lock
 	if (!ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_CONTROL)] &&
@@ -307,9 +307,9 @@ static void highLevelCtrlService(void) {
 	Inputs.cup_control[0] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_CONTROL)];
 	Inputs.cup_control[1] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_CONTROL)];
 	Inputs.cup_control[2] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_CONTROL)];
-	Inputs.cup_error[0] = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_ERROR)];
-	Inputs.cup_error[1] = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP2_ERROR)];
-	Inputs.cup_error[2] = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP3_ERROR)];
+	Inputs.cup_error[0] = ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_CUP1_ERROR)];
+	Inputs.cup_error[1] = ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_CUP2_ERROR)];
+	Inputs.cup_error[2] = ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_CUP3_ERROR)];
 
 	if (!IsHighLevelStateInitialized) {
 		HighLevelState.prev_error_code = 0u;
@@ -317,13 +317,12 @@ static void highLevelCtrlService(void) {
 		IsHighLevelStateInitialized = true;
 	}
 
-	// Allow reset from Modbus write in normal/debug mode.
-	HighLevelState.error_storage = ModbusHoldingRegisters[ErrorStorageIndex];
+	HighLevelState.error_storage = ModbusInputRegisters[ErrorStorageIndex];
 
 	highLevelCtrlTick(&Inputs, &HighLevelState, &Outputs);
 
-	ModbusHoldingRegisters[ErrorCodeIndex] = Outputs.error_code;
-	ModbusHoldingRegisters[ErrorStorageIndex] = Outputs.error_storage;
+	ModbusInputRegisters[ErrorCodeIndex] = Outputs.error_code;
+	ModbusInputRegisters[ErrorStorageIndex] = Outputs.error_storage;
 
 	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_REQUESTED_STATE)] = Outputs.cup_requested_state[0];
 	ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_REQUESTED_STATE)] = Outputs.cup_requested_state[1];
@@ -376,17 +375,17 @@ static void auxiliaryFSMsService(void) {
 
 	auxiliaryFSMsTick(&Inputs, &AuxiliaryFSMsStateData, &Outputs);
 
-	if (Outputs.cup_error[0] != ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_ERROR)]) {
-		ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_ERROR)] = Outputs.cup_error[0];
-		ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP1_ERROR_STORAGE)] |= Outputs.cup_error[0];
+	if (Outputs.cup_error[0] != ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_CUP1_ERROR)]) {
+		ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_CUP1_ERROR)] = Outputs.cup_error[0];
+		ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_CUP1_ERROR_STORAGE)] |= Outputs.cup_error[0];
 	}
-	if (Outputs.cup_error[1] != ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP2_ERROR)]) {
-		ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP2_ERROR)] = Outputs.cup_error[1];
-		ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP2_ERROR_STORAGE)] |= Outputs.cup_error[1];
+	if (Outputs.cup_error[1] != ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_CUP2_ERROR)]) {
+		ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_CUP2_ERROR)] = Outputs.cup_error[1];
+		ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_CUP2_ERROR_STORAGE)] |= Outputs.cup_error[1];
 	}
-	if (Outputs.cup_error[2] != ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP3_ERROR)]) {
-		ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP3_ERROR)] = Outputs.cup_error[2];
-		ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_CUP3_ERROR_STORAGE)] |= Outputs.cup_error[2];
+	if (Outputs.cup_error[2] != ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_CUP3_ERROR)]) {
+		ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_CUP3_ERROR)] = Outputs.cup_error[2];
+		ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_CUP3_ERROR_STORAGE)] |= Outputs.cup_error[2];
 	}
 
 	if (Outputs.trigger_insert[0]) {
