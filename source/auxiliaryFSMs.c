@@ -215,7 +215,11 @@ void pneumaticFsmTick(uint16_t Cup,
         OutputsPtr->actuator_insert[Cup] = Actuator;
     }
     OutputsPtr->trigger_insert[Cup] = Trigger;
+    if ((PNEUMATIC_FSM_STATE_ERROR == PneumaticLocalState) && (0 == Error)) {
+        Error = FsmStatePtr->error_in_memory[Cup];
+    }
     OutputsPtr->cup_error[Cup] = Error;
+    FsmStatePtr->error_in_memory[Cup] = Error;
 }
 
 // -------------------------------------------------------------------------------------------------------------
@@ -525,7 +529,11 @@ void pneumaticWithLockFsmTick(uint16_t Cup,
         OutputsPtr->actuator_insert[Cup] = Actuator;
     }
     OutputsPtr->trigger_insert[Cup] = Trigger;
+    if ((PNEUMATIC_WITH_LOCK_FSM_STATE_ERROR == PneumaticWithLockLocalState) && (0 == Error)) {
+        Error = FsmStatePtr->error_in_memory[Cup];
+    }
     OutputsPtr->cup_error[Cup] = Error;
+    FsmStatePtr->error_in_memory[Cup] = Error;
 }
 
 // -------------------------------------------------------------------------------------------------------------
@@ -918,7 +926,11 @@ void motorFsmTick(uint16_t Cup,
         OutputsPtr->actuator_brake[Cup] = ActuatorBrake;
     }
     OutputsPtr->trigger_brake[Cup] = TriggerBrake;
+    if ((MOTOR_FSM_STATE_ERROR == MotorLocalState) && (0 == Error)) {
+        Error = FsmStatePtr->error_in_memory[Cup];
+    }
     OutputsPtr->cup_error[Cup] = Error;
+    FsmStatePtr->error_in_memory[Cup] = Error;
 }
 
 // -------------------------------------------------------------------------------------------------------------

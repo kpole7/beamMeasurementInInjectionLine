@@ -251,6 +251,7 @@ static void mainInitialization(void){
 
 	memset(&AuxiliaryFSMsStateData, 0, sizeof(AuxiliaryFSMsStateData));
 	AuxiliaryFSMsStateData.active_cup = 1u;
+	memset(AuxiliaryFSMsStateData.error_in_memory, 0, sizeof(AuxiliaryFSMsStateData.error_in_memory));
 
 #if MODBUS_DEBUG_MODE
 	initInputPortJP1();
@@ -417,6 +418,23 @@ static void auxiliaryFSMsService(void) {
 	}
 
 	ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP)] = clampActiveCup(AuxiliaryFSMsStateData.active_cup);
+
+	for (int Cup = 0; Cup < MAX_CUPS; Cup++) {
+		switch (Inputs.cup_type[Cup]) {
+		case CUP_TYPE_PNEUMATIC:
+			ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_CUP1_FSM_STATE) + Cup] = AuxiliaryFSMsStateData.pneumatic_fsm_state[Cup];
+			break;
+		case CUP_TYPE_PNEUMATIC_WITH_LOCK:
+			ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_CUP1_FSM_STATE) + Cup] = AuxiliaryFSMsStateData.pneumatic_with_lock_fsm_state[Cup];
+			break;
+		case CUP_TYPE_MOTOR:
+			ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_CUP1_FSM_STATE) + Cup] = AuxiliaryFSMsStateData.motor_fsm_state[Cup];
+			break;
+		default:
+			assert(false); // This should never happen, as the cup type is validated in the high-level control FSM
+			break;
+		}
+	}
 }
 
 static uint16_t clampInstalledCups(uint16_t value) {

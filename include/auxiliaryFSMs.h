@@ -97,6 +97,7 @@ typedef struct {
     uint16_t braking_elapsed[MAX_CUPS];
     bool is_cup_inserted[MAX_CUPS];
     uint16_t active_cup;
+    uint16_t error_in_memory[MAX_CUPS];
 } AuxiliaryFSMsState;
 
 void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *Inputs,
