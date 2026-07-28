@@ -9,6 +9,7 @@
 
 
 #define PAUSE_AFTER_BOOT_TIME_IN_TICKS 5000u // 10 seconds with 2ms tick period
+#define PAUSE_BEFORE_RECOVERY_IN_TICKS 500u //  1 second with 2ms tick period
 #define PRE_BRAKING_TIME_IN_TICKS 5u
 #define BRAKING_TIME_IN_TICKS 400u
 #define PAUSE_AFTER_LOCK_TIME_IN_TICKS 500u
@@ -854,6 +855,7 @@ void motorFsmTick(uint16_t Cup,
                   AuxiliaryFSMsState *FsmStatePtr,
                   AuxiliaryFSMsOutputs *OutputsPtr)
 {
+    static bool IsPowerUpTime = true;
     MotorFsmStateEnum MotorLocalState = FsmStatePtr->motor_fsm_state[Cup];
     bool PauseAfterBootIsOver = false;
     bool TransitionTimeExceeded = false;
@@ -873,8 +875,11 @@ void motorFsmTick(uint16_t Cup,
 
     if (MOTOR_FSM_STATE_BOOTED == MotorLocalState) {
         saturatingIncreaseU16(&FsmStatePtr->pause_after_boot_elapsed[Cup]);
-        if (FsmStatePtr->pause_after_boot_elapsed[Cup] > PAUSE_AFTER_BOOT_TIME_IN_TICKS) {
+        if (FsmStatePtr->pause_after_boot_elapsed[Cup] > 
+            (IsPowerUpTime? PAUSE_AFTER_BOOT_TIME_IN_TICKS : PAUSE_BEFORE_RECOVERY_IN_TICKS)) 
+        {
             PauseAfterBootIsOver = true;
+            IsPowerUpTime = false;
         }
     } else {
         FsmStatePtr->pause_after_boot_elapsed[Cup] = 0u;
