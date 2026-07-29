@@ -29,9 +29,6 @@ static bool isWritableCoilAddress(USHORT address) {
 	return (address == MODBUS_ADDR_CUP1_CONTROL) ||
 	       (address == MODBUS_ADDR_CUP2_CONTROL) ||
 	       (address == MODBUS_ADDR_CUP3_CONTROL) ||
-	       (address == MODBUS_ADDR_CUP1_ERROR_RECOVERY) ||
-	       (address == MODBUS_ADDR_CUP2_ERROR_RECOVERY) ||
-	       (address == MODBUS_ADDR_CUP3_ERROR_RECOVERY) ||
 		   (address == MODBUS_ADDR_CLEAR_ERRORS);
 }
 

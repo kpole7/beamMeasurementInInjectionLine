@@ -251,7 +251,6 @@ static void mainInitialization(void){
 
 	memset(&AuxiliaryFSMsStateData, 0, sizeof(AuxiliaryFSMsStateData));
 	AuxiliaryFSMsStateData.active_cup = 1u;
-	memset(AuxiliaryFSMsStateData.error_in_memory, 0, sizeof(AuxiliaryFSMsStateData.error_in_memory));
 
 #if MODBUS_DEBUG_MODE
 	initInputPortJP1();
@@ -348,28 +347,6 @@ static void auxiliaryFSMsService(void) {
 	Inputs.time_limit_withdrawing_ms[1] = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_WITHDRAWING2)];
 	Inputs.time_limit_withdrawing_ms[2] = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_TIME_LIMIT_WITHDRAWING3)];
 
-	if ((ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_CUP1_ERROR_RECOVERY)]) &&
-		(ModbusCoils[      coilIndexFromAddress(MODBUS_ADDR_CUP1_ERROR_RECOVERY)])) 
-	{
-		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_CUP1_ERROR_RECOVERY)] = false;
-		ModbusCoils[      coilIndexFromAddress(MODBUS_ADDR_CUP1_ERROR_RECOVERY)] = false;
-		Inputs.cup_error_recover[0] = true;
-	}
-	if ((ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_CUP2_ERROR_RECOVERY)]) &&
-		(ModbusCoils[      coilIndexFromAddress(MODBUS_ADDR_CUP2_ERROR_RECOVERY)])) 
-	{
-		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_CUP2_ERROR_RECOVERY)] = false;
-		ModbusCoils[      coilIndexFromAddress(MODBUS_ADDR_CUP2_ERROR_RECOVERY)] = false;
-		Inputs.cup_error_recover[1] = true;
-	}
-	if ((ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_CUP3_ERROR_RECOVERY)]) &&
-		(ModbusCoils[      coilIndexFromAddress(MODBUS_ADDR_CUP3_ERROR_RECOVERY)])) 
-	{
-		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_CUP3_ERROR_RECOVERY)] = false;
-		ModbusCoils[      coilIndexFromAddress(MODBUS_ADDR_CUP3_ERROR_RECOVERY)] = false;
-		Inputs.cup_error_recover[2] = true;
-	}
-
 	Inputs.cup_requested_state[0] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP1_REQUESTED_STATE)];
 	Inputs.cup_requested_state[1] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP2_REQUESTED_STATE)];
 	Inputs.cup_requested_state[2] = ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_CUP3_REQUESTED_STATE)];
@@ -398,29 +375,39 @@ static void auxiliaryFSMsService(void) {
 		ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_CUP3_ERROR_STORAGE)] |= Outputs.cup_error[2];
 	}
 
-	if (Outputs.trigger_insert[0]) {
+	if (Outputs.trigger_insert[0] && 
+		(ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)] != Outputs.actuator_insert[0]))
+	{
 		printf("AuxFsmTick; actuator 1: %d->%d\r\n", ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)], Outputs.actuator_insert[0]);
 		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)] = Outputs.actuator_insert[0];
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)] = true;
 	}
 
-	if (Outputs.trigger_insert[1]){
+	if (Outputs.trigger_insert[1] && 
+		(ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)] != Outputs.actuator_insert[1]))
+	{
 		printf("AuxFsmTick; actuator 2: %d->%d\r\n", ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)], Outputs.actuator_insert[1]);
 		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)] = Outputs.actuator_insert[1];
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)] = true;
 	}
 
-	if (Outputs.trigger_insert[2]){
+	if (Outputs.trigger_insert[2] && 
+		(ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)] != Outputs.actuator_insert[2]))
+	{
 		printf("AuxFsmTick; actuator 3 in: %d->%d\r\n", ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)], Outputs.actuator_insert[2]);
 		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)] = Outputs.actuator_insert[2];
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)] = true;
 	}
-	if (Outputs.trigger_withdraw[2]){
+	if (Outputs.trigger_withdraw[2] && 
+		(ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_OUT)] != Outputs.actuator_withdraw[2]))
+	{
 		printf("AuxFsmTick; actuator 3 out: %d->%d\r\n", ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_OUT)], Outputs.actuator_withdraw[2]);
 		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_OUT)] = Outputs.actuator_withdraw[2];
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_OUT)] = true;
 	}
-	if (Outputs.trigger_brake[2]){
+	if (Outputs.trigger_brake[2] && 
+		(ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_BRAKE)] != Outputs.actuator_brake[2]))
+	{
 		printf("AuxFsmTick; actuator 3 brake: %d->%d\r\n", ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_BRAKE)], Outputs.actuator_brake[2]);
 		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_BRAKE)] = Outputs.actuator_brake[2];
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_BRAKE)] = true;
