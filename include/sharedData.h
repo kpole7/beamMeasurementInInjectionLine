@@ -20,7 +20,7 @@
 // Constants related to Modbus registers
 //..............................................................................
 
-#define MODBUS_ADDR_THE_LAST_COIL 24
+#define MODBUS_ADDR_THE_LAST_COIL 21
 #define MODBUS_ADDR_THE_LAST_HOLDING_REGISTER 1138
 #define MODBUS_ADDR_THE_LAST_INPUT_REGISTER 3025
 
