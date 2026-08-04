@@ -4,6 +4,7 @@
 #include "sharedData.h"
 #include "mainTimer.h"
 #include "compilationTime.h"
+#include "masterConfig.h"
 
 #include <stdlib.h> // rand()
 
@@ -95,7 +96,9 @@ void initializeModbusRegisters(void) {
 	// live random values for testing purposes
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_AMPLIFIER_RANDOM_OFFSET)] = 20u;
 
+#if DEBUG_SIMULATION_MODE
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] = 6u; // PRINTOUTS_LOGIC | PRINTOUTS_ACTUATORS
+#endif // DEBUG_SIMULATION_MODE
 }
 
 

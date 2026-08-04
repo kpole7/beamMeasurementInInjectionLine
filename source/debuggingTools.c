@@ -604,7 +604,9 @@ void debugCommandInterpreter(void) {
 			case 'S':
 				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] |= PRINTOUTS_SIMULATION;
 				printSettingsInfo();
+#if DEBUG_SIMULATION_MODE
 				printf(" Simulator states: Cup1=%u, Cup2=%u, Cup3=%u\r\n", SimulationState1, SimulationState2, SimulationState3);
+#endif // DEBUG_SIMULATION_MODE
 				break;
 			case 's':
 				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] &= ~PRINTOUTS_SIMULATION;
