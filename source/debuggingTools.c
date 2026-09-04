@@ -241,6 +241,7 @@ char *getTimeStampStringWithoutUpdate(void){
 
 void printChangedRegisters( const char *ContextComment ) {
 	static uint16_t OldModbusHoldingRegisters[MODBUS_HOLDING_REGISTERS_NUMBER];
+	static uint16_t OldModbusInputRegistersButNotSamples[MODBUS_INPUTS_BUT_NOT_SAMPLES_NUMBER];
 	static bool OldModbusCoils[MODBUS_COILS_NUMBER];
 	bool AnyChange = false;
 	int16_t Counter = 3;
@@ -268,6 +269,22 @@ void printChangedRegisters( const char *ContextComment ) {
 			AnyChange = true;
 			printf("%04d: %04X -> %04X  ", J+MODBUS_HOLDING_REGISTERS_ADDRESS, OldModbusHoldingRegisters[J], ModbusHoldingRegisters[J]);
 			OldModbusHoldingRegisters[J] = ModbusHoldingRegisters[J];
+			Counter+=2;
+			if (Counter >= 16) {
+				printf("\r\n    ");
+				Counter = 0;
+			}
+		}
+	}
+	for (int J = 0; J < MODBUS_INPUTS_BUT_NOT_SAMPLES_NUMBER; J++) {
+		if (ModbusInputRegisters[J+MODBUS_INPUTS_BUT_NOT_SAMPLES_ADDRESS] != OldModbusInputRegistersButNotSamples[J]) {
+			if (!AnyChange) {
+				printf("%s %11s  ", getTimeStampString(), ContextComment);
+			}
+			AnyChange = true;
+			printf("%04d: %04X -> %04X  ", J+MODBUS_INPUTS_BUT_NOT_SAMPLES_ADDRESS, OldModbusInputRegistersButNotSamples[J], 
+				ModbusInputRegisters[J+MODBUS_INPUTS_BUT_NOT_SAMPLES_ADDRESS]);
+			OldModbusInputRegistersButNotSamples[J] = ModbusInputRegisters[J+MODBUS_INPUTS_BUT_NOT_SAMPLES_ADDRESS];
 			Counter+=2;
 			if (Counter >= 16) {
 				printf("\r\n    ");

@@ -46,6 +46,11 @@
 /// This is the number of read-only input registers
 #define MODBUS_INPUT_REGISTERS_NUMBER       (MODBUS_ADDR_THE_LAST_INPUT_REGISTER - MODBUS_INPUT_REGISTERS_ADDRESS + 1)
 
+#define MODBUS_INPUTS_BUT_NOT_SAMPLES_ADDRESS      MODBUS_ADDR_ACTIVE_CUP
+
+/// This is the number of read-only input registers excluding samples
+#define MODBUS_INPUTS_BUT_NOT_SAMPLES_NUMBER       (MODBUS_ADDR_THE_LAST_INPUT_REGISTER - MODBUS_INPUTS_BUT_NOT_SAMPLES_ADDRESS + 1)
+
 //..............................................................................
 // Definitions of variables concerning Modbus communication
 //..............................................................................
