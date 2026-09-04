@@ -277,14 +277,16 @@ void printChangedRegisters( const char *ContextComment ) {
 		}
 	}
 	for (int J = 0; J < MODBUS_INPUTS_BUT_NOT_SAMPLES_NUMBER; J++) {
-		if (ModbusInputRegisters[J+MODBUS_INPUTS_BUT_NOT_SAMPLES_ADDRESS] != OldModbusInputRegistersButNotSamples[J]) {
+		uint16_t Address = J + MODBUS_INPUTS_BUT_NOT_SAMPLES_ADDRESS;
+		uint16_t InputIndex = inputIndexFromAddress(Address);
+		if (ModbusInputRegisters[InputIndex] != OldModbusInputRegistersButNotSamples[J]) {
 			if (!AnyChange) {
 				printf("%s %11s  ", getTimeStampString(), ContextComment);
 			}
 			AnyChange = true;
-			printf("%04d: %04X -> %04X  ", J+MODBUS_INPUTS_BUT_NOT_SAMPLES_ADDRESS, OldModbusInputRegistersButNotSamples[J], 
-				ModbusInputRegisters[J+MODBUS_INPUTS_BUT_NOT_SAMPLES_ADDRESS]);
-			OldModbusInputRegistersButNotSamples[J] = ModbusInputRegisters[J+MODBUS_INPUTS_BUT_NOT_SAMPLES_ADDRESS];
+			printf("%04d: %04X -> %04X  ", Address, OldModbusInputRegistersButNotSamples[J], 
+				ModbusInputRegisters[InputIndex]);
+			OldModbusInputRegistersButNotSamples[J] = ModbusInputRegisters[InputIndex];
 			Counter+=2;
 			if (Counter >= 16) {
 				printf("\r\n    ");

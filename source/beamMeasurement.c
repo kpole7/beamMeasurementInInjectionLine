@@ -61,8 +61,6 @@ static void initModbusActivityLed(void);
 /// the correct timing and strength of illumination).
 static void modbusActivityLedService(void);
 
-static void printRegisters(void);
-
 static void mainInitialization(void);
 
 static void highLevelCtrlService(void);
@@ -221,22 +219,6 @@ static void modbusActivityLedService(void) {
 		atomic_store_explicit(&ModbusActiveLedShort, false, memory_order_release);
 		ModbusActiveLedLong = false;
 	}
-}
-
-static void printRegisters(void){
-	for (int J = 0; J < MODBUS_INPUT_REGISTERS_NUMBER; J++) {
-		printf("  %04X", ModbusInputRegisters[J]);
-		if ((J % 5) == 4) {
-			printf("\r\n");
-		}
-	}
-	for (int J = 0; J < MODBUS_COILS_NUMBER; J++) {
-		printf(" %c", ModbusCoils[J] ? '1' : '0');
-		if ((J % 3) == 2) {
-			printf(" |");
-		}
-	}
-	printf("\r\n");
 }
 
 static void mainInitialization(void){
