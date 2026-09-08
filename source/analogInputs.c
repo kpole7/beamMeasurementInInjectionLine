@@ -322,7 +322,7 @@ void analogInputsMeasurements(void) {
 
 #endif
 
-				ModbusInputRegisters[SafeActiveCup*5 + Channel] = (uint16_t)Result;
+				ModbusInputRegisters[SafeActiveCup*ANALOG_MAX_CHANNELS + Channel] = (uint16_t)Result;
 
 				auxiliaryPinOutputValue1(true); // just for debugging purposes
 
@@ -341,16 +341,16 @@ void analogInputsMeasurements(void) {
 						printf("Ch%u: %4lu [%4lu] %3lu [%4lu] %u.%02u uA %u|", Channel, 
 								AccumulatorHighGain, (uint32_t)(FilteredValues0[Channel]+0.5f), 
 								AccumulatorLowGain, (uint32_t)(FilteredValues1[Channel]+0.5f), 
-								(unsigned int)(ModbusInputRegisters[SafeActiveCup*5 + Channel]/100), 
-								(unsigned int)(ModbusInputRegisters[SafeActiveCup*5 + Channel]%100),
+								(unsigned int)(ModbusInputRegisters[SafeActiveCup*ANALOG_MAX_CHANNELS + Channel]/100), 
+								(unsigned int)(ModbusInputRegisters[SafeActiveCup*ANALOG_MAX_CHANNELS + Channel]%100),
 								ErrorCode);
 					}
 					if (SelectedChannel == (Channel + 1u)) {
 						printf("Ch%u: %4lu [%4lu] %3lu [%4lu] %u.%02u uA %c%u | x1=%u x2=%u y1=%u y2=%u | coef=%lu res=%ld | BaseIndexX=%u BaseIndexY=%u", Channel, 
 								AccumulatorHighGain, (uint32_t)(FilteredValues0[Channel]+0.5f), 
 								AccumulatorLowGain, (uint32_t)(FilteredValues1[Channel]+0.5f), 
-								(unsigned int)(ModbusInputRegisters[SafeActiveCup*5 + Channel]/100), 
-								(unsigned int)(ModbusInputRegisters[SafeActiveCup*5 + Channel]%100),
+								(unsigned int)(ModbusInputRegisters[SafeActiveCup*ANALOG_MAX_CHANNELS + Channel]/100), 
+								(unsigned int)(ModbusInputRegisters[SafeActiveCup*ANALOG_MAX_CHANNELS + Channel]%100),
 								IsSignalLarge[Channel] ? 'L' : 'H',										// L = low gain, H = high gain
 								ErrorCode,
 								CalculationsTemporaryData.x_a, CalculationsTemporaryData.x_b,
