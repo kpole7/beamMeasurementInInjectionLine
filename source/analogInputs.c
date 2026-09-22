@@ -1,8 +1,8 @@
 /// @file analogInputs.c
 
 #include "sharedData.h"
-
 #include "debuggingTools.h"
+#include "configFaradayCups.h"
 
 #include "hardware/adc.h"
 #include "pico/stdlib.h"
@@ -85,17 +85,16 @@ static const float GetVoltageOffset = (float)0.0;
 //---------------------------------------------------------------------------------------------------
 
 /// @brief This is a buffer for raw samples from the ADC0 converter
-static uint16_t RawBufferAdc0[ANALOG_MAX_CHANNELS][ADC_RAW_BUFFER_SIZE];
+static uint16_t RawBufferAdc0[MAX_CUPS][ANALOG_MAX_CHANNELS][ADC_RAW_BUFFER_SIZE];
 
 /// @brief This is a buffer for raw samples from the ADC1 converter
-static uint16_t RawBufferAdc1[ANALOG_MAX_CHANNELS][ADC_RAW_BUFFER_SIZE];
+static uint16_t RawBufferAdc1[MAX_CUPS][ANALOG_MAX_CHANNELS][ADC_RAW_BUFFER_SIZE];
 
 /// @brief Index for writing new samples from ADC0 and ADC1
 static uint32_t AdcBuffersHead = 0;
 
-/// @brief This variable stores the value of the active cup (1, 2 or 3) that is read from Modbus holding register; 
-/// it is used for checking if the active cup has changed since the last measurement cycle
-static uint16_t LocalActiveCup = 0xFFFFu;
+/// @brief This variable stores the index of the currently measured cup
+static uint16_t IndexedCup;
 
 /// @brief This variable stores the index of the currently measured channel
 static uint16_t ActiveChannel;
@@ -143,6 +142,7 @@ void initializeAdcMeasurements(void) {
 	gpio_set_dir(GPIO_FOR_CHANNEL_MULTIPLEXER_CONTROL_1, GPIO_OUT);
 	gpio_put(GPIO_FOR_CHANNEL_MULTIPLEXER_CONTROL_1, false);
 
+	IndexedCup = 0;
 	ActiveChannel = 0;
 }
 
@@ -153,51 +153,27 @@ void analogInputsMeasurements(void) {
 	// Measure ADC0
 	adc_select_input(0);
 	(void)adc_read(); // dummy read
-	RawBufferAdc0[ActiveChannel][AdcBuffersHead] = adc_read();
+	RawBufferAdc0[IndexedCup][ActiveChannel][AdcBuffersHead] = adc_read();
 	// Measure ADC1
 	adc_select_input(1);
 	(void)adc_read(); // dummy read
-	RawBufferAdc1[ActiveChannel][AdcBuffersHead] = adc_read();
+	RawBufferAdc1[IndexedCup][ActiveChannel][AdcBuffersHead] = adc_read();
 	// Update the index for the next samples
 	AdcBuffersHead++;
-
-	uint16_t SafeActiveCup = (LocalActiveCup <= 2u) ? LocalActiveCup : 0u;
 
 	if (ActiveChannel < (ANALOG_MAX_CHANNELS - 1)) {
 		ActiveChannel++;
 	} else {
 		ActiveChannel = 0;
 
-		// Keep local cup state synchronized with the ActiveCup Modbus register.
-		if (LocalActiveCup + 1u != ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP)]) {
-			if (0 == ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP)]){
-				ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP)] = 1u; // just for testing purposes (initialization of the register)
-			}
-			LocalActiveCup = ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP)];
-			LocalActiveCup--;
-			if (LocalActiveCup > 2u){
-				LocalActiveCup = 0u;
-			}
-			SafeActiveCup = LocalActiveCup;
-
-			for (uint16_t J = 0; J < ANALOG_MAX_CHANNELS; J++) {
-				for (uint16_t K = 0; K < ADC_RAW_BUFFER_SIZE; K++) {
-					RawBufferAdc0[J][K] = 0;
-					RawBufferAdc1[J][K] = 0;
-				}
-				IsSignalLarge[J] = true; // initial value for the first measurement cycle after the cup change
-			}
-
-			for (int J = 0; J < MODBUS_INPUT_REGISTERS_NUMBER; J++) {
-				ModbusInputRegisters[J] = 0;
-			}
+		if (IndexedCup < (MAX_CUPS - 1)) {
+			IndexedCup++;
+		} else {
+			IndexedCup = 0;
 		}
 
 		// just for testing purposes
 		PrintoutsForTestingPurposes  = ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_ANALOG) != 0u);
-
-		// Defensive clamp to avoid out-of-bounds writes when local state is invalid.
-		SafeActiveCup = (LocalActiveCup <= 2u) ? LocalActiveCup : 0u;
 
 		// Calculations are carried out on the basis of the samples stored in the buffers, 
 		// and the results are stored in Modbus input registers
@@ -205,11 +181,8 @@ void analogInputsMeasurements(void) {
 		CalculationDivider++;
 		CalculationDivider &= ADC_INDEX_MASK;
 		if (CalculationDivider == 0) {
-			if (PrintoutsForTestingPurposes) {
-				printf("Cup %u ", SafeActiveCup + 1u); // just for testing purposes
-			}
 			for (uint16_t Channel = 0; Channel < ANALOG_MAX_CHANNELS; Channel++) {
-				uint16_t HoldingBaseIndexX = holdingIndexFromAddress(MODBUS_CALIBRATION_X_REGISTERS_ADDRESS + (SafeActiveCup * (4u*6u)) + (Channel * 6u));
+				uint16_t HoldingBaseIndexX = holdingIndexFromAddress(MODBUS_CALIBRATION_X_REGISTERS_ADDRESS + (IndexedCup * (4u*6u)) + (Channel * 6u));
 				uint16_t HoldingBaseIndexY = holdingIndexFromAddress(MODBUS_CALIBRATION_Y_REGISTERS_ADDRESS);
 				uint32_t AccumulatorHighGain = 0;
 				uint32_t AccumulatorLowGain = 0;
@@ -217,8 +190,8 @@ void analogInputsMeasurements(void) {
 				auxiliaryPinOutputValue1(true); // just for debugging purposes
 
 				for (uint16_t K = 0; K < ADC_RAW_BUFFER_SIZE; K++) {
-					AccumulatorHighGain += RawBufferAdc0[Channel][K];
-					AccumulatorLowGain += RawBufferAdc1[Channel][K];
+					AccumulatorHighGain += RawBufferAdc0[IndexedCup][Channel][K];
+					AccumulatorLowGain += RawBufferAdc1[IndexedCup][Channel][K];
 				}
 				AccumulatorHighGain /= ACCUMULATOR_DIVIDER;
 				AccumulatorLowGain /= ACCUMULATOR_DIVIDER;
@@ -231,7 +204,7 @@ void analogInputsMeasurements(void) {
 						IsSignalLarge[Channel] = true;
 					}
 				}
-				CalculationsTemporaryData.cup_number = SafeActiveCup;
+				CalculationsTemporaryData.cup_number = IndexedCup;
 				CalculationsTemporaryData.channel_number = Channel;
 				if (IsSignalLarge[Channel]) {
 					uint16_t X1 = ModbusHoldingRegisters[HoldingBaseIndexX];
@@ -313,7 +286,7 @@ void analogInputsMeasurements(void) {
 
 #else
 
-				int32_t Result = ModbusHoldingRegisters[SafeActiveCup*4 + Channel + holdingIndexFromAddress(MODBUS_ADDR_SIM_AMPLIFIER_CUP1_ELECTRODE1)];
+				int32_t Result = ModbusHoldingRegisters[IndexedCup*4 + Channel + holdingIndexFromAddress(MODBUS_ADDR_SIM_AMPLIFIER_CUP1_ELECTRODE1)];
 				uint16_t ErrorCode = 0;
 				int32_t DeviationForSimulation = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_AMPLIFIER_RANDOM_OFFSET)] +
 					(ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_SIM_AMPLIFIER_RANDOM_RATE)] * Result) / 0x100;
@@ -322,7 +295,7 @@ void analogInputsMeasurements(void) {
 
 #endif
 
-				ModbusInputRegisters[SafeActiveCup*ANALOG_MAX_CHANNELS + Channel] = (uint16_t)Result;
+				ModbusInputRegisters[IndexedCup*ANALOG_MAX_CHANNELS + Channel] = (uint16_t)Result;
 
 				auxiliaryPinOutputValue1(true); // just for debugging purposes
 
@@ -338,20 +311,21 @@ void analogInputsMeasurements(void) {
 
 					uint16_t SelectedChannel = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT2)];
 					if (0 == SelectedChannel) {
-						printf("Ch%u: %4lu [%4lu] %3lu [%4lu] %u.%02u uA %u|", Channel, 
+						printf("Fc%u Ch%u: %4lu [%4lu] %3lu [%4lu] %u.%02u uA %u|", IndexedCup+1, Channel, 
 								AccumulatorHighGain, (uint32_t)(FilteredValues0[Channel]+0.5f), 
 								AccumulatorLowGain, (uint32_t)(FilteredValues1[Channel]+0.5f), 
-								(unsigned int)(ModbusInputRegisters[SafeActiveCup*ANALOG_MAX_CHANNELS + Channel]/100), 
-								(unsigned int)(ModbusInputRegisters[SafeActiveCup*ANALOG_MAX_CHANNELS + Channel]%100),
+								(unsigned int)(ModbusInputRegisters[IndexedCup*ANALOG_MAX_CHANNELS + Channel]/100), 
+								(unsigned int)(ModbusInputRegisters[IndexedCup*ANALOG_MAX_CHANNELS + Channel]%100),
 								ErrorCode);
 					}
 					if (SelectedChannel == (Channel + 1u)) {
-						printf("Ch%u: %4lu [%4lu] %3lu [%4lu] %u.%02u uA %c%u | x1=%u x2=%u y1=%u y2=%u | coef=%lu res=%ld | BaseIndexX=%u BaseIndexY=%u", Channel, 
+						printf("Fc%u Ch%u: %4lu [%4lu] %3lu [%4lu] %u.%02u uA %c%u | x1=%u x2=%u y1=%u y2=%u | coef=%lu res=%ld | BaseIndexX=%u BaseIndexY=%u", 
+								IndexedCup+1, Channel, 
 								AccumulatorHighGain, (uint32_t)(FilteredValues0[Channel]+0.5f), 
 								AccumulatorLowGain, (uint32_t)(FilteredValues1[Channel]+0.5f), 
-								(unsigned int)(ModbusInputRegisters[SafeActiveCup*ANALOG_MAX_CHANNELS + Channel]/100), 
-								(unsigned int)(ModbusInputRegisters[SafeActiveCup*ANALOG_MAX_CHANNELS + Channel]%100),
-								IsSignalLarge[Channel] ? 'L' : 'H',										// L = low gain, H = high gain
+								(unsigned int)(ModbusInputRegisters[IndexedCup*ANALOG_MAX_CHANNELS + Channel]/100), 
+								(unsigned int)(ModbusInputRegisters[IndexedCup*ANALOG_MAX_CHANNELS + Channel]%100),
+								IsSignalLarge[Channel] ? 'L' : 'H',	// L = low gain, H = high gain
 								ErrorCode,
 								CalculationsTemporaryData.x_a, CalculationsTemporaryData.x_b,
 								CalculationsTemporaryData.y_a, CalculationsTemporaryData.y_b,
@@ -376,7 +350,7 @@ void analogInputsMeasurements(void) {
 			}
 		}
 	}
-	controlSelectedCup(SafeActiveCup);
+	controlSelectedCup(IndexedCup);
 	controlSelectedChannel(ActiveChannel);
 }
 
@@ -387,8 +361,8 @@ float getVoltage( uint16_t ChannelNumber ) {
 	uint32_t Accumulator1 = 0;
 	bool IsSignalLarge = false;
 	for (uint8_t J = 0; J < ADC_RAW_BUFFER_SIZE; J++) {
-		Accumulator0 += RawBufferAdc0[ChannelNumber][J];
-		Accumulator1 += RawBufferAdc1[ChannelNumber][J];
+		Accumulator0 += RawBufferAdc0[IndexedCup][ChannelNumber][J];
+		Accumulator1 += RawBufferAdc1[IndexedCup][ChannelNumber][J];
 	}
 	return (float)Accumulator0 * GetVoltageCoefficient - GetVoltageOffset;
 }
