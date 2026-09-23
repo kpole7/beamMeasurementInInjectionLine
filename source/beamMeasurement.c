@@ -395,7 +395,8 @@ static void auxiliaryFSMsService(void) {
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_BRAKE)] = true;
 	}
 
-	ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP)] = clampActiveCup(AuxiliaryFSMsStateData.active_cup);
+	ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP)] &= 0xFFF0;
+	ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP)] |= clampActiveCup(AuxiliaryFSMsStateData.active_cup);
 
 	for (int Cup = 0; Cup < MAX_CUPS; Cup++) {
 		switch (Inputs.cup_type[Cup]) {

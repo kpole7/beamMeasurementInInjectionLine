@@ -99,13 +99,17 @@ static uint16_t IndexedCup;
 /// @brief This variable stores the index of the currently measured channel
 static uint16_t ActiveChannel;
 
-static bool IsSignalLarge[ANALOG_MAX_CHANNELS] = {true, true, true, true};
+static bool IsSignalLarge[MAX_CUPS][ANALOG_MAX_CHANNELS] = {
+	{true, true, true, true},
+	{true, true, true, true},
+	{true, true, true, true}
+};
 
 static CalculationsInputDataStruct CalculationsTemporaryData;
 
 static bool PrintoutsForTestingPurposes;
-static double FilteredValues0[ANALOG_MAX_CHANNELS];
-static double FilteredValues1[ANALOG_MAX_CHANNELS];
+static double FilteredValues0[MAX_CUPS][ANALOG_MAX_CHANNELS];
+static double FilteredValues1[MAX_CUPS][ANALOG_MAX_CHANNELS];
 
 //---------------------------------------------------------------------------------------------------
 // Local function prototypes
@@ -195,18 +199,18 @@ void analogInputsMeasurements(void) {
 				}
 				AccumulatorHighGain /= ACCUMULATOR_DIVIDER;
 				AccumulatorLowGain /= ACCUMULATOR_DIVIDER;
-				if (IsSignalLarge[Channel]) {
+				if (IsSignalLarge[IndexedCup][Channel]) {
 					if (AccumulatorLowGain < ModbusHoldingRegisters[HoldingBaseIndexX + 2u]){
-						IsSignalLarge[Channel] = false;
+						IsSignalLarge[IndexedCup][Channel] = false;
 					}
 				} else {
 					if (AccumulatorLowGain > ModbusHoldingRegisters[HoldingBaseIndexX + 1u]){
-						IsSignalLarge[Channel] = true;
+						IsSignalLarge[IndexedCup][Channel] = true;
 					}
 				}
 				CalculationsTemporaryData.cup_number = IndexedCup;
 				CalculationsTemporaryData.channel_number = Channel;
-				if (IsSignalLarge[Channel]) {
+				if (IsSignalLarge[IndexedCup][Channel]) {
 					uint16_t X1 = ModbusHoldingRegisters[HoldingBaseIndexX];
 					uint16_t X2 = ModbusHoldingRegisters[HoldingBaseIndexX+1u];
 					uint16_t X3 = ModbusHoldingRegisters[HoldingBaseIndexX+2u];
@@ -297,23 +301,30 @@ void analogInputsMeasurements(void) {
 
 				ModbusInputRegisters[IndexedCup*ANALOG_MAX_CHANNELS + Channel] = (uint16_t)Result;
 
+				if (IsSignalLarge[IndexedCup][Channel]) {
+					ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP)] |= (0x10 << (IndexedCup*4+Channel));
+				}
+				else {
+					ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_ACTIVE_CUP)] &= ~(0x10 << (IndexedCup*4+Channel));
+				}
+
 				auxiliaryPinOutputValue1(true); // just for debugging purposes
 
 #if DEBUG_SIMULATION_MODE == 0
 				// just for testing purposes
 				if (PrintoutsForTestingPurposes) {
 					if (IirFilterReset) {
-						FilteredValues0[Channel] = (double)AccumulatorHighGain;
-						FilteredValues1[Channel] = (double)AccumulatorLowGain;
+						FilteredValues0[IndexedCup][Channel] = (double)AccumulatorHighGain;
+						FilteredValues1[IndexedCup][Channel] = (double)AccumulatorLowGain;
 					}
-					FilteredValues0[Channel] = (FilteredValues0[Channel] * FILTER_COEFFICIENT_B) + ((double)AccumulatorHighGain * FILTER_COEFFICIENT_A);
-					FilteredValues1[Channel] = (FilteredValues1[Channel] * FILTER_COEFFICIENT_B) + ((double)AccumulatorLowGain * FILTER_COEFFICIENT_A);
+					FilteredValues0[IndexedCup][Channel] = (FilteredValues0[IndexedCup][Channel] * FILTER_COEFFICIENT_B) + ((double)AccumulatorHighGain * FILTER_COEFFICIENT_A);
+					FilteredValues1[IndexedCup][Channel] = (FilteredValues1[IndexedCup][Channel] * FILTER_COEFFICIENT_B) + ((double)AccumulatorLowGain * FILTER_COEFFICIENT_A);
 
 					uint16_t SelectedChannel = ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_ARGUMENT2)];
 					if (0 == SelectedChannel) {
 						printf("Fc%u Ch%u: %4lu [%4lu] %3lu [%4lu] %u.%02u uA %u|", IndexedCup+1, Channel, 
-								AccumulatorHighGain, (uint32_t)(FilteredValues0[Channel]+0.5f), 
-								AccumulatorLowGain, (uint32_t)(FilteredValues1[Channel]+0.5f), 
+								AccumulatorHighGain, (uint32_t)(FilteredValues0[IndexedCup][Channel]+0.5f), 
+								AccumulatorLowGain, (uint32_t)(FilteredValues1[IndexedCup][Channel]+0.5f), 
 								(unsigned int)(ModbusInputRegisters[IndexedCup*ANALOG_MAX_CHANNELS + Channel]/100), 
 								(unsigned int)(ModbusInputRegisters[IndexedCup*ANALOG_MAX_CHANNELS + Channel]%100),
 								ErrorCode);
@@ -321,11 +332,11 @@ void analogInputsMeasurements(void) {
 					if (SelectedChannel == (Channel + 1u)) {
 						printf("Fc%u Ch%u: %4lu [%4lu] %3lu [%4lu] %u.%02u uA %c%u | x1=%u x2=%u y1=%u y2=%u | coef=%lu res=%ld | BaseIndexX=%u BaseIndexY=%u", 
 								IndexedCup+1, Channel, 
-								AccumulatorHighGain, (uint32_t)(FilteredValues0[Channel]+0.5f), 
-								AccumulatorLowGain, (uint32_t)(FilteredValues1[Channel]+0.5f), 
+								AccumulatorHighGain, (uint32_t)(FilteredValues0[IndexedCup][Channel]+0.5f), 
+								AccumulatorLowGain, (uint32_t)(FilteredValues1[IndexedCup][Channel]+0.5f), 
 								(unsigned int)(ModbusInputRegisters[IndexedCup*ANALOG_MAX_CHANNELS + Channel]/100), 
 								(unsigned int)(ModbusInputRegisters[IndexedCup*ANALOG_MAX_CHANNELS + Channel]%100),
-								IsSignalLarge[Channel] ? 'L' : 'H',	// L = low gain, H = high gain
+								IsSignalLarge[IndexedCup][Channel] ? 'L' : 'H',	// L = low gain, H = high gain
 								ErrorCode,
 								CalculationsTemporaryData.x_a, CalculationsTemporaryData.x_b,
 								CalculationsTemporaryData.y_a, CalculationsTemporaryData.y_b,
@@ -333,8 +344,8 @@ void analogInputsMeasurements(void) {
 								HoldingBaseIndexX, HoldingBaseIndexY);
 					}
 				} else {
-					FilteredValues0[Channel] = (double)AccumulatorHighGain;
-					FilteredValues1[Channel] = (double)AccumulatorLowGain;
+					FilteredValues0[IndexedCup][Channel] = (double)AccumulatorHighGain;
+					FilteredValues1[IndexedCup][Channel] = (double)AccumulatorLowGain;
 				}
 #endif
 
@@ -359,7 +370,6 @@ void analogInputsMeasurements(void) {
 float getVoltage( uint16_t ChannelNumber ) {
 	uint32_t Accumulator0 = 0;
 	uint32_t Accumulator1 = 0;
-	bool IsSignalLarge = false;
 	for (uint8_t J = 0; J < ADC_RAW_BUFFER_SIZE; J++) {
 		Accumulator0 += RawBufferAdc0[IndexedCup][ChannelNumber][J];
 		Accumulator1 += RawBufferAdc1[IndexedCup][ChannelNumber][J];
