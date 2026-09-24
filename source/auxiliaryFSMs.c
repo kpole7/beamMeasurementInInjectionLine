@@ -8,7 +8,7 @@
 #include <stdio.h>
 
 
-#define PAUSE_AFTER_BOOT_TIME_IN_TICKS 5000u // 10 seconds with 2ms tick period
+#define PAUSE_AFTER_BOOT_TIME_IN_TICKS 1500u // 3 seconds with 2ms tick period
 #define PAUSE_BEFORE_RECOVERY_IN_TICKS 500u //  1 second with 2ms tick period
 #define PRE_BRAKING_TIME_IN_TICKS 5u
 #define BRAKING_TIME_IN_TICKS 400u
@@ -74,8 +74,6 @@ static void pneumaticFsmInserting(bool Requested, bool Switch, bool PauseAfterBo
         *StatePtr = PNEUMATIC_FSM_STATE_INSERTED;
     }
     if (TransitionTimeFinished) {
-        *ActuatorPtr = true;
-        *TriggerPtr = true;
         *ErrorPtr |= AUXILIARY_FSM_ERROR_TIMEOUT_INSERT;
     }
 }
@@ -101,8 +99,6 @@ static void pneumaticFsmWithdrawing(bool Requested, bool Switch, bool PauseAfter
         *StatePtr = PNEUMATIC_FSM_STATE_EXTRACTED;
     }
     if (TransitionTimeFinished) {
-        *ActuatorPtr = false;
-        *TriggerPtr = true;
         *ErrorPtr |= AUXILIARY_FSM_ERROR_TIMEOUT_WITHDRAW;
     }
 }
@@ -251,8 +247,6 @@ static void pneumaticWithLockFsmWithdrawing(bool Inhibit, bool Requested, bool S
         *StatePtr = PNEUMATIC_WITH_LOCK_FSM_STATE_EXTRACTED;
     }
     if (TransitionTimeFinished) {
-        *ActuatorPtr = true;
-        *TriggerPtr = true;
         *ErrorPtr |= AUXILIARY_FSM_ERROR_TIMEOUT_WITHDRAW;
     }
 }
@@ -288,8 +282,6 @@ static void pneumaticWithLockFsmInserting(bool Inhibit, bool Requested, bool Swi
         *StatePtr = PNEUMATIC_WITH_LOCK_FSM_STATE_INSERTED;
     }
     if (TransitionTimeFinished) {
-        *ActuatorPtr = true;
-        *TriggerPtr = true;
         *ErrorPtr |= AUXILIARY_FSM_ERROR_TIMEOUT_INSERT;
     }
 }
