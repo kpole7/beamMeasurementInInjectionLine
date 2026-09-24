@@ -18,12 +18,10 @@
 //---------------------------------------------------------------------------------------------------
 
 /// This is size of the buffer for raw samples; it must be a power of 2 for the correct operation of the circular buffer
-#define ADC_RAW_BUFFER_SIZE 32
+#define ADC_RAW_BUFFER_SIZE 8
 
 /// This mask is used for calculating the index in the circular buffer for raw samples
 #define ADC_INDEX_MASK (ADC_RAW_BUFFER_SIZE - 1)
-
-#define ACCUMULATOR_DIVIDER 8u
 
 #define ANALOG_MAX_CHANNELS 4
 
@@ -90,8 +88,8 @@ static uint16_t RawBufferAdc0[MAX_CUPS][ANALOG_MAX_CHANNELS][ADC_RAW_BUFFER_SIZE
 /// @brief This is a buffer for raw samples from the ADC1 converter
 static uint16_t RawBufferAdc1[MAX_CUPS][ANALOG_MAX_CHANNELS][ADC_RAW_BUFFER_SIZE];
 
-/// @brief Index for writing new samples from ADC0 and ADC1
-static uint32_t AdcBuffersHead = 0;
+/// @brief Index for writing the next sample of each cup/channel pair
+static uint8_t AdcBuffersHead[MAX_CUPS][ANALOG_MAX_CHANNELS];
 
 /// @brief This variable stores the index of the currently measured cup
 static uint16_t IndexedCup;
@@ -125,7 +123,11 @@ static int32_t randomGaussian(int32_t Mean, int32_t StandardDeviation);
 
 /// This function initializes peripherals for ADC measuring and the local variables related to ADC measurements
 void initializeAdcMeasurements(void) {
-	AdcBuffersHead = 0;
+	for (uint16_t Cup = 0; Cup < MAX_CUPS; Cup++) {
+		for (uint16_t Channel = 0; Channel < ANALOG_MAX_CHANNELS; Channel++) {
+			AdcBuffersHead[Cup][Channel] = 0;
+		}
+	}
 	adc_init();
 	adc_gpio_init(GPIO_FOR_ADC0);
 	adc_gpio_init(GPIO_FOR_ADC1);
@@ -153,39 +155,26 @@ void initializeAdcMeasurements(void) {
 /// @brief This function collects measurements from ADC
 /// It should be called only by the timer ISR (repeatingTimerISR)
 void analogInputsMeasurements(void) {
-	AdcBuffersHead &= ADC_INDEX_MASK;
+	uint8_t SampleIndex = AdcBuffersHead[IndexedCup][ActiveChannel];
 	// Measure ADC0
 	adc_select_input(0);
 	(void)adc_read(); // dummy read
-	RawBufferAdc0[IndexedCup][ActiveChannel][AdcBuffersHead] = adc_read();
+	RawBufferAdc0[IndexedCup][ActiveChannel][SampleIndex] = adc_read();
 	// Measure ADC1
 	adc_select_input(1);
 	(void)adc_read(); // dummy read
-	RawBufferAdc1[IndexedCup][ActiveChannel][AdcBuffersHead] = adc_read();
-	// Update the index for the next samples
-	AdcBuffersHead++;
+	RawBufferAdc1[IndexedCup][ActiveChannel][SampleIndex] = adc_read();
+	AdcBuffersHead[IndexedCup][ActiveChannel] = (uint8_t)((SampleIndex + 1u) & ADC_INDEX_MASK);
 
 	if (ActiveChannel < (ANALOG_MAX_CHANNELS - 1)) {
 		ActiveChannel++;
 	} else {
-		ActiveChannel = 0;
-
-		if (IndexedCup < (MAX_CUPS - 1)) {
-			IndexedCup++;
-		} else {
-			IndexedCup = 0;
-		}
-
 		// just for testing purposes
 		PrintoutsForTestingPurposes  = ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & PRINTOUTS_ANALOG) != 0u);
 
 		// Calculations are carried out on the basis of the samples stored in the buffers, 
 		// and the results are stored in Modbus input registers
-		static uint16_t CalculationDivider = 0;
-		CalculationDivider++;
-		CalculationDivider &= ADC_INDEX_MASK;
-		if (CalculationDivider == 0) {
-			for (uint16_t Channel = 0; Channel < ANALOG_MAX_CHANNELS; Channel++) {
+		for (uint16_t Channel = 0; Channel < ANALOG_MAX_CHANNELS; Channel++) {
 				uint16_t HoldingBaseIndexX = holdingIndexFromAddress(MODBUS_CALIBRATION_X_REGISTERS_ADDRESS + (IndexedCup * (4u*6u)) + (Channel * 6u));
 				uint16_t HoldingBaseIndexY = holdingIndexFromAddress(MODBUS_CALIBRATION_Y_REGISTERS_ADDRESS);
 				uint32_t AccumulatorHighGain = 0;
@@ -197,8 +186,8 @@ void analogInputsMeasurements(void) {
 					AccumulatorHighGain += RawBufferAdc0[IndexedCup][Channel][K];
 					AccumulatorLowGain += RawBufferAdc1[IndexedCup][Channel][K];
 				}
-				AccumulatorHighGain /= ACCUMULATOR_DIVIDER;
-				AccumulatorLowGain /= ACCUMULATOR_DIVIDER;
+				AccumulatorHighGain /= ADC_RAW_BUFFER_SIZE;
+				AccumulatorLowGain /= ADC_RAW_BUFFER_SIZE;
 				if (IsSignalLarge[IndexedCup][Channel]) {
 					if (AccumulatorLowGain < ModbusHoldingRegisters[HoldingBaseIndexX + 2u]){
 						IsSignalLarge[IndexedCup][Channel] = false;
@@ -354,11 +343,17 @@ void analogInputsMeasurements(void) {
 
 
 
-			}
-			IirFilterReset = false;
-			if (PrintoutsForTestingPurposes) {
-				printf("\r\n"); // just for testing purposes
-			}
+		}
+		IirFilterReset = false;
+		if (PrintoutsForTestingPurposes) {
+			printf("\r\n"); // just for testing purposes
+		}
+
+		ActiveChannel = 0;
+		if (IndexedCup < (MAX_CUPS - 1)) {
+			IndexedCup++;
+		} else {
+			IndexedCup = 0;
 		}
 	}
 	controlSelectedCup(IndexedCup);
