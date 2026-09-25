@@ -537,8 +537,6 @@ static void motorFsmWithdrawing(bool Requested, bool SwitchA, bool SwitchB,
     bool *TriggerInsertPtr, bool *TriggerWithdrawPtr, bool *TriggerBrakePtr, uint16_t *ErrorPtr)
 {
     if (SwitchA && SwitchB) {
-        *ActuatorWithdrawPtr = false;
-        *TriggerWithdrawPtr = true;
         *ErrorPtr |= AUXILIARY_FSM_ERROR_SWITCHES_OF_MOTOR_ACTUATOR;
         return;
     }
@@ -548,8 +546,6 @@ static void motorFsmWithdrawing(bool Requested, bool SwitchA, bool SwitchB,
         *StatePtr = MOTOR_FSM_STATE_WITHDRAWING_PRE_BRAKING;
     }
     if (IsTransitionTimeout) {
-        *ActuatorWithdrawPtr = false;
-        *TriggerWithdrawPtr = true;
         *ErrorPtr |= AUXILIARY_FSM_ERROR_TIMEOUT_WITHDRAW;
     }
 }
@@ -608,8 +604,6 @@ static void motorFsmInserting(bool Requested, bool SwitchA, bool SwitchB,
     bool *TriggerInsertPtr, bool *TriggerWithdrawPtr, bool *TriggerBrakePtr, uint16_t *ErrorPtr)
 {
     if (SwitchA && SwitchB) {
-        *ActuatorInsertPtr = false;
-        *TriggerInsertPtr = true;
         *ErrorPtr |= AUXILIARY_FSM_ERROR_SWITCHES_OF_MOTOR_ACTUATOR;
         return;
     }
@@ -619,8 +613,6 @@ static void motorFsmInserting(bool Requested, bool SwitchA, bool SwitchB,
         *StatePtr = MOTOR_FSM_STATE_INSERTING_PRE_BRAKING;
     }
     if (IsTransitionTimeout) {
-        *ActuatorInsertPtr = false;
-        *TriggerInsertPtr = true;
         *ErrorPtr |= AUXILIARY_FSM_ERROR_TIMEOUT_INSERT;
     }
 }

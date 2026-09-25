@@ -12,12 +12,22 @@
 #include "mb.h"
 #include "sharedData.h"
 
-static uint16_t VerifiedConfigurationRegisters = MODBUS_ADDR_TIME_LIMIT_INSERTING1;
+static uint16_t VerifiedConfigurationRegisters = 0;
 
 static void verifyConfigurationRegisters(USHORT usAddress, USHORT usNRegs) {
-	if (usAddress == VerifiedConfigurationRegisters) {
+	if (MODBUS_ADDR_TIME_LIMIT_INSERTING1 == usAddress){
+		VerifiedConfigurationRegisters = 0;
+	}
+
+	if (usAddress == VerifiedConfigurationRegisters + MODBUS_ADDR_TIME_LIMIT_INSERTING1) {
 		VerifiedConfigurationRegisters += usNRegs;
-		ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_SUCCESSFULL_INITIALIZATION)] = VerifiedConfigurationRegisters-1;
+		ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_SUCCESSFULL_INITIALIZATION)] &= 0xFF00u;
+		if (VerifiedConfigurationRegisters <= 0x00FFu){
+			ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_SUCCESSFULL_INITIALIZATION)] |= VerifiedConfigurationRegisters;
+		}
+		else {
+			ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_SUCCESSFULL_INITIALIZATION)] |= 0x00FFu;
+		}
 	}
 }
 

@@ -17,6 +17,12 @@
 #define GPIO_FOR_MOTOR_ACTUATOR_OUT 18
 #define GPIO_FOR_MOTOR_ACTUATOR_BRAKE 16
 
+#define STATE_VALVE_ACTUATOR1_MASK 0x8000u
+#define STATE_VALVE_ACTUATOR2_MASK 0x4000u
+#define STATE_MOTOR_ACTUATOR_IN_MASK 0x2000u
+#define STATE_MOTOR_ACTUATOR_OUT_MASK 0x1000u
+#define STATE_MOTOR_ACTUATOR_BRAKE_MASK 0x0800u
+
 //---------------------------------------------------------------------------------------------------
 // Local variables
 //---------------------------------------------------------------------------------------------------
@@ -204,5 +210,36 @@ void actuatorCtrlTick(void) {
 	if (DebugPrintoutsEnabled && AnyTrigger) {
 		printf("New state:  %u    %u    %u    %u    %u\r\n\r\n", StateValveActuator1, StateValveActuator2, StateMotorActuatorIn, StateMotorActuatorOut, StateMotorActuatorBrake);
 	} // just for testing purposes
+
+	if (StateValveActuator1){
+		ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_SUCCESSFULL_INITIALIZATION)] |= STATE_VALVE_ACTUATOR1_MASK;
+	}
+	else {
+		ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_SUCCESSFULL_INITIALIZATION)] &= ~STATE_VALVE_ACTUATOR1_MASK;
+	}
+	if (StateValveActuator2){
+		ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_SUCCESSFULL_INITIALIZATION)] |= STATE_VALVE_ACTUATOR2_MASK;
+	}
+	else {
+		ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_SUCCESSFULL_INITIALIZATION)] &= ~STATE_VALVE_ACTUATOR2_MASK;
+	}
+	if (StateMotorActuatorIn){
+		ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_SUCCESSFULL_INITIALIZATION)] |= STATE_MOTOR_ACTUATOR_IN_MASK;
+	}
+	else {
+		ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_SUCCESSFULL_INITIALIZATION)] &= ~STATE_MOTOR_ACTUATOR_IN_MASK;
+	}
+	if (StateMotorActuatorOut){
+		ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_SUCCESSFULL_INITIALIZATION)] |= STATE_MOTOR_ACTUATOR_OUT_MASK;
+	}
+	else {
+		ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_SUCCESSFULL_INITIALIZATION)] &= ~STATE_MOTOR_ACTUATOR_OUT_MASK;
+	}
+	if (StateMotorActuatorBrake){
+		ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_SUCCESSFULL_INITIALIZATION)] |= STATE_MOTOR_ACTUATOR_BRAKE_MASK;
+	}
+	else {
+		ModbusInputRegisters[inputIndexFromAddress(MODBUS_ADDR_SUCCESSFULL_INITIALIZATION)] &= ~STATE_MOTOR_ACTUATOR_BRAKE_MASK;
+	}
 }
 
