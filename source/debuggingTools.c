@@ -63,7 +63,7 @@ uint16_t SimulationCounter3;
 
 
 //..............................................................................
-// Definitions of interface functions
+// Definitions of functions
 //..............................................................................
 
 /// @brief This function initializes the auxiliary output pins for testing purposes.
@@ -80,6 +80,20 @@ void auxiliaryOutputsInitialize(void) {
 void auxiliaryPinOutputValue1(bool Value) { gpio_put(AUXILIARY_PIN_1, Value); }
 
 void auxiliaryPinOutputValue2(bool Value) { gpio_put(AUXILIARY_PIN_2, Value); }
+
+static void auxiliaryJumperInitialize(void) {
+	gpio_init(AUXILIARY_PIN_3);
+	gpio_set_dir(AUXILIARY_PIN_3, GPIO_OUT);
+	gpio_put(AUXILIARY_PIN_3, true);
+
+	gpio_init(AUXILIARY_PIN_4);
+	gpio_set_dir(AUXILIARY_PIN_4, GPIO_IN);
+	gpio_pull_down(AUXILIARY_PIN_4);
+}
+
+static bool getAuxiliaryJumperState(void) {
+	return gpio_get(AUXILIARY_PIN_4);
+}
 
 void initializeTimeStamp(void){
 	TimeStampMinutes = 0;
@@ -460,13 +474,41 @@ static void printSettingsInfo(void) {
 	printf("\r\n");
 }
 
-void debugCommandInterpreter(void) {
+void debugMainLoopTick(void) {
 	static uint16_t StoredEventCode;
+	static uint16_t EnableSimulationJumperCounter = 0;
 	uint16_t PressedDigitValue;
 	bool DoNotClearStoredEventCode = false;
 	int InputCharacter = getchar_timeout_us(0); // non-blocking read
 
 	if (InputCharacter != PICO_ERROR_TIMEOUT) {
+		if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & ENABLE_SIMULATION) != 0u) {
+			if (getAuxiliaryJumperState()) {
+				EnableSimulationJumperCounter = 0;
+			}
+			else {
+				EnableSimulationJumperCounter++;
+				if (EnableSimulationJumperCounter > 200) {
+					printf("Simulation mode disabled\r\n");
+					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] &= ~ENABLE_SIMULATION;
+					EnableSimulationJumperCounter = 0;
+				}
+			}
+		}
+		else{
+			if (getAuxiliaryJumperState()) {
+				EnableSimulationJumperCounter++;
+				if (EnableSimulationJumperCounter > 200) {
+					printf("Simulation mode enabled\r\n");
+					ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] |= ENABLE_SIMULATION;
+					EnableSimulationJumperCounter = 0;
+				}
+			}
+			else {
+				EnableSimulationJumperCounter = 0;
+			}
+		}
+
 		switch (InputCharacter) {
 			case 'A':
 				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] |= PRINTOUTS_ANALOG;

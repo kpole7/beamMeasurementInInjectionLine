@@ -89,7 +89,7 @@ int main() {
 
 
 			analogInputsMeasurements();
-			debugCommandInterpreter();
+			debugMainLoopTick();
 		}
 		if (atomic_load_explicit(&SlowProcessesTimeTick2, memory_order_acquire)) {
 			atomic_store_explicit(&SlowProcessesTimeTick2, false, memory_order_release);

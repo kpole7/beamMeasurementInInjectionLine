@@ -11,12 +11,15 @@
 
 #define AUXILIARY_PIN_1 8
 #define AUXILIARY_PIN_2 22
+#define AUXILIARY_PIN_3 14
+#define AUXILIARY_PIN_4 15
 
-#define PRINTOUTS_ANALOG 1u
-#define PRINTOUTS_LOGIC 2u
-#define PRINTOUTS_ACTUATORS 4u
-#define PRINTOUTS_SIMULATION 8u
-#define PRINTOUTS_SIM_EVENT 16u
+#define PRINTOUTS_ANALOG 0x0001u
+#define PRINTOUTS_LOGIC 0x0002u
+#define PRINTOUTS_ACTUATORS 0x0004u
+#define PRINTOUTS_SIMULATION 0x0008u
+#define PRINTOUTS_SIM_EVENT 0x0010u
+#define ENABLE_SIMULATION 0x8000u
 
 #define SIM_EVENT_SWITCH1_PERMANENT_OFF 1u
 #define SIM_EVENT_SWITCH1_PERMANENT_ON 2u
@@ -53,7 +56,7 @@ char *getTimeStampStringWithoutUpdate(void);
 
 void printChangedRegisters( const char *ContextComment );
 
-void debugCommandInterpreter(void);
+void debugMainLoopTick(void);
 
 #if DEBUG_SIMULATION_MODE
 void simulationMainLoopTick(void);
