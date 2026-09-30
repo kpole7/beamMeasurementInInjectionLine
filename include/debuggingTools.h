@@ -45,7 +45,7 @@
 #define APP_DEBUG 0
 #endif
 
-void auxiliaryOutputsInitialize(void);
+void initializeDebuggingTools(void);
 void auxiliaryPinOutputValue1(bool Value);
 void auxiliaryPinOutputValue2(bool Value);
 

@@ -221,7 +221,7 @@ static void mainInitialization(void){
 
 	initializeLogicInputs();
 	initializeAdcMeasurements();
-	auxiliaryOutputsInitialize();
+	initializeDebuggingTools();
 	initializeActuatorControl();
 	initializeTimeStamp();
 
