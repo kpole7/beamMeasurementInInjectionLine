@@ -38,16 +38,6 @@
 static bool ModbusActiveLedIsOnShort, ModbusActiveLedIsOnLong;
 
 //..............................................................................
-// Variables for debugging
-//..............................................................................
-
-#if MODBUS_DEBUG_MODE
-bool IsChangeModbusWrite;
-static bool IsJumperJP1;
-static bool OldIsJumperJP1;
-#endif
-
-//..............................................................................
 // Prototypes of functions
 //..............................................................................
 
@@ -126,22 +116,9 @@ int main() {
 #endif
 
 			updateTimeStamp(FAST_PERIPHERALS_TICK_PERIOD_MS);
-
-#if MODBUS_DEBUG_MODE
-			// Reading the states of jumpers.
-			IsJumperJP1 = !readInputPortJP1(); // false;	// Modbus state machine debugging
-#endif
 		}
 
 		printChangedRegisters("Main loop");
-
-#if MODBUS_DEBUG_MODE
-		// Auxiliary printouts for debugging purpose
-		if (IsJumperJP1 && !OldIsJumperJP1) {
-			logPrintAll(0);
-		}
-		OldIsJumperJP1 = IsJumperJP1;
-#endif
 
 		// Modbus communication service
 		if (!atomic_load_explicit(&ModbusAssertionFailed, memory_order_acquire)) {
@@ -233,11 +210,6 @@ static void mainInitialization(void){
 
 	memset(&AuxiliaryFSMsStateData, 0, sizeof(AuxiliaryFSMsStateData));
 	AuxiliaryFSMsStateData.active_cup = 1u;
-
-#if MODBUS_DEBUG_MODE
-	initInputPortJP1();
-	initAuxiliaryPrintouts();
-#endif
 
 	sleep_ms(100);
 	printf("\r\n\r\n\r\n\r\n\r\n\r\nHello!\r\nCompilation time is %s\r\n", CompilationTime);

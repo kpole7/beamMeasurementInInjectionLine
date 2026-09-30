@@ -42,11 +42,6 @@ xMBPortEventPost( eMBEventType eEvent )
 {
 	atomic_store_explicit( &xEventInQueue, true, memory_order_release ); /* K.O. */
 	atomic_store_explicit( &eQueuedEvent, eEvent, memory_order_release ); /* K.O. */
-
-#if MODBUS_DEBUG_MODE
-    logAddEvent("Event",atomic_load_explicit( &eQueuedEvent, memory_order_acquire )); /* K.O. modification */
-#endif
-
     return TRUE;
 }
 

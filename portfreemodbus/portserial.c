@@ -51,9 +51,6 @@ static volatile bool    is_tx           = FALSE;
 void
 vMBPortSerialEnable( BOOL xRxEnable, BOOL xTxEnable )
 {
-#if MODBUS_DEBUG_MODE
-	logAddEvent("ser Enab", (uint16_t)xRxEnable);
-#endif
 //K.O.	uart_set_irq_enables( MODBUS_UART_ID, xRxEnable, xTxEnable );
     is_rx = xRxEnable;
 
@@ -66,19 +63,11 @@ vMBPortSerialEnable( BOOL xRxEnable, BOOL xTxEnable )
 void xMBPortSerialPoll(void)
 {
 	if(is_tx){
-#if MODBUS_DEBUG_MODE
-		logOnceAddEvent("ser Poll1",0xFFFFu);
-#endif
-
 		if(uart_is_writable( MODBUS_UART_ID )) //K.O. modification
 		{
 #ifndef VARIABLE_POINTERS_TO_FUNCTIONS_NOT_ALLOWED //K.O. modification
 			pxMBFrameCBTransmitterEmpty(  );
 #else
-#if MODBUS_DEBUG_MODE
-			logAddEvent("ser Poll2", 0xFFFFu);
-#endif // MODBUS_DEBUG_MODE
-
 			xMBRTUTransmitFSM(  );
 #endif // VARIABLE_POINTERS_TO_FUNCTIONS_NOT_ALLOWED
     	}
@@ -154,9 +143,6 @@ static void prvvUARTxISR( void )
 	}
     if ( is_rx )
     {
-#if MODBUS_DEBUG_MODE
-    	logAddEvent("irq rx", 0xFFFFu);
-#endif
 #ifndef VARIABLE_POINTERS_TO_FUNCTIONS_NOT_ALLOWED
     	pxMBFrameCBByteReceived();
 #else
@@ -169,7 +155,4 @@ static void prvvUARTxISR( void )
     		(void)uart_getc(MODBUS_UART_ID);
     	}
     }
-#if MODBUS_DEBUG_MODE
-    logAddEvent("reti uart", 0xFFFFu);
-#endif
 }

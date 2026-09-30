@@ -89,9 +89,6 @@ Create an ISR which is called whenever the timer has expired. This function
 */
 static int64_t prvvTIMERExpiredISR(alarm_id_t id, void *user_data) /* K.O. */
 {
-#if MODBUS_DEBUG_MODE
-	logAddEvent("irq time", (uint16_t)id); /* K.O. */
-#endif
 	if(atomic_load_explicit( &ModbusAssertionFailed, memory_order_acquire )){ /* K.O. */
 		vMBPortTimersDisable(); /* K.O. */
 		return(0); /* K.O. */
@@ -100,9 +97,6 @@ static int64_t prvvTIMERExpiredISR(alarm_id_t id, void *user_data) /* K.O. */
     ( void )pxMBPortCBTimerExpired(  );
 #else
     ( void )xMBRTUTimerT35Expired(  );
-#endif
-#if MODBUS_DEBUG_MODE
-    logAddEvent("reti time", 0xFFFFu); /* K.O. */
 #endif
 	return(0); /* K.O. */
 }

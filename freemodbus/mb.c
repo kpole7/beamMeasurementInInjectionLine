@@ -358,10 +358,6 @@ eMBPoll( void )
     /* Check if the protocol stack is ready. */
     if( eMBState != STATE_ENABLED )
     {
-#if MODBUS_DEBUG_MODE
-    	logAddEvent("eMBPoll 1", (uint16_t)eMBState); /* K.O. */
-#endif
-
         return MB_EILLSTATE;
     }
 
@@ -375,10 +371,6 @@ eMBPoll( void )
             break;
 
         case EV_FRAME_RECEIVED:
-#if MODBUS_DEBUG_MODE
-        	logAddEvent("eMBPoll 2", (uint16_t)eMBState); /* K.O. */
-#endif
-
 #ifndef VARIABLE_POINTERS_TO_FUNCTIONS_NOT_ALLOWED /* K.O. modification */
             eStatus = peMBFrameReceiveCur( &ucRcvAddress, &ucMBFrame, &usLength );
 #else
@@ -395,10 +387,6 @@ eMBPoll( void )
             break;
 
         case EV_EXECUTE:
-#if MODBUS_DEBUG_MODE
-        	logAddEvent("eMBPoll 3", (uint16_t)eMBState); /* K.O. */
-#endif
-
             ucFunctionCode = ucMBFrame[MB_PDU_FUNC_OFF];
             eException = MB_EX_ILLEGAL_FUNCTION;
             for( i = 0; i < MB_FUNC_HANDLERS_MAX; i++ )
@@ -410,9 +398,6 @@ eMBPoll( void )
                 }
                 else if( xFuncHandlers[i].ucFunctionCode == ucFunctionCode )
                 {
-#if MODBUS_DEBUG_MODE
-                	logAddEvent("eMBPoll3+", (uint16_t)i); /* K.O. */
-#endif
                 	eException = xFuncHandlers[i].pxHandler( ucMBFrame, &usLength );
                     break;
                 }
@@ -442,28 +427,12 @@ eMBPoll( void )
             break;
 
         case EV_FRAME_SENT:
-#if MODBUS_DEBUG_MODE
-        	logAddEvent("eMBPoll 4", (uint16_t)eMBState); /* K.O. */
-#if (MODBUS_DEBUG_MODE && MODBUS_DEBUG_PRINT)
-        	logPrintNew(200);
-#endif
-#endif
             break;
         }
     }
     else{
     	xMBPortSerialPoll(); /* K.O. Substantial modification of the source code */
     }
-
-#if 0
-
-    /* Intentionally dead code */
-    eMBFuncReadInputRegister( ucMBFrame, &usLength );
-    eMBFuncReadHoldingRegister( ucMBFrame, &usLength );
-    eMBFuncWriteHoldingRegister( ucMBFrame, &usLength );
-    eMBFuncReadCoils( ucMBFrame, &usLength );
-    eMBFuncWriteCoil( ucMBFrame, &usLength );
-#endif
 
     return MB_ENOERR;
 }

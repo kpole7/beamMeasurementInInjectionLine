@@ -173,9 +173,6 @@ eMBRTUReceive( UCHAR * pucRcvAddress, UCHAR ** pucFrame, USHORT * pusLength )
 
     if(usRcvBufferPos >= MB_SER_PDU_SIZE_MAX){/* K.O. */
     	atomic_store_explicit( &ModbusAssertionFailed, true, memory_order_release ); /* K.O. */
-#if MODBUS_DEBUG_MODE
-    	logAddEvent("Assert",1);/* K.O. */
-#endif
         critical_section_exit( &ModbusRtuCriticalSection ); /* K.O. modification */
     	return(true);/* K.O. */
     }/* K.O. */
@@ -236,22 +233,11 @@ eMBRTUSend( UCHAR ucSlaveAddress, const UCHAR * pucFrame, USHORT usLength )
         /* Calculate CRC16 checksum for Modbus-Serial-Line-PDU. */
         usCRC16 = usMBCRC16( ( UCHAR * ) pucSndBufferCur, usSndBufferCount );
 
-
-#if MODBUS_DEBUG_MODE /* K.O. */
-//        if (SimulationFrameError != 0){
-//        	usCRC16++;
-//        }
-#endif
-
         ucRTUBuf[usSndBufferCount++] = ( UCHAR )( usCRC16 & 0xFF );
         ucRTUBuf[usSndBufferCount++] = ( UCHAR )( usCRC16 >> 8 );
 
         /* Activate the transmitter. */
         eSndState = STATE_TX_XMIT;
-
-#if MODBUS_DEBUG_MODE
-       	logAddEvent("eMBRTUSnd", 0xFFFFu); /* K.O. */
-#endif
 
         vMBPortSerialEnable( FALSE, TRUE );
     }
@@ -273,9 +259,6 @@ xMBRTUReceiveFSM( void )
 
     if(eSndState != STATE_TX_IDLE){/* K.O. modification */
     	atomic_store_explicit( &ModbusAssertionFailed, true, memory_order_release ); /* K.O. */
-#if MODBUS_DEBUG_MODE
-    	logAddEvent("Assert",2);/* K.O. */
-#endif
     	return(true);/* K.O. */
     }/* K.O. */
 /* K.O.    assert( eSndState == STATE_TX_IDLE ); */
@@ -339,9 +322,6 @@ xMBRTUTransmitFSM( void )
 
     if(atomic_load_explicit( &eRcvState, memory_order_acquire ) != STATE_RX_IDLE){/* K.O. */
     	atomic_store_explicit( &ModbusAssertionFailed, true, memory_order_release ); /* K.O. */
-#if MODBUS_DEBUG_MODE
-    	logAddEvent("Assert",3);/* K.O. */
-#endif
     	return(true);/* K.O. */
     }/* K.O. */
 /* K.O.    assert( eRcvState == STATE_RX_IDLE ); */
@@ -404,9 +384,6 @@ xMBRTUTimerT35Expired( void )
     default:
     	vMBPortTimersDisable(  );/* K.O. */
     	atomic_store_explicit( &ModbusAssertionFailed, true, memory_order_release ); /* K.O. */
-#if MODBUS_DEBUG_MODE
-    	logAddEvent("Assert",4);/* K.O. */
-#endif
     	return(false);/* K.O. */
 /* K.O.    	assert( ( eRcvState == STATE_RX_INIT ) ||
                  ( eRcvState == STATE_RX_RCV ) || ( eRcvState == STATE_RX_ERROR ) ); */
