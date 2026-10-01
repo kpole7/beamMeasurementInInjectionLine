@@ -67,6 +67,7 @@ void initializeConfigurationJumper(void) {
 	}
 	SimulationEnabled = false;
 	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] &= ~ENABLE_SIMULATION;
+	printf("SIMULATION MODE IS %s\n", SimulationEnabled ? "ENABLED" : "DISABLED");
 }
 
 uint16_t holdingIndexFromAddress(uint16_t address) {
