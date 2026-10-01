@@ -7,6 +7,7 @@
 #include "masterConfig.h"
 
 #include <stdlib.h> // rand()
+#include <stdio.h> // printf()
 
 //..............................................................................
 // Constants
