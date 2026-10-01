@@ -9,7 +9,14 @@
 #include <stdlib.h> // rand()
 
 //..............................................................................
-// Variables for Modbus communication
+// Constants
+//..............................................................................
+
+#define CONFIGURATION_GPIO_1 14
+#define CONFIGURATION_GPIO_2 15
+
+//..............................................................................
+// Variables
 //..............................................................................
 
 /// This is a table of Modbus input registers to monitor the state of the hardware.
@@ -33,6 +40,34 @@ atomic_bool ModbusActiveLedShort;
 
 /// This is a flag indicating that the LED should shine longer, due to sending a response back to the master.
 volatile bool ModbusActiveLedLong;
+
+/// This flag indicates whether the system is running in simulation mode.
+bool SimulationEnabled = false;
+
+
+//..............................................................................
+// Function definitions
+//..............................................................................
+
+void initializeConfigurationJumper(void) {
+	gpio_init(CONFIGURATION_GPIO_1);
+	gpio_set_dir(CONFIGURATION_GPIO_1, GPIO_OUT);
+	gpio_put(CONFIGURATION_GPIO_1, false);
+
+	gpio_init(CONFIGURATION_GPIO_2);
+	gpio_set_dir(CONFIGURATION_GPIO_2, GPIO_IN);
+	gpio_pull_up(CONFIGURATION_GPIO_2);
+
+	sleep_us(100); // small delay to allow the configuration jumper state to stabilize
+
+	if (gpio_get(CONFIGURATION_GPIO_2)) {
+		ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] |= ENABLE_SIMULATION;
+		SimulationEnabled = true;
+		return;
+	}
+	SimulationEnabled = false;
+	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] &= ~ENABLE_SIMULATION;
+}
 
 uint16_t holdingIndexFromAddress(uint16_t address) {
 	return (uint16_t)(address - MODBUS_HOLDING_REGISTERS_ADDRESS);

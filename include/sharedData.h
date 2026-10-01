@@ -51,15 +51,26 @@
 /// This is the number of read-only input registers excluding samples
 #define MODBUS_INPUTS_BUT_NOT_SAMPLES_NUMBER       (MODBUS_ADDR_THE_LAST_INPUT_REGISTER - MODBUS_INPUTS_BUT_NOT_SAMPLES_ADDRESS + 1)
 
+#define PRINTOUTS_ANALOG 0x0001u
+#define PRINTOUTS_LOGIC 0x0002u
+#define PRINTOUTS_ACTUATORS 0x0004u
+#define PRINTOUTS_SIMULATION 0x0008u
+#define PRINTOUTS_SIM_EVENT 0x0010u
+#define ENABLE_SIMULATION 0x8000u
+
 //..............................................................................
-// Definitions of variables concerning Modbus communication
+// Definitions of variables
 //..............................................................................
 
 extern uint16_t ModbusInputRegisters[MODBUS_INPUT_REGISTERS_NUMBER];
 extern bool ModbusCoils[MODBUS_COILS_NUMBER];
 extern bool ModbusCoilTrigger[MODBUS_COILS_NUMBER];
 extern uint16_t ModbusHoldingRegisters[MODBUS_HOLDING_REGISTERS_NUMBER];
+extern bool SimulationEnabled;
 
+//..............................................................................
+// Function declarations
+//..............................................................................
 
 uint16_t holdingIndexFromAddress(uint16_t address);
 
@@ -68,6 +79,8 @@ uint16_t inputIndexFromAddress(uint16_t address);
 uint16_t coilIndexFromAddress(uint16_t address);
 
 void initializeModbusRegisters(void);
+
+void initializeConfigurationJumper(void);
 
 
 #endif // SHARED_DATA_H

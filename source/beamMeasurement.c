@@ -201,6 +201,8 @@ static void modbusActivityLedService(void) {
 static void mainInitialization(void){
 	stdio_init_all();
 	atomic_store_explicit(&ModbusAssertionFailed, false, memory_order_release);
+
+	initializeConfigurationJumper();
 	turnOnLedOnBoard();
 	initModbusActivityLed();
 	initializeModbusRegisters();

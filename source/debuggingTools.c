@@ -66,7 +66,6 @@ uint16_t SimulationCounter3;
 //..............................................................................
 
 static void auxiliaryOutputsInitialize(void);
-static void auxiliaryJumperInitialize(void);
 
 //..............................................................................
 // Definitions of functions
@@ -74,37 +73,22 @@ static void auxiliaryJumperInitialize(void);
 
 void initializeDebuggingTools(void) {
 	auxiliaryOutputsInitialize();
-	auxiliaryJumperInitialize();
 }
 
 /// @brief This function initializes the auxiliary output pins for testing purposes.
 static void auxiliaryOutputsInitialize(void) {
-	gpio_init(AUXILIARY_PIN_1);
-	gpio_set_dir(AUXILIARY_PIN_1, GPIO_OUT);
-	gpio_put(AUXILIARY_PIN_1, false);
+	gpio_init(AUXILIARY_GPIO_PIN_1);
+	gpio_set_dir(AUXILIARY_GPIO_PIN_1, GPIO_OUT);
+	gpio_put(AUXILIARY_GPIO_PIN_1, false);
 
-	gpio_init(AUXILIARY_PIN_2);
-	gpio_set_dir(AUXILIARY_PIN_2, GPIO_OUT);
-	gpio_put(AUXILIARY_PIN_2, false);
+	gpio_init(AUXILIARY_GPIO_PIN_2);
+	gpio_set_dir(AUXILIARY_GPIO_PIN_2, GPIO_OUT);
+	gpio_put(AUXILIARY_GPIO_PIN_2, false);
 }
 
-void auxiliaryPinOutputValue1(bool Value) { gpio_put(AUXILIARY_PIN_1, Value); }
+void auxiliaryPinOutputValue1(bool Value) { gpio_put(AUXILIARY_GPIO_PIN_1, Value); }
 
-void auxiliaryPinOutputValue2(bool Value) { gpio_put(AUXILIARY_PIN_2, Value); }
-
-static void auxiliaryJumperInitialize(void) {
-	gpio_init(AUXILIARY_PIN_3);
-	gpio_set_dir(AUXILIARY_PIN_3, GPIO_OUT);
-	gpio_put(AUXILIARY_PIN_3, true);
-
-	gpio_init(AUXILIARY_PIN_4);
-	gpio_set_dir(AUXILIARY_PIN_4, GPIO_IN);
-	gpio_pull_down(AUXILIARY_PIN_4);
-}
-
-static bool getAuxiliaryJumperState(void) {
-	return gpio_get(AUXILIARY_PIN_4);
-}
+void auxiliaryPinOutputValue2(bool Value) { gpio_put(AUXILIARY_GPIO_PIN_2, Value); }
 
 void initializeTimeStamp(void){
 	TimeStampMinutes = 0;
@@ -487,37 +471,9 @@ static void printSettingsInfo(void) {
 
 void debugMainLoopTick(void) {
 	static uint16_t StoredEventCode;
-	static uint16_t EnableSimulationJumperCounter = 0;
 	uint16_t PressedDigitValue;
 	bool DoNotClearStoredEventCode = false;
 	int InputCharacter = getchar_timeout_us(0); // non-blocking read
-
-	if ((ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] & ENABLE_SIMULATION) != 0u) {
-		if (getAuxiliaryJumperState()) {
-			EnableSimulationJumperCounter = 0;
-		}
-		else {
-			EnableSimulationJumperCounter++;
-			if (EnableSimulationJumperCounter > 200) {
-				printf("Simulation mode disabled\r\n");
-				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] &= ~ENABLE_SIMULATION;
-				EnableSimulationJumperCounter = 0;
-			}
-		}
-	}
-	else{
-		if (getAuxiliaryJumperState()) {
-			EnableSimulationJumperCounter++;
-			if (EnableSimulationJumperCounter > 200) {
-				printf("Simulation mode enabled\r\n");
-				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] |= ENABLE_SIMULATION;
-				EnableSimulationJumperCounter = 0;
-			}
-		}
-		else {
-			EnableSimulationJumperCounter = 0;
-		}
-	}
 
 	if (InputCharacter != PICO_ERROR_TIMEOUT) {
 		switch (InputCharacter) {
