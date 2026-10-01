@@ -98,6 +98,7 @@ void updateVerboseMode(void) {
 			if (SteadyVerboseCounter > 100) {
 				VerboseEnabled = false;
 				SteadyVerboseCounter = 0;
+				ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] = 0;
 				printf("Verbose mode disabled\n");
 			}
 		}

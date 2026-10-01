@@ -6,6 +6,7 @@
 
 #include "hardware/uart.h"
 #include <stdatomic.h>
+#include <stdbool.h>
 
 // Which uart is used by Pico
 #define MODBUS_UART_ID uart1
@@ -53,5 +54,9 @@ extern atomic_bool ModbusActiveLedShort;
 // This is a flag indicating that the LED should shine longer, due to sending
 // a response back to the master
 extern volatile bool ModbusActiveLedLong;
+
+extern bool SimulationEnabled;
+
+extern bool VerboseEnabled;
 
 #endif // MODBUS_CONFIG_H

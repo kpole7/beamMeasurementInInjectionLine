@@ -66,8 +66,6 @@ extern uint16_t ModbusInputRegisters[MODBUS_INPUT_REGISTERS_NUMBER];
 extern bool ModbusCoils[MODBUS_COILS_NUMBER];
 extern bool ModbusCoilTrigger[MODBUS_COILS_NUMBER];
 extern uint16_t ModbusHoldingRegisters[MODBUS_HOLDING_REGISTERS_NUMBER];
-extern bool SimulationEnabled;
-extern bool VerboseEnabled;
 
 //..............................................................................
 // Function declarations

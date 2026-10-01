@@ -3,6 +3,7 @@
 
 #include "auxiliaryFSMs.h"
 #include "debuggingTools.h"
+#include "modbusConfig.h"
 #include <limits.h>
 #include <string.h>
 #include <stdio.h>
@@ -921,9 +922,11 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *Inputs,
 
             // just for debug purposes, to see the state transitions in the console
             if (DebugOldState.pneumatic_fsm_state[Cup] != FsmState->pneumatic_fsm_state[Cup]) {
-                printf("%s  FSMs tick (Pnm); Cup %u state %s -> %s\n", getTimeStampString(), Cup+1, 
-                    pneumaticFsmStateToString(DebugOldState.pneumatic_fsm_state[Cup]), 
-                    pneumaticFsmStateToString(FsmState->pneumatic_fsm_state[Cup]));
+                if (VerboseEnabled) {
+                    printf("%s  FSMs tick (Pnm); Cup %u state %s -> %s\n", getTimeStampString(), Cup+1, 
+                        pneumaticFsmStateToString(DebugOldState.pneumatic_fsm_state[Cup]), 
+                        pneumaticFsmStateToString(FsmState->pneumatic_fsm_state[Cup]));
+                }
                 DebugOldState.pneumatic_fsm_state[Cup] = FsmState->pneumatic_fsm_state[Cup];
             }
         } else if (CUP_TYPE_PNEUMATIC_WITH_LOCK == Inputs->cup_type[Cup]) {
@@ -931,9 +934,11 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *Inputs,
 
             // just for debug purposes, to see the state transitions in the console
             if (DebugOldState.pneumatic_with_lock_fsm_state[Cup] != FsmState->pneumatic_with_lock_fsm_state[Cup]) {
-                printf("%s  FSMs tick (P+L); Cup %u state %s -> %s\n", getTimeStampString(), Cup+1, 
-                    pneumaticWithLockFsmStateToString(DebugOldState.pneumatic_with_lock_fsm_state[Cup]), 
-                    pneumaticWithLockFsmStateToString(FsmState->pneumatic_with_lock_fsm_state[Cup]));
+                if (VerboseEnabled) {
+                    printf("%s  FSMs tick (P+L); Cup %u state %s -> %s\n", getTimeStampString(), Cup+1, 
+                        pneumaticWithLockFsmStateToString(DebugOldState.pneumatic_with_lock_fsm_state[Cup]), 
+                        pneumaticWithLockFsmStateToString(FsmState->pneumatic_with_lock_fsm_state[Cup]));
+                }
                 DebugOldState.pneumatic_with_lock_fsm_state[Cup] = FsmState->pneumatic_with_lock_fsm_state[Cup];
             }
         } else if (CUP_TYPE_MOTOR == Inputs->cup_type[Cup]) {
@@ -941,9 +946,11 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *Inputs,
 
             // just for debug purposes, to see the state transitions in the console
             if (DebugOldState.motor_fsm_state[Cup] != FsmState->motor_fsm_state[Cup]) {
-                printf("%s  FSMs tick (Mot); Cup %u state %s -> %s\n", getTimeStampString(), Cup+1, 
-                    motorFsmStateToString(DebugOldState.motor_fsm_state[Cup]), 
-                    motorFsmStateToString(FsmState->motor_fsm_state[Cup]));
+                if (VerboseEnabled) {
+                    printf("%s  FSMs tick (Mot); Cup %u state %s -> %s\n", getTimeStampString(), Cup+1, 
+                        motorFsmStateToString(DebugOldState.motor_fsm_state[Cup]), 
+                        motorFsmStateToString(FsmState->motor_fsm_state[Cup]));
+                }
                 DebugOldState.motor_fsm_state[Cup] = FsmState->motor_fsm_state[Cup];
             }
         } else {
@@ -955,7 +962,9 @@ void auxiliaryFSMsTick(const AuxiliaryFSMsInputs *Inputs,
     }
     FsmState->active_cup = ActiveCupIndex+1; // we use 1-based indexing for active cup
     if (DebugOldState.active_cup != FsmState->active_cup) {
-        printf("%s  FSMs tick; active cup %u -> %u\n", getTimeStampString(), DebugOldState.active_cup, FsmState->active_cup);
+        if (VerboseEnabled) {
+            printf("%s  FSMs tick; active cup %u -> %u\n", getTimeStampString(), DebugOldState.active_cup, FsmState->active_cup);
+        }
         DebugOldState.active_cup = FsmState->active_cup;
     }
 }

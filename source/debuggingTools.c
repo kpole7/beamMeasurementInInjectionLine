@@ -121,6 +121,10 @@ char *getTimeStampStringWithoutUpdate(void){
 }
 
 void printChangedRegisters( const char *ContextComment ) {
+	if (!VerboseEnabled) {
+		return;
+	}
+
 	static uint16_t OldModbusHoldingRegisters[MODBUS_HOLDING_REGISTERS_NUMBER];
 	static uint16_t OldModbusInputRegistersButNotSamples[MODBUS_INPUTS_BUT_NOT_SAMPLES_NUMBER];
 	static bool OldModbusCoils[MODBUS_COILS_NUMBER];

@@ -204,6 +204,7 @@ static void mainInitialization(void){
 	atomic_store_explicit(&ModbusAssertionFailed, false, memory_order_release);
 
 	sleep_ms(100);
+	updateVerboseMode();
 	printf("\r\n\r\n\r\n\r\n\r\n\r\nHello!\r\nCompilation time is %s\r\n", CompilationTime);
 #if DEBUG_SIMULATION_MODE
 	printf("Simulation mode is ON\r\n");
@@ -335,7 +336,9 @@ static void auxiliaryFSMsService(void) {
 	if (Outputs.trigger_insert[0] && 
 		(ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)] != Outputs.actuator_insert[0]))
 	{
-		printf("AuxFsmTick; actuator 1: %d->%d\r\n", ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)], Outputs.actuator_insert[0]);
+		if (VerboseEnabled) {
+			printf("AuxFsmTick; actuator 1: %d->%d\r\n", ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)], Outputs.actuator_insert[0]);
+		}
 		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)] = Outputs.actuator_insert[0];
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR1_CONTROL)] = true;
 	}
@@ -343,7 +346,9 @@ static void auxiliaryFSMsService(void) {
 	if (Outputs.trigger_insert[1] && 
 		(ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)] != Outputs.actuator_insert[1]))
 	{
-		printf("AuxFsmTick; actuator 2: %d->%d\r\n", ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)], Outputs.actuator_insert[1]);
+		if (VerboseEnabled) {
+			printf("AuxFsmTick; actuator 2: %d->%d\r\n", ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)], Outputs.actuator_insert[1]);
+		}
 		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)] = Outputs.actuator_insert[1];
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR2_CONTROL)] = true;
 	}
@@ -351,21 +356,27 @@ static void auxiliaryFSMsService(void) {
 	if (Outputs.trigger_insert[2] && 
 		(ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)] != Outputs.actuator_insert[2]))
 	{
-		printf("AuxFsmTick; actuator 3 in: %d->%d\r\n", ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)], Outputs.actuator_insert[2]);
+		if (VerboseEnabled) {
+			printf("AuxFsmTick; actuator 3 in: %d->%d\r\n", ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)], Outputs.actuator_insert[2]);
+		}
 		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)] = Outputs.actuator_insert[2];
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_IN)] = true;
 	}
 	if (Outputs.trigger_withdraw[2] && 
 		(ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_OUT)] != Outputs.actuator_withdraw[2]))
 	{
-		printf("AuxFsmTick; actuator 3 out: %d->%d\r\n", ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_OUT)], Outputs.actuator_withdraw[2]);
+		if (VerboseEnabled) {
+			printf("AuxFsmTick; actuator 3 out: %d->%d\r\n", ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_OUT)], Outputs.actuator_withdraw[2]);
+		}
 		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_OUT)] = Outputs.actuator_withdraw[2];
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_OUT)] = true;
 	}
 	if (Outputs.trigger_brake[2] && 
 		(ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_BRAKE)] != Outputs.actuator_brake[2]))
 	{
-		printf("AuxFsmTick; actuator 3 brake: %d->%d\r\n", ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_BRAKE)], Outputs.actuator_brake[2]);
+		if (VerboseEnabled) {
+			printf("AuxFsmTick; actuator 3 brake: %d->%d\r\n", ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_BRAKE)], Outputs.actuator_brake[2]);
+		}
 		ModbusCoils[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_BRAKE)] = Outputs.actuator_brake[2];
 		ModbusCoilTrigger[coilIndexFromAddress(MODBUS_ADDR_ACTUATOR3_CONTROL_BRAKE)] = true;
 	}
