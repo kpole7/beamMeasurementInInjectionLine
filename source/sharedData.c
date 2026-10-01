@@ -62,12 +62,12 @@ void initializeConfigurationJumper(void) {
 	sleep_us(100); // small delay to allow the configuration jumper state to stabilize
 
 	if (gpio_get(CONFIGURATION_GPIO_2)) {
-		ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] |= ENABLE_SIMULATION;
+		SimulationEnabled = false;
+		ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] &= ~ENABLE_SIMULATION;
+	} else {
 		SimulationEnabled = true;
-		return;
+		ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] |= ENABLE_SIMULATION;
 	}
-	SimulationEnabled = false;
-	ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] &= ~ENABLE_SIMULATION;
 	printf("SIMULATION MODE IS %s\n", SimulationEnabled ? "ENABLED" : "DISABLED");
 }
 

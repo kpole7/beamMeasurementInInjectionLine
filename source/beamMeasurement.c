@@ -202,6 +202,14 @@ static void mainInitialization(void){
 	stdio_init_all();
 	atomic_store_explicit(&ModbusAssertionFailed, false, memory_order_release);
 
+	sleep_ms(100);
+	printf("\r\n\r\n\r\n\r\n\r\n\r\nHello!\r\nCompilation time is %s\r\n", CompilationTime);
+#if DEBUG_SIMULATION_MODE
+	printf("Simulation mode is ON\r\n");
+#else
+	printf("Simulation mode is OFF\r\n");
+#endif
+
 	initializeConfigurationJumper();
 	turnOnLedOnBoard();
 	initModbusActivityLed();
@@ -212,14 +220,6 @@ static void mainInitialization(void){
 
 	memset(&AuxiliaryFSMsStateData, 0, sizeof(AuxiliaryFSMsStateData));
 	AuxiliaryFSMsStateData.active_cup = 1u;
-
-	sleep_ms(100);
-	printf("\r\n\r\n\r\n\r\n\r\n\r\nHello!\r\nCompilation time is %s\r\n", CompilationTime);
-#if DEBUG_SIMULATION_MODE
-	printf("Simulation mode is ON\r\n");
-#else
-	printf("Simulation mode is OFF\r\n");
-#endif
 
 	initializeLogicInputs();
 	initializeAdcMeasurements();
