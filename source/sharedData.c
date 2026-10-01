@@ -43,17 +43,21 @@ atomic_bool ModbusActiveLedShort;
 volatile bool ModbusActiveLedLong;
 
 /// This flag indicates whether the system is running in simulation mode.
+/// The simulation mode is active when the CONFIGURATION_GPIO_1 input is low on power-up.
 bool SimulationEnabled = false;
 
+/// This flag indicates whether verbose output is enabled at the auxiliary serial interface.
+/// The verbose mode is active when the CONFIGURATION_GPIO_2 input is low.
+bool VerboseEnabled = false;
 
 //..............................................................................
 // Function definitions
 //..............................................................................
 
-void initializeConfigurationJumper(void) {
+void initializeConfigurationInputs(void) {
 	gpio_init(CONFIGURATION_GPIO_1);
-	gpio_set_dir(CONFIGURATION_GPIO_1, GPIO_OUT);
-	gpio_put(CONFIGURATION_GPIO_1, false);
+	gpio_set_dir(CONFIGURATION_GPIO_1, GPIO_IN);
+	gpio_pull_up(CONFIGURATION_GPIO_1);
 
 	gpio_init(CONFIGURATION_GPIO_2);
 	gpio_set_dir(CONFIGURATION_GPIO_2, GPIO_IN);
@@ -61,7 +65,7 @@ void initializeConfigurationJumper(void) {
 
 	sleep_us(100); // small delay to allow the configuration jumper state to stabilize
 
-	if (gpio_get(CONFIGURATION_GPIO_2)) {
+	if (gpio_get(CONFIGURATION_GPIO_1)) {
 		SimulationEnabled = false;
 		ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] &= ~ENABLE_SIMULATION;
 	} else {
@@ -69,6 +73,35 @@ void initializeConfigurationJumper(void) {
 		ModbusHoldingRegisters[holdingIndexFromAddress(MODBUS_ADDR_DEBUG_PRINTOUTS)] |= ENABLE_SIMULATION;
 	}
 	printf("SIMULATION MODE IS %s\n", SimulationEnabled ? "ENABLED" : "DISABLED");
+}
+
+void updateVerboseMode(void) {
+	static uint16_t SteadyVerboseCounter = 0;
+	if (!VerboseEnabled) {
+		if (gpio_get(CONFIGURATION_GPIO_2)) {
+			SteadyVerboseCounter = 0;
+		}
+		else {
+			SteadyVerboseCounter++;
+			if (SteadyVerboseCounter > 100) {
+				VerboseEnabled = true;
+				SteadyVerboseCounter = 0;
+				printf("Verbose mode enabled\n");
+			}
+		}
+	} else {
+		if (!gpio_get(CONFIGURATION_GPIO_2)) {
+			SteadyVerboseCounter = 0;
+		}
+		else {
+			SteadyVerboseCounter++;
+			if (SteadyVerboseCounter > 100) {
+				VerboseEnabled = false;
+				SteadyVerboseCounter = 0;
+				printf("Verbose mode disabled\n");
+			}
+		}
+	}
 }
 
 uint16_t holdingIndexFromAddress(uint16_t address) {

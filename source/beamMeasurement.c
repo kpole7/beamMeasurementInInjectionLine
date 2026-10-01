@@ -88,6 +88,7 @@ int main() {
 			auxiliaryPinOutputValue2(true);
 
 
+			updateVerboseMode();
 			analogInputsMeasurements();
 			debugMainLoopTick();
 		}
@@ -210,7 +211,7 @@ static void mainInitialization(void){
 	printf("Simulation mode is OFF\r\n");
 #endif
 
-	initializeConfigurationJumper();
+	initializeConfigurationInputs();
 	turnOnLedOnBoard();
 	initModbusActivityLed();
 	initializeModbusRegisters();
